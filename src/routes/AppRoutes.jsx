@@ -1,0 +1,62 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthLayout } from '../layouts/AuthLayout';
+import { DashboardLayout } from '../layouts/DashboardLayout';
+import { Login } from '../pages/Login';
+import { Register } from '../pages/Register';
+import { ForgotPassword } from '../pages/ForgotPassword';
+import { Dashboard } from '../pages/Dashboard';
+import { FleetOverview } from '../pages/FleetOverview';
+import { LiveTracking } from '../pages/LiveTracking';
+import { GPSHistory } from '../pages/GPSHistory';
+import { Machines } from '../pages/Machines';
+import { MachineDetail } from '../pages/MachineDetail';
+import { Drivers } from '../pages/Drivers';
+import { DriverDetail } from '../pages/DriverDetail';
+import { Fields } from '../pages/Fields';
+import { Jobs } from '../pages/Jobs';
+import { Reports } from '../pages/Reports';
+import { Alerts } from '../pages/Alerts';
+import { Maintenance } from '../pages/Maintenance';
+import { AIAssistant } from '../pages/AIAssistant';
+import { Settings } from '../pages/Settings';
+import { Help } from '../pages/Help';
+import { PATHS } from '../constants';
+
+export const AppRoutes = () => {
+  return (
+    <Routes>
+      {/* Public Auth Layout pages */}
+      <Route element={<AuthLayout />}>
+        <Route path={PATHS.LOGIN} element={<Login />} />
+        <Route path={PATHS.REGISTER} element={<Register />} />
+        <Route path={PATHS.FORGOT_PASSWORD} element={<ForgotPassword />} />
+      </Route>
+
+      {/* Protected dashboard system pages */}
+      <Route element={<DashboardLayout />}>
+        <Route path={PATHS.DASHBOARD} element={<Dashboard />} />
+        <Route path={PATHS.FLEET_OVERVIEW} element={<FleetOverview />} />
+        <Route path={PATHS.TRACKING} element={<LiveTracking />} />
+        <Route path={PATHS.GPS_HISTORY} element={<GPSHistory />} />
+        <Route path={PATHS.MACHINES} element={<Machines />} />
+        <Route path={PATHS.MACHINE_DETAIL} element={<MachineDetail />} />
+        <Route path={PATHS.DRIVERS} element={<Drivers />} />
+        <Route path={PATHS.DRIVER_DETAIL} element={<DriverDetail />} />
+        <Route path={PATHS.FIELDS} element={<Fields />} />
+        <Route path={PATHS.JOBS} element={<Jobs />} />
+        <Route path={PATHS.REPORTS} element={<Reports />} />
+        <Route path={PATHS.ALERTS} element={<Alerts />} />
+        <Route path={PATHS.MAINTENANCE} element={<Maintenance />} />
+        <Route path={PATHS.AI_ASSISTANT} element={<AIAssistant />} />
+        <Route path={PATHS.SETTINGS} element={<Settings />} />
+        <Route path={PATHS.HELP} element={<Help />} />
+      </Route>
+
+      {/* Redirection fallback */}
+      <Route path="*" element={<Navigate to={PATHS.DASHBOARD} replace />} />
+    </Routes>
+  );
+};
+
+export default AppRoutes;
