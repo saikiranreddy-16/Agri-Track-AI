@@ -10,6 +10,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import authRoutes from './routes/authRoutes.js';
+import machineRoutes from './routes/machineRoutes.js';
+import driverRoutes from './routes/driverRoutes.js';
+import fieldRoutes from './routes/fieldRoutes.js';
+import jobRoutes from './routes/jobRoutes.js';
+import alertRoutes from './routes/alertRoutes.js';
+import maintenanceRoutes from './routes/maintenanceRoutes.js';
+import gpsRoutes from './routes/gpsHistoryRoutes.js';
+import activityLogRoutes from './routes/activityLogRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -86,6 +95,15 @@ app.get('/api/health', (req, res) => {
 
 // 9. Mount Versioned API Routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/machines', machineRoutes);
+app.use('/api/v1/drivers', driverRoutes);
+app.use('/api/v1/fields', fieldRoutes);
+app.use('/api/v1/jobs', jobRoutes);
+app.use('/api/v1/alerts', alertRoutes);
+app.use('/api/v1/maintenance', maintenanceRoutes);
+app.use('/api/v1/gps', gpsRoutes);
+app.use('/api/v1/activity-logs', activityLogRoutes);
+app.use('/api/v1/reports', reportRoutes);
 
 // 10. Central Error Middleware Hooking
 app.use(notFound);
