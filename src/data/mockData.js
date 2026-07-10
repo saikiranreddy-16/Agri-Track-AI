@@ -341,7 +341,7 @@ export const mockMachines = [
     brand: 'Kartar',
     model: '4000 Combo',
     registration: 'PB-10-LM-1002',
-    status: 'Offline',
+    status: 'Maintenance',
     fuel: 0,
     battery: 10,
     assignedDriverId: null,

@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaPlus, FaTh, FaList, FaTrash, FaPen, FaEye, FaSearch, 
-  FaGasPump, FaBatteryThreeQuarters, FaCompass, FaLink, FaUserPlus
+  FaGasPump, FaBatteryThreeQuarters, FaCompass, FaLink, FaUserPlus,
+  FaClock, FaUserTie, FaToggleOn, FaPowerOff, FaTools
 } from 'react-icons/fa';
 import { mockMachines, mockDrivers } from '../data/mockData';
 import { PATHS } from '../constants';
@@ -36,6 +37,7 @@ export const Machines = () => {
   const [formReg, setFormReg] = useState('');
   const [formDriver, setFormDriver] = useState('');
   const [formFuel, setFormFuel] = useState(100);
+  const [formStatus, setFormStatus] = useState('Idle');
 
   const getDriverName = (driverId) => {
     const drv = mockDrivers.find(d => d.id === driverId);
@@ -96,6 +98,7 @@ export const Machines = () => {
     setFormReg(machine.registration);
     setFormDriver(machine.assignedDriverId || '');
     setFormFuel(machine.fuel);
+    setFormStatus(machine.status);
     setIsEditOpen(true);
   };
 
@@ -111,7 +114,8 @@ export const Machines = () => {
       model: formModel,
       registration: formReg,
       assignedDriverId: formDriver || null,
-      fuel: parseInt(formFuel, 10)
+      fuel: parseInt(formFuel, 10),
+      status: formStatus
     } : m));
 
     setIsEditOpen(false);
@@ -201,9 +205,10 @@ export const Machines = () => {
             className="px-3 py-2 text-xs font-bold bg-gray-50 dark:bg-emerald-950/30 border border-gray-200 dark:border-emerald-950/40 rounded-xl focus:outline-none dark:text-white"
           >
             <option value="All">All Statuses</option>
-            <option value="Working">Working</option>
+            <option value="Working">Running</option>
             <option value="Idle">Idle</option>
             <option value="Offline">Offline</option>
+            <option value="Maintenance">Maintenance</option>
           </select>
         </div>
 
@@ -246,14 +251,16 @@ export const Machines = () => {
                     e.target.src = 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80';
                   }}
                 />
-                <span className={`absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                <span className={`absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase shadow-md ${
                   machine.status === 'Working'
                     ? 'bg-emerald-500 text-white'
                     : machine.status === 'Idle'
-                    ? 'bg-yellow-500 text-white'
-                    : 'bg-red-500 text-white'
+                    ? 'bg-orange-500 text-white'
+                    : machine.status === 'Offline'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-purple-600 text-white'
                 }`}>
-                  {machine.status}
+                  {machine.status === 'Working' ? 'Running' : machine.status}
                 </span>
               </div>
 
@@ -269,18 +276,28 @@ export const Machines = () => {
 
                   <div className="grid grid-cols-2 gap-3 mt-4 text-xs">
                     <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                      <FaGasPump className="text-gray-400 shrink-0" />
-                      <span>Fuel: {machine.fuel}%</span>
+                      <FaUserTie className="text-emerald-500/80 dark:text-emerald-400 shrink-0" />
+                      <span className="truncate">Driver: <strong className="text-gray-700 dark:text-gray-200">{getDriverName(machine.assignedDriverId)}</strong></span>
                     </div>
                     <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                      <FaBatteryThreeQuarters className="text-gray-400 shrink-0" />
-                      <span>Battery: {machine.battery}%</span>
+                      <FaGasPump className="text-orange-500/80 dark:text-orange-400 shrink-0" />
+                      <span>Fuel: <strong className="text-gray-700 dark:text-gray-200">{machine.fuel}%</strong></span>
                     </div>
-                    <div className="col-span-2 border-t border-gray-100 dark:border-emerald-950/20 pt-2.5 text-gray-500 dark:text-gray-400">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400 mr-2">Driver:</span>
-                      <span className="font-semibold text-gray-700 dark:text-gray-200">
-                        {getDriverName(machine.assignedDriverId)}
-                      </span>
+                    <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                      <FaCompass className="text-blue-500/80 dark:text-blue-400 shrink-0" />
+                      <span>Speed: <strong className="text-gray-700 dark:text-gray-200">{machine.speed} km/h</strong></span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                      {machine.engineStatus === 'On' ? (
+                        <FaToggleOn className="text-emerald-500 shrink-0" />
+                      ) : (
+                        <FaPowerOff className="text-red-500 shrink-0" />
+                      )}
+                      <span>Engine: <strong className={machine.engineStatus === 'On' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-red-550 font-bold'}>{machine.engineStatus === 'On' ? 'ON' : 'OFF'}</strong></span>
+                    </div>
+                    <div className="col-span-2 flex items-center gap-1.5 text-gray-500 dark:text-gray-400 border-t border-gray-150 dark:border-emerald-950/20 pt-2.5">
+                      <FaClock className="text-sky-500/80 dark:text-sky-400 shrink-0" />
+                      <span>Working Hours: <strong className="text-gray-700 dark:text-gray-200">{machine.workingHours || 0} hrs</strong></span>
                     </div>
                   </div>
                 </div>
@@ -343,10 +360,12 @@ export const Machines = () => {
                       machine.status === 'Working'
                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400'
                         : machine.status === 'Idle'
-                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-400'
-                        : 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400'
+                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-400'
+                        : machine.status === 'Offline'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400'
+                        : 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-400'
                     }`}>
-                      {machine.status}
+                      {machine.status === 'Working' ? 'Running' : machine.status}
                     </span>
                   </td>
                   <td className="p-4">{machine.fuel}%</td>
@@ -578,18 +597,32 @@ export const Machines = () => {
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Assign Operator</label>
+                    <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Status</label>
                     <select
-                      value={formDriver}
-                      onChange={(e) => setFormDriver(e.target.value)}
+                      value={formStatus}
+                      onChange={(e) => setFormStatus(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                     >
-                      <option value="">Unassigned</option>
-                      {mockDrivers.map(d => (
-                        <option key={d.id} value={d.id}>{d.name}</option>
-                      ))}
+                      <option value="Working">Running</option>
+                      <option value="Idle">Idle</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Maintenance">Maintenance</option>
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Assign Operator</label>
+                  <select
+                    value={formDriver}
+                    onChange={(e) => setFormDriver(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
+                  >
+                    <option value="">Unassigned</option>
+                    {mockDrivers.map(d => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex gap-2 justify-end pt-4">

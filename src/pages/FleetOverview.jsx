@@ -16,16 +16,18 @@ export const FleetOverview = () => {
   const workingCount = mockMachines.filter(m => m.status === 'Working').length;
   const idleCount = mockMachines.filter(m => m.status === 'Idle').length;
   const offlineCount = mockMachines.filter(m => m.status === 'Offline').length;
+  const maintenanceCount = mockMachines.filter(m => m.status === 'Maintenance').length;
 
   const filteredMachines = filterType === 'All' 
     ? mockMachines 
     : mockMachines.filter(m => m.status === filterType);
 
   const stats = [
-    { label: 'Total Fleet', value: totalCount, icon: FaTractor, color: 'text-gray-600 dark:text-gray-300' },
-    { label: 'Working', value: workingCount, icon: FaCheckCircle, color: 'text-emerald-500' },
-    { label: 'Idle / Standing', value: idleCount, icon: FaCircle, color: 'text-yellow-500' },
-    { label: 'Offline / Yard', value: offlineCount, icon: FaExclamationTriangle, color: 'text-red-500' }
+    { label: 'Total Fleet', value: totalCount, icon: FaTractor, color: 'text-gray-650 dark:text-gray-300' },
+    { label: 'Running', value: workingCount, icon: FaCheckCircle, color: 'text-emerald-500' },
+    { label: 'Idle', value: idleCount, icon: FaCircle, color: 'text-orange-500' },
+    { label: 'Offline', value: offlineCount, icon: FaExclamationTriangle, color: 'text-red-500' },
+    { label: 'Maintenance', value: maintenanceCount, icon: FaTools, color: 'text-purple-550' }
   ];
 
   return (
@@ -60,16 +62,17 @@ export const FleetOverview = () => {
       </div>
 
       {/* Fleet Stats Overview Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div 
               key={stat.label} 
               onClick={() => {
-                if (stat.label === 'Working') setFilterType('Working');
-                else if (stat.label === 'Idle / Standing') setFilterType('Idle');
-                else if (stat.label === 'Offline / Yard') setFilterType('Offline');
+                if (stat.label === 'Running') setFilterType('Working');
+                else if (stat.label === 'Idle') setFilterType('Idle');
+                else if (stat.label === 'Offline') setFilterType('Offline');
+                else if (stat.label === 'Maintenance') setFilterType('Maintenance');
                 else setFilterType('All');
               }}
               className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center justify-between cursor-pointer"
@@ -89,18 +92,18 @@ export const FleetOverview = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 border-b border-gray-200 dark:border-emerald-950/20 pb-1">
-        {['All', 'Working', 'Idle', 'Offline'].map((t) => (
+      <div className="flex gap-2 border-b border-gray-200 dark:border-emerald-950/20 pb-1 overflow-x-auto custom-scrollbar">
+        {['All', 'Working', 'Idle', 'Offline', 'Maintenance'].map((t) => (
           <button
             key={t}
             onClick={() => setFilterType(t)}
-            className={`px-4 py-2 text-xs font-bold transition-all relative ${
+            className={`px-4 py-2 text-xs font-bold transition-all relative shrink-0 cursor-pointer ${
               filterType === t 
-                ? 'text-emerald-600 dark:text-emerald-400' 
+                ? 'text-emerald-600 dark:text-emerald-400 font-extrabold' 
                 : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
             }`}
           >
-            {t} Assets
+            {t === 'Working' ? 'Running' : t} Assets
             {filterType === t && (
               <motion.div 
                 layoutId="activeTabUnderline"
@@ -137,10 +140,12 @@ export const FleetOverview = () => {
                   machine.status === 'Working'
                     ? 'bg-emerald-500 text-white'
                     : machine.status === 'Idle'
-                    ? 'bg-yellow-500 text-white'
-                    : 'bg-red-500 text-white'
+                    ? 'bg-orange-500 text-white'
+                    : machine.status === 'Offline'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-purple-600 text-white'
                 }`}>
-                  {machine.status}
+                  {machine.status === 'Working' ? 'Running' : machine.status}
                 </span>
               </div>
 

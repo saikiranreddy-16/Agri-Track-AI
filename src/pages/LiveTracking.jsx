@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { 
   FaTractor, FaCompass, FaGasPump, FaBatteryThreeQuarters, FaCheckCircle, 
-  FaClock, FaMapMarkerAlt, FaExpand, FaSearch, FaHistory, FaUserPlus, FaEye 
+  FaClock, FaMapMarkerAlt, FaExpand, FaSearch, FaHistory, FaUserPlus, FaEye, FaUserTie
 } from 'react-icons/fa';
 import { mockMachines, mockDrivers } from '../data/mockData';
 import { PATHS } from '../constants';
@@ -35,7 +35,13 @@ const RecenterMap = ({ center, zoom = 14 }) => {
 
 // Create custom colored pins matching status
 const createCustomPin = (status, type) => {
-  const color = status === 'Working' ? '#10b981' : status === 'Idle' ? '#eab308' : '#ef4444';
+  const color = status === 'Working' 
+    ? '#10b981' 
+    : status === 'Idle' 
+    ? '#f97316' 
+    : status === 'Offline' 
+    ? '#ef4444' 
+    : '#8b5cf6'; // Maintenance: purple
   return L.divIcon({
     html: `
       <div class="relative flex items-center justify-center w-8 h-8 rounded-full border-2 border-white shadow-md text-white font-bold transition-all" style="background-color: ${color};">
@@ -118,8 +124,11 @@ export const LiveTracking = () => {
   };
 
   const filteredMachines = machines.filter(m => {
+    const driverName = getDriverName(m.assignedDriverId).toLowerCase();
     const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          m.brand.toLowerCase().includes(searchQuery.toLowerCase());
+                          m.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          m.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          driverName.includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'All' || m.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -156,18 +165,18 @@ export const LiveTracking = () => {
           </div>
 
           {/* Status Pills */}
-          <div className="flex gap-1">
-            {['All', 'Working', 'Idle', 'Offline'].map((st) => (
+          <div className="flex gap-1 overflow-x-auto pb-1 custom-scrollbar">
+            {['All', 'Working', 'Idle', 'Offline', 'Maintenance'].map((st) => (
               <button
                 key={st}
                 onClick={() => setFilterStatus(st)}
-                className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-all ${
+                className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-all shrink-0 cursor-pointer ${
                   filterStatus === st
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-gray-100 dark:bg-emerald-900/10 text-gray-500 hover:bg-gray-200'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'bg-gray-100 dark:bg-emerald-900/10 text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-emerald-900/20'
                 }`}
               >
-                {st}
+                {st === 'Working' ? 'Running' : st}
               </button>
             ))}
           </div>
@@ -191,10 +200,12 @@ export const LiveTracking = () => {
                   m.status === 'Working'
                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400'
                     : m.status === 'Idle'
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-400'
-                    : 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400'
+                    ? 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-400'
+                    : m.status === 'Offline'
+                    ? 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400'
+                    : 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-400'
                 }`}>
-                  {m.status}
+                  {m.status === 'Working' ? 'Running' : m.status}
                 </span>
               </div>
               
@@ -281,31 +292,47 @@ export const LiveTracking = () => {
             {/* Quick stats grid */}
             <div className="grid grid-cols-2 gap-3 text-xs mb-4">
               <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">
-                <FaTractor className="text-emerald-500" />
+                <FaUserTie className="text-emerald-500 shrink-0" />
                 <div>
-                  <div className="text-[10px] text-gray-400">Driver</div>
+                  <div className="text-[10px] text-gray-400 font-bold">Driver</div>
                   <div className="font-bold truncate">{getDriverName(selectedMachine.assignedDriverId)}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">
-                <FaCompass className="text-emerald-500" />
+                <FaCompass className="text-blue-500 shrink-0" />
                 <div>
-                  <div className="text-[10px] text-gray-400">Speed / GPS</div>
+                  <div className="text-[10px] text-gray-400 font-bold">Speed</div>
                   <div className="font-bold">{selectedMachine.speed} km/h</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">
-                <FaGasPump className="text-orange-500" />
+                <FaGasPump className="text-orange-500 shrink-0" />
                 <div>
-                  <div className="text-[10px] text-gray-400">Fuel Tank</div>
+                  <div className="text-[10px] text-gray-400 font-bold">Fuel Tank</div>
                   <div className="font-bold">{selectedMachine.fuel}%</div>
                 </div>
               </div>
               <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">
-                <FaBatteryThreeQuarters className="text-yellow-500" />
+                <FaClock className="text-sky-500 shrink-0" />
                 <div>
-                  <div className="text-[10px] text-gray-400">Battery</div>
-                  <div className="font-bold">{selectedMachine.battery}%</div>
+                  <div className="text-[10px] text-gray-400 font-bold">Working Hours</div>
+                  <div className="font-bold">{selectedMachine.workingHours || 0} hrs</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">
+                <FaBatteryThreeQuarters className="text-yellow-500 shrink-0" />
+                <div>
+                  <div className="text-[10px] text-gray-400 font-bold">Engine Status</div>
+                  <div className={`font-bold uppercase ${selectedMachine.engineStatus === 'On' ? 'text-emerald-500' : 'text-red-500'}`}>
+                    {selectedMachine.engineStatus === 'On' ? 'ON' : 'OFF'}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: selectedMachine.status === 'Working' ? '#10b981' : selectedMachine.status === 'Idle' ? '#f97316' : selectedMachine.status === 'Offline' ? '#ef4444' : '#8b5cf6' }} />
+                <div>
+                  <div className="text-[10px] text-gray-400 font-bold">Status</div>
+                  <div className="font-bold uppercase">{selectedMachine.status === 'Working' ? 'Running' : selectedMachine.status}</div>
                 </div>
               </div>
               <div className="col-span-2 p-2 bg-gray-50 dark:bg-emerald-950/20 rounded-xl space-y-1">

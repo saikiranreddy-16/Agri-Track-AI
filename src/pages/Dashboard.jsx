@@ -7,7 +7,8 @@ import {
 } from 'recharts';
 import { 
   FaTractor, FaUserTie, FaMap, FaExclamationTriangle, 
-  FaGasPump, FaClock, FaRoute, FaArrowRight, FaTasks, FaPlus
+  FaGasPump, FaClock, FaRoute, FaArrowRight, FaTasks, FaPlus,
+  FaChartBar, FaTools, FaRobot
 } from 'react-icons/fa';
 import { mockMachines, mockDrivers, mockJobs } from '../data/mockData';
 import { useUIState } from '../context/UIStateContext';
@@ -29,9 +30,10 @@ export const Dashboard = () => {
 
   // Dynamic calculations based on mock data
   const totalMachines = mockMachines.length;
-  const activeMachines = mockMachines.filter(m => m.status !== 'Offline').length;
+  const activeMachines = mockMachines.filter(m => m.status === 'Working' || m.status === 'Idle').length;
   const offlineMachines = mockMachines.filter(m => m.status === 'Offline').length;
   const workingMachines = mockMachines.filter(m => m.status === 'Working').length;
+  const maintenanceMachines = mockMachines.filter(m => m.status === 'Maintenance').length;
   const totalDrivers = mockDrivers.length;
   
   const totalAreaCovered = 582; // hectares
@@ -50,13 +52,23 @@ export const Dashboard = () => {
 
   const stats = [
     { title: 'Total Machines', value: totalMachines, sub: `${activeMachines} Active`, icon: FaTractor, color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/20' },
-    { title: 'Working Machines', value: workingMachines, sub: `${activeMachines - workingMachines} Idle`, icon: FaTractor, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20' },
+    { title: 'Working Machines', value: workingMachines, sub: `${activeMachines - workingMachines} Idle, ${maintenanceMachines} Maint.`, icon: FaTractor, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20' },
     { title: 'Offline Machines', value: offlineMachines, sub: 'Needs Inspection', icon: FaExclamationTriangle, color: 'text-red-500 bg-red-50 dark:bg-red-950/20' },
     { title: 'Active Drivers', value: totalDrivers, sub: '5 On Shift', icon: FaUserTie, color: 'text-purple-500 bg-purple-50 dark:bg-purple-950/20' },
     { title: 'Area Covered Today', value: `${totalAreaCovered} ha`, sub: '+12% from yesterday', icon: FaMap, color: 'text-orange-500 bg-orange-50 dark:bg-orange-950/20' },
     { title: 'Fuel Used Today', value: `${totalFuelUsed} L`, sub: 'Avg 5.4 L/ha', icon: FaGasPump, color: 'text-yellow-500 bg-yellow-50 dark:bg-yellow-950/20' },
     { title: 'Working Hours Today', value: `${totalHoursWorked} hrs`, sub: 'Across 6 active crews', icon: FaClock, color: 'text-sky-500 bg-sky-50 dark:bg-sky-950/20' },
     { title: 'Recent Warnings', value: alerts.filter(a => a.status === 'Active').length, sub: 'Active GPS alerts', icon: FaExclamationTriangle, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/20' }
+  ];
+
+  const quickActions = [
+    { name: 'Start Job', path: PATHS.JOBS, icon: FaPlus, bgClass: 'bg-emerald-500 shadow-emerald-500/20 shadow-md' },
+    { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute, bgClass: 'bg-blue-500 shadow-blue-500/20 shadow-md' },
+    { name: 'Reports', path: PATHS.REPORTS, icon: FaChartBar, bgClass: 'bg-indigo-500 shadow-indigo-500/20 shadow-md' },
+    { name: 'Machine List', path: PATHS.MACHINES, icon: FaTractor, bgClass: 'bg-amber-500 shadow-amber-500/20 shadow-md' },
+    { name: 'Drivers', path: PATHS.DRIVERS, icon: FaUserTie, bgClass: 'bg-purple-500 shadow-purple-500/20 shadow-md' },
+    { name: 'Maintenance', path: PATHS.MAINTENANCE, icon: FaTools, bgClass: 'bg-red-500 shadow-red-500/20 shadow-md' },
+    { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, bgClass: 'bg-teal-500 shadow-teal-500/20 shadow-md' }
   ];
 
   // Activities Feed
@@ -96,6 +108,32 @@ export const Dashboard = () => {
             <FaPlus className="text-xs" />
             Dispatch Job
           </button>
+        </div>
+      </div>
+
+      {/* Quick Action Buttons */}
+      <div className="bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl p-5 shadow-sm">
+        <h2 className="text-xs font-bold text-gray-450 dark:text-emerald-500/80 uppercase tracking-wider mb-4">
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+          {quickActions.map((action, idx) => {
+            const Icon = action.icon;
+            return (
+              <Link
+                key={action.name}
+                to={action.path}
+                className="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/20 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-950/20 hover:border-emerald-500/30 group transition-all text-center cursor-pointer shadow-sm hover:shadow"
+              >
+                <div className={`p-3 rounded-lg mb-2.5 transition-all group-hover:scale-110 ${action.bgClass} text-white`}>
+                  <Icon className="text-lg" />
+                </div>
+                <span className="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                  {action.name}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </div>
 

@@ -72,10 +72,12 @@ export const MachineDetail = () => {
               machine.status === 'Working'
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400'
                 : machine.status === 'Idle'
-                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-400'
-                : 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400'
+                ? 'bg-orange-100 text-orange-850 dark:bg-orange-950/50 dark:text-orange-400'
+                : machine.status === 'Offline'
+                ? 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400'
+                : 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-400'
             }`}>
-              {machine.status}
+              {machine.status === 'Working' ? 'Running' : machine.status}
             </span>
           </h1>
         </div>
