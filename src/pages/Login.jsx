@@ -7,7 +7,7 @@ export const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('rajesh.patel@agritrack.in');
+  const [email, setEmail] = useState('rajesh@example.com');
   const [password, setPassword] = useState('password123');
   const [selectedRole, setSelectedRole] = useState('Farm Owner');
   const [rememberMe, setRememberMe] = useState(true);

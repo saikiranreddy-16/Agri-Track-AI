@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import io from 'socket.io-client';
+import api from '../utils/api';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
   FaTractor, FaGasPump, FaBatteryThreeQuarters, FaTools, 
   FaClock, FaMapMarkerAlt, FaFileAlt, FaHistory, FaExclamationTriangle, 
   FaChevronLeft, FaCamera, FaDownload 
 } from 'react-icons/fa';
-import { mockMachines, mockDrivers } from '../data/mockData';
 import { PATHS } from '../constants';
 
 // Fix Leaflet pin icon
@@ -23,12 +24,90 @@ const customPin = L.icon({
   iconAnchor: [12, 41]
 });
 
+// Helper component to center Leaflet map dynamically
+const RecenterMap = ({ center, zoom = 15 }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, zoom);
+    }
+  }, [center, zoom, map]);
+  return null;
+};
+
+const formatMachine = (m) => ({
+  id: m._id || m.id,
+  name: m.name,
+  type: m.type,
+  brand: m.brand,
+  model: m.model,
+  registration: m.registration,
+  status: m.status,
+  fuel: m.fuel !== undefined ? m.fuel : 100,
+  battery: m.battery !== undefined ? m.battery : 100,
+  assignedDriverId: m.assignedDriverId,
+  location: m.location || { lat: 30.902, lng: 75.853 },
+  speed: m.speed || 0,
+  heading: m.heading || 0,
+  engineStatus: m.engineStatus || 'Off',
+  workingHours: m.workingHours || 0,
+  distanceTravelled: m.distanceTravelled || 0,
+  currentAddress: m.currentAddress || '',
+  photo: m.photo || 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
+  documents: m.documents || [],
+  workHistory: m.workHistory || [],
+  fuelHistory: m.fuelHistory || [],
+  maintenanceHistory: m.maintenanceHistory || [],
+  alerts: m.alerts || [],
+  updatedAt: m.updatedAt,
+});
+
 export const MachineDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [machine, setMachine] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const machine = mockMachines.find(m => m.id === id);
+  // Fetch machine details on mount
+  useEffect(() => {
+    const fetchMachineDetails = async () => {
+      try {
+        const response = await api.get(`/machines/${id}`);
+        if (response.data && response.data.success) {
+          setMachine(formatMachine(response.data.data));
+        }
+      } catch (err) {
+        console.error('Failed to fetch machine details:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMachineDetails();
+  }, [id]);
+
+  // Set up socket listener for live changes
+  useEffect(() => {
+    const socket = io('http://localhost:5000', { withCredentials: true });
+
+    socket.on('machineUpdate', (updated) => {
+      if (updated._id === id || updated.id === id) {
+        setMachine(formatMachine(updated));
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="h-96 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!machine) {
     return (
@@ -43,7 +122,13 @@ export const MachineDetail = () => {
     );
   }
 
-  const assignedDriver = mockDrivers.find(d => d.id === machine.assignedDriverId);
+  const assignedDriver = machine.assignedDriverId && typeof machine.assignedDriverId === 'object'
+    ? {
+        name: machine.assignedDriverId.name,
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&h=400&q=80',
+        experience: '8 Years',
+      }
+    : null;
 
   const tabs = [
     { id: 'overview', label: 'Overview & GPS', icon: FaTractor },
@@ -175,6 +260,7 @@ export const MachineDetail = () => {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
+                  <RecenterMap center={[machine.location.lat, machine.location.lng]} />
                   <Marker position={[machine.location.lat, machine.location.lng]} icon={customPin}>
                     <Popup>
                       <strong>{machine.name}</strong><br />

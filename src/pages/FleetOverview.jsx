@@ -1,26 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import io from 'socket.io-client';
+import api from '../utils/api';
 import { 
   FaTractor, FaCircle, FaGasPump, FaCompass, FaRegCalendarAlt, FaTools, 
   FaPlus, FaCheckCircle, FaExclamationTriangle, FaEye
 } from 'react-icons/fa';
-import { mockMachines, mockDrivers } from '../data/mockData';
 import { PATHS } from '../constants';
+
+const formatMachine = (m) => ({
+  id: m._id || m.id,
+  name: m.name,
+  type: m.type,
+  brand: m.brand,
+  model: m.model,
+  registration: m.registration,
+  status: m.status,
+  fuel: m.fuel !== undefined ? m.fuel : 100,
+  battery: m.battery !== undefined ? m.battery : 100,
+  assignedDriverId: m.assignedDriverId,
+  location: m.location || { lat: 30.902, lng: 75.853 },
+  speed: m.speed || 0,
+  heading: m.heading || 0,
+  engineStatus: m.engineStatus || 'Off',
+  workingHours: m.workingHours || 0,
+  distanceTravelled: m.distanceTravelled || 0,
+  currentAddress: m.currentAddress || '',
+  photo: m.photo || 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
+  documents: m.documents || [],
+});
 
 export const FleetOverview = () => {
   const navigate = useNavigate();
   const [filterType, setFilterType] = useState('All');
+  const [machines, setMachines] = useState([]);
 
-  const totalCount = mockMachines.length;
-  const workingCount = mockMachines.filter(m => m.status === 'Working').length;
-  const idleCount = mockMachines.filter(m => m.status === 'Idle').length;
-  const offlineCount = mockMachines.filter(m => m.status === 'Offline').length;
-  const maintenanceCount = mockMachines.filter(m => m.status === 'Maintenance').length;
+  // Fetch machines list on mount
+  useEffect(() => {
+    const fetchMachines = async () => {
+      try {
+        const response = await api.get('/machines');
+        if (response.data && response.data.success) {
+          setMachines(response.data.data.map(formatMachine));
+        }
+      } catch (error) {
+        console.error('Failed to load fleet:', error);
+      }
+    };
+    fetchMachines();
+  }, []);
+
+  // Listen to live machine position and status updates
+  useEffect(() => {
+    const socket = io('http://localhost:5000', { withCredentials: true });
+    
+    socket.on('machineUpdate', (updated) => {
+      const formatted = formatMachine(updated);
+      setMachines(prev => prev.map(m => m.id === formatted.id ? formatted : m));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const totalCount = machines.length;
+  const workingCount = machines.filter(m => m.status === 'Working').length;
+  const idleCount = machines.filter(m => m.status === 'Idle').length;
+  const offlineCount = machines.filter(m => m.status === 'Offline').length;
+  const maintenanceCount = machines.filter(m => m.status === 'Maintenance').length;
 
   const filteredMachines = filterType === 'All' 
-    ? mockMachines 
-    : mockMachines.filter(m => m.status === filterType);
+    ? machines 
+    : machines.filter(m => m.status === filterType);
 
   const stats = [
     { label: 'Total Fleet', value: totalCount, icon: FaTractor, color: 'text-gray-650 dark:text-gray-300' },
@@ -117,7 +170,7 @@ export const FleetOverview = () => {
       {/* Machines Listing */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredMachines.map((machine) => {
-          const driver = mockDrivers.find(d => d.id === machine.assignedDriverId);
+          const driver = machine.assignedDriverId;
           return (
             <motion.div
               layout

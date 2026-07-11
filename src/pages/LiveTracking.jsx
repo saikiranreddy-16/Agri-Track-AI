@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import io from 'socket.io-client';
+import api from '../utils/api';
 import { 
   FaTractor, FaCompass, FaGasPump, FaBatteryThreeQuarters, FaCheckCircle, 
-  FaClock, FaMapMarkerAlt, FaExpand, FaSearch, FaHistory, FaUserPlus, FaEye, FaUserTie
+  FaClock, FaMapMarkerAlt, FaExpand, FaSearch, FaHistory, FaUserPlus, FaEye, FaUserTie,
+  FaExclamationTriangle
 } from 'react-icons/fa';
-import { mockMachines, mockDrivers } from '../data/mockData';
 import { PATHS } from '../constants';
 
 // Fix for default Leaflet icon resolution issues
@@ -57,70 +59,125 @@ const createCustomPin = (status, type) => {
   });
 };
 
+const formatMachine = (m) => ({
+  id: m._id || m.id,
+  name: m.name,
+  type: m.type,
+  brand: m.brand,
+  model: m.model,
+  registration: m.registration,
+  status: m.status,
+  fuel: m.fuel,
+  battery: m.battery,
+  assignedDriverId: m.assignedDriverId,
+  location: m.location || { lat: 30.902, lng: 75.853 },
+  speed: m.speed || 0,
+  heading: m.heading || 0,
+  engineStatus: m.engineStatus || 'Off',
+  workingHours: m.workingHours || 0,
+  distanceTravelled: m.distanceTravelled || 0,
+  currentAddress: m.currentAddress || '',
+  photo: m.photo || 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
+  updatedAt: m.updatedAt,
+});
+
 export const LiveTracking = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Local state for dynamic machine positions (simulating GPS movements)
-  const [machines, setMachines] = useState(mockMachines);
+  // Local state for fleet machines
+  const [machines, setMachines] = useState([]);
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
-  const [mapCenter, setMapCenter] = useState([41.885, -87.645]);
+  const [mapCenter, setMapCenter] = useState([30.902, 75.853]);
   const [mapZoom, setMapZoom] = useState(13);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Check if a machine was requested to be located from another view
+  // Keep a ref to selectedMachine for updating it inside the Socket listener
+  const selectedMachineRef = useRef(null);
   useEffect(() => {
-    if (location.state?.locateMachineId) {
-      const target = machines.find(m => m.id === location.state.locateMachineId);
-      if (target) {
-        setSelectedMachine(target);
-        setMapCenter([target.location.lat, target.location.lng]);
-        setMapZoom(15);
-      }
-    } else if (machines.length > 0) {
-      setSelectedMachine(machines[0]);
-      setMapCenter([machines[0].location.lat, machines[0].location.lng]);
-    }
-  }, [location.state, machines]);
-
-  // Simulate active movement (jiggling GPS markers) on a 4 second interval
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMachines(prevMachines => {
-        const updated = prevMachines.map(m => {
-          if (m.status !== 'Working') return m;
-          // Slowly creep Northeast/Southwest
-          const deltaLat = (Math.random() - 0.3) * 0.0003;
-          const deltaLng = (Math.random() - 0.3) * 0.0003;
-          const newLat = m.location.lat + deltaLat;
-          const newLng = m.location.lng + deltaLng;
-          
-          return {
-            ...m,
-            location: { lat: newLat, lng: newLng },
-            speed: Math.max(6, Math.min(22, m.speed + Math.floor(Math.random() * 3) - 1)),
-            fuel: Math.max(1, m.fuel - (Math.random() > 0.8 ? 1 : 0))
-          };
-        });
-
-        // Sync details panel if currently focused on a moving machine
-        if (selectedMachine) {
-          const fresh = updated.find(x => x.id === selectedMachine.id);
-          if (fresh) setSelectedMachine(fresh);
-        }
-
-        return updated;
-      });
-    }, 4000);
-
-    return () => clearInterval(interval);
+    selectedMachineRef.current = selectedMachine;
   }, [selectedMachine]);
+
+  // Fetch initial fleet data from the API
+  useEffect(() => {
+    const fetchMachines = async () => {
+      try {
+        const response = await api.get('/machines');
+        if (response.data && response.data.success) {
+          const formatted = response.data.data.map(formatMachine);
+          setMachines(formatted);
+
+          // Handle URL navigation locating
+          if (location.state?.locateMachineId) {
+            const target = formatted.find(m => m.id === location.state.locateMachineId);
+            if (target) {
+              setSelectedMachine(target);
+              setMapCenter([target.location.lat, target.location.lng]);
+              setMapZoom(15);
+            }
+          } else if (formatted.length > 0) {
+            setSelectedMachine(formatted[0]);
+            setMapCenter([formatted[0].location.lat, formatted[0].location.lng]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load initial machines:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMachines();
+  }, [location.state]);
+
+  // Set up Socket.IO subscription
+  useEffect(() => {
+    const socket = io('http://localhost:5000', {
+      withCredentials: true,
+      reconnectionAttempts: 10,
+    });
+
+    socket.on('connect', () => {
+      setIsSocketConnected(true);
+    });
+
+    socket.on('disconnect', () => {
+      setIsSocketConnected(false);
+    });
+
+    socket.on('connect_error', () => {
+      setIsSocketConnected(false);
+    });
+
+    socket.on('machineUpdate', (updated) => {
+      const formatted = formatMachine(updated);
+      
+      setMachines(prev => prev.map(m => m.id === formatted.id ? formatted : m));
+
+      // Synchronize currently open details panel
+      if (selectedMachineRef.current && selectedMachineRef.current.id === formatted.id) {
+        setSelectedMachine(formatted);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const selectAndCenter = (machine) => {
     setSelectedMachine(machine);
     setMapCenter([machine.location.lat, machine.location.lng]);
     setMapZoom(15);
+  };
+
+  const getDriverName = (assignedDriver) => {
+    if (!assignedDriver) return 'Not Assigned';
+    if (typeof assignedDriver === 'object') return assignedDriver.name;
+    return 'Not Assigned';
   };
 
   const filteredMachines = machines.filter(m => {
@@ -132,11 +189,6 @@ export const LiveTracking = () => {
     const matchesStatus = filterStatus === 'All' || m.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
-
-  const getDriverName = (driverId) => {
-    const driver = mockDrivers.find(d => d.id === driverId);
-    return driver ? driver.name : 'Not Assigned';
-  };
 
   return (
     <div className="h-[calc(100vh-8.5rem)] flex flex-col lg:flex-row gap-4 relative overflow-hidden -m-4 md:-m-6">
@@ -222,7 +274,13 @@ export const LiveTracking = () => {
       </div>
 
       {/* Main Map View Area */}
-      <div className="flex-1 h-full relative">
+      <div className="flex-1 h-full relative font-sans">
+        {!isSocketConnected && (
+          <div className="absolute top-4 left-4 z-40 bg-red-600/90 backdrop-blur text-white px-4 py-2 rounded-xl shadow-lg border border-red-500 flex items-center gap-2 text-xs font-bold animate-pulse">
+            <FaExclamationTriangle className="shrink-0" />
+            Connection Lost to Live GPS Stream - Reconnecting...
+          </div>
+        )}
         <MapContainer 
           center={mapCenter} 
           zoom={mapZoom} 
@@ -264,7 +322,7 @@ export const LiveTracking = () => {
         {/* Map Floating Controls overlay */}
         <div className="absolute top-4 right-4 z-40 bg-white dark:bg-[#0e1712] p-2.5 rounded-xl shadow-lg border border-gray-100 dark:border-emerald-950/30 flex flex-col gap-2">
           <button 
-            onClick={() => { setMapCenter([41.885, -87.645]); setMapZoom(13); }}
+            onClick={() => { setMapCenter([30.902, 75.853]); setMapZoom(13); }}
             className="p-2 bg-gray-50 dark:bg-emerald-950/30 hover:bg-gray-100 rounded-lg text-xs font-bold text-gray-700 dark:text-emerald-300"
             title="Reset Map Bounds"
           >
@@ -288,6 +346,13 @@ export const LiveTracking = () => {
                 Close
               </button>
             </div>
+
+            {selectedMachine.status === 'Offline' && (
+              <div className="mb-3 px-3 py-2 bg-red-50/50 dark:bg-red-955/20 border border-red-200/50 dark:border-red-900/30 text-red-700 dark:text-red-400 rounded-xl text-[10px] font-bold flex items-center gap-2">
+                <FaExclamationTriangle className="shrink-0 text-red-500" />
+                <span>GPS Offline / No Signal - Showing Last Known Location</span>
+              </div>
+            )}
 
             {/* Quick stats grid */}
             <div className="grid grid-cols-2 gap-3 text-xs mb-4">

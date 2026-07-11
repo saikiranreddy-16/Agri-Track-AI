@@ -1,21 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import io from 'socket.io-client';
+import api from '../utils/api';
 import { 
   FaPlus, FaTh, FaList, FaTrash, FaPen, FaEye, FaSearch, 
   FaGasPump, FaBatteryThreeQuarters, FaCompass, FaLink, FaUserPlus,
   FaClock, FaUserTie, FaToggleOn, FaPowerOff, FaTools
 } from 'react-icons/fa';
-import { mockMachines, mockDrivers } from '../data/mockData';
 import { PATHS } from '../constants';
 import { useAuth } from '../context/AuthContext';
+
+const formatMachine = (m) => ({
+  id: m._id || m.id,
+  name: m.name,
+  type: m.type,
+  brand: m.brand,
+  model: m.model,
+  registration: m.registration,
+  status: m.status,
+  fuel: m.fuel !== undefined ? m.fuel : 100,
+  battery: m.battery !== undefined ? m.battery : 100,
+  assignedDriverId: m.assignedDriverId,
+  location: m.location || { lat: 30.902, lng: 75.853 },
+  speed: m.speed || 0,
+  heading: m.heading || 0,
+  engineStatus: m.engineStatus || 'Off',
+  workingHours: m.workingHours || 0,
+  distanceTravelled: m.distanceTravelled || 0,
+  currentAddress: m.currentAddress || '',
+  photo: m.photo || 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
+});
 
 export const Machines = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   // Local state for CRUD operations
-  const [machinesList, setMachinesList] = useState(mockMachines);
+  const [machinesList, setMachinesList] = useState([]);
+  const [driversList, setDriversList] = useState([]);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   
   // Filters
@@ -39,8 +62,45 @@ export const Machines = () => {
   const [formFuel, setFormFuel] = useState(100);
   const [formStatus, setFormStatus] = useState('Idle');
 
-  const getDriverName = (driverId) => {
-    const drv = mockDrivers.find(d => d.id === driverId);
+  // Load initial database records
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [machRes, drvRes] = await Promise.all([
+          api.get('/machines'),
+          api.get('/drivers')
+        ]);
+        if (machRes.data && machRes.data.success) {
+          setMachinesList(machRes.data.data.map(formatMachine));
+        }
+        if (drvRes.data && drvRes.data.success) {
+          setDriversList(drvRes.data.data);
+        }
+      } catch (error) {
+        console.error('Failed to load fleet and driver records:', error);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Sync machinery positions dynamically
+  useEffect(() => {
+    const socket = io('http://localhost:5000', { withCredentials: true });
+    
+    socket.on('machineUpdate', (updated) => {
+      const formatted = formatMachine(updated);
+      setMachinesList(prev => prev.map(m => m.id === formatted.id ? formatted : m));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  const getDriverName = (assignedDriver) => {
+    if (!assignedDriver) return 'Unassigned';
+    if (typeof assignedDriver === 'object') return assignedDriver.name;
+    const drv = driversList.find(d => d._id === assignedDriver || d.id === assignedDriver);
     return drv ? drv.name : 'Unassigned';
   };
 
@@ -55,38 +115,29 @@ export const Machines = () => {
     setIsAddOpen(true);
   };
 
-  const handleAdd = (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
     if (!formName || !formBrand || !formReg) return;
 
-    const newMachine = {
-      id: `mach-${Date.now()}`,
-      name: formName,
-      type: formType,
-      brand: formBrand,
-      model: formModel,
-      registration: formReg,
-      status: 'Idle',
-      fuel: parseInt(formFuel, 10),
-      battery: 100,
-      assignedDriverId: formDriver || null,
-      location: { lat: 41.885, lng: -87.645 },
-      speed: 0,
-      engineStatus: 'Off',
-      workingHours: 0,
-      distanceTravelled: 0,
-      nextService: '2026-09-01',
-      currentAddress: 'Maintenance Yard Depot, IL',
-      photo: 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
-      workHistory: [],
-      fuelHistory: [],
-      maintenanceHistory: [],
-      documents: [],
-      alerts: []
-    };
-
-    setMachinesList([newMachine, ...machinesList]);
-    setIsAddOpen(false);
+    try {
+      const response = await api.post('/machines', {
+        name: formName,
+        type: formType,
+        brand: formBrand,
+        model: formModel,
+        registration: formReg,
+        assignedDriverId: formDriver || null,
+        fuel: parseInt(formFuel, 10),
+        status: 'Idle',
+        location: { lat: 30.902, lng: 75.853 }
+      });
+      if (response.data && response.data.success) {
+        setMachinesList(prev => [formatMachine(response.data.data), ...prev]);
+        setIsAddOpen(false);
+      }
+    } catch (error) {
+      console.error('Failed to register machinery:', error);
+    }
   };
 
   const handleOpenEdit = (machine) => {
@@ -96,30 +147,38 @@ export const Machines = () => {
     setFormBrand(machine.brand);
     setFormModel(machine.model);
     setFormReg(machine.registration);
-    setFormDriver(machine.assignedDriverId || '');
+    setFormDriver(machine.assignedDriverId && typeof machine.assignedDriverId === 'object' 
+      ? machine.assignedDriverId._id 
+      : machine.assignedDriverId || ''
+    );
     setFormFuel(machine.fuel);
     setFormStatus(machine.status);
     setIsEditOpen(true);
   };
 
-  const handleEdit = (e) => {
+  const handleEdit = async (e) => {
     e.preventDefault();
     if (!formName || !formBrand || !formReg) return;
 
-    setMachinesList(prev => prev.map(m => m.id === activeMachine.id ? {
-      ...m,
-      name: formName,
-      type: formType,
-      brand: formBrand,
-      model: formModel,
-      registration: formReg,
-      assignedDriverId: formDriver || null,
-      fuel: parseInt(formFuel, 10),
-      status: formStatus
-    } : m));
-
-    setIsEditOpen(false);
-    setActiveMachine(null);
+    try {
+      const response = await api.put(`/machines/${activeMachine.id}`, {
+        name: formName,
+        type: formType,
+        brand: formBrand,
+        model: formModel,
+        registration: formReg,
+        assignedDriverId: formDriver || null,
+        fuel: parseInt(formFuel, 10),
+        status: formStatus
+      });
+      if (response.data && response.data.success) {
+        setMachinesList(prev => prev.map(m => m.id === activeMachine.id ? formatMachine(response.data.data) : m));
+        setIsEditOpen(false);
+        setActiveMachine(null);
+      }
+    } catch (error) {
+      console.error('Failed to update machinery:', error);
+    }
   };
 
   const handleOpenDelete = (machine) => {
@@ -127,10 +186,17 @@ export const Machines = () => {
     setIsDeleteOpen(true);
   };
 
-  const handleDelete = () => {
-    setMachinesList(prev => prev.filter(m => m.id !== activeMachine.id));
-    setIsDeleteOpen(false);
-    setActiveMachine(null);
+  const handleDelete = async () => {
+    try {
+      const response = await api.delete(`/machines/${activeMachine.id}`);
+      if (response.data && response.data.success) {
+        setMachinesList(prev => prev.filter(m => m.id !== activeMachine.id));
+        setIsDeleteOpen(false);
+        setActiveMachine(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete machinery:', error);
+    }
   };
 
   // Filter application
@@ -487,8 +553,8 @@ export const Machines = () => {
                     className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                   >
                     <option value="">Unassigned</option>
-                    {mockDrivers.map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
+                    {driversList.map(d => (
+                      <option key={d._id || d.id} value={d._id || d.id}>{d.name}</option>
                     ))}
                   </select>
                 </div>
@@ -619,8 +685,8 @@ export const Machines = () => {
                     className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                   >
                     <option value="">Unassigned</option>
-                    {mockDrivers.map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
+                    {driversList.map(d => (
+                      <option key={d._id || d.id} value={d._id || d.id}>{d.name}</option>
                     ))}
                   </select>
                 </div>

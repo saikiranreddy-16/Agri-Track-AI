@@ -20,6 +20,27 @@ const gpsHistorySchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    heading: {
+      type: Number,
+      default: 0,
+    },
+    engineStatus: {
+      type: String,
+      enum: ['On', 'Off'],
+      default: 'Off',
+    },
+    fuel: {
+      type: Number,
+      default: 100,
+    },
+    workingHours: {
+      type: Number,
+      default: 0,
+    },
+    distanceTravelled: {
+      type: Number,
+      default: 0,
+    },
     timestamp: {
       type: Date,
       default: Date.now,

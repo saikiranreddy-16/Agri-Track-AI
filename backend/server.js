@@ -1,6 +1,9 @@
+import http from 'http';
 import dotenv from 'dotenv';
 import app from './app.js';
 import connectDB from './config/db.js';
+import { initSocket } from './services/socketService.js';
+import { startGPSSimulator } from './services/gpsSimulator.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -10,9 +13,17 @@ connectDB();
 
 const PORT = process.env.PORT || 5000;
 
-// Start Express server listening
-const server = app.listen(PORT, () => {
+// Create HTTP server wrapping Express app
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+initSocket(server);
+
+// Start HTTP server listening
+server.listen(PORT, () => {
   console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  // Start simulated machinery movement timer
+  startGPSSimulator();
 });
 
 // Handle unhandled promise rejections (e.g. database connection errors)

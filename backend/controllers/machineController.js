@@ -157,3 +157,16 @@ export const deleteMachine = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get live status/telemetry of all machines
+// @route   GET /api/v1/machines/live-status
+// @access  Private
+export const getMachineLiveStatus = async (req, res, next) => {
+  try {
+    const machines = await Machine.find({}, 'name type status location speed heading engineStatus fuel workingHours distanceTravelled updatedAt')
+      .populate('assignedDriverId', 'name phone');
+    return successResponse(res, 200, 'Live status of all machines retrieved successfully', machines);
+  } catch (error) {
+    next(error);
+  }
+};

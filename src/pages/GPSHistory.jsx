@@ -7,7 +7,7 @@ import {
   FaPlay, FaPause, FaStepBackward, FaTractor, FaClock, 
   FaGasPump, FaCompass, FaMapMarkerAlt, FaSignOutAlt 
 } from 'react-icons/fa';
-import { mockHistoryPaths, mockHistoryStops, mockMachines } from '../data/mockData';
+import api from '../utils/api';
 
 // Fix for default Leaflet icon resolution issues
 import 'leaflet/dist/leaflet.css';
@@ -50,21 +50,56 @@ const createPinIcon = (color, text) => {
 export const GPSHistory = () => {
   const location = useLocation();
 
-  // Find requested machine or fall back to machine-1
-  const [selectedMachineId, setSelectedMachineId] = useState(() => {
-    return location.state?.historyMachineId || 'mach-1';
-  });
-
+  const [machines, setMachines] = useState([]);
+  const [selectedMachineId, setSelectedMachineId] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1000); // ms per step
+  const [pathCoordinates, setPathCoordinates] = useState([]);
+  const [stopMarkers, setStopMarkers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const pathCoordinates = mockHistoryPaths[selectedMachineId] || [];
-  const stopMarkers = mockHistoryStops[selectedMachineId] || [];
-  const activeMachine = mockMachines.find(m => m.id === selectedMachineId);
-
-  // Sync index boundary on machine switch
+  // Fetch machines list on mount
   useEffect(() => {
+    const fetchMachines = async () => {
+      try {
+        const response = await api.get('/machines');
+        if (response.data && response.data.success) {
+          const fetched = response.data.data;
+          setMachines(fetched);
+          
+          const initialId = location.state?.historyMachineId || (fetched.length > 0 ? fetched[0]._id : '');
+          setSelectedMachineId(initialId);
+        }
+      } catch (error) {
+        console.error('Failed to fetch machines for history playback:', error);
+      }
+    };
+    fetchMachines();
+  }, [location.state]);
+
+  // Fetch route playback data when selected machine changes
+  useEffect(() => {
+    if (!selectedMachineId) return;
+
+    const fetchPlaybackData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.get(`/gps/${selectedMachineId}/playback`);
+        if (response.data && response.data.success) {
+          setPathCoordinates(response.data.data.coordinates || []);
+          setStopMarkers(response.data.data.stops || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch GPS playback coordinates:', error);
+        setPathCoordinates([]);
+        setStopMarkers([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPlaybackData();
     setCurrentStep(0);
     setIsPlaying(false);
   }, [selectedMachineId]);
@@ -88,6 +123,7 @@ export const GPSHistory = () => {
 
   const activePoint = pathCoordinates[currentStep] || null;
   const polylinePositions = pathCoordinates.map(pt => [pt.lat, pt.lng]);
+  const activeMachine = machines.find(m => m._id === selectedMachineId);
 
   const handleSliderChange = (e) => {
     setCurrentStep(parseInt(e.target.value, 10));
@@ -119,8 +155,8 @@ export const GPSHistory = () => {
           onChange={(e) => setSelectedMachineId(e.target.value)}
           className="px-3 py-2 text-xs font-bold bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/40 rounded-xl focus:outline-none dark:text-white"
         >
-          {mockMachines.map(m => (
-            <option key={m.id} value={m.id}>{m.name}</option>
+          {machines.map(m => (
+            <option key={m._id} value={m._id}>{m.name}</option>
           ))}
         </select>
       </div>

@@ -58,6 +58,10 @@ const machineSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    heading: {
+      type: Number,
+      default: 0,
+    },
     engineStatus: {
       type: String,
       enum: ['On', 'Off'],
