@@ -23,7 +23,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
  * @param {string} timeframe - 'Today', 'Yesterday', 'Weekly', 'Monthly'
  * @returns {Promise<Array>} - Array of machine metrics objects
  */
-export const getOperationsMetrics = async (timeframe) => {
+export const getOperationsMetrics = async (timeframe, ownerId = null) => {
   const now = new Date();
   let startDate = new Date();
   let endDate = new Date();
@@ -55,7 +55,8 @@ export const getOperationsMetrics = async (timeframe) => {
   }
 
   // Fetch all machines
-  const machines = await Machine.find({});
+  const query = ownerId ? { owner: ownerId } : {};
+  const machines = await Machine.find(query);
   const report = [];
 
   for (const machine of machines) {

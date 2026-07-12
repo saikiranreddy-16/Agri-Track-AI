@@ -7,7 +7,8 @@ import { logActivity } from '../utils/activityLogger.js';
 // @access  Private
 export const getFields = async (req, res, next) => {
   try {
-    const fields = await Field.find({}).populate('machineAssigned', 'name registration type');
+    const query = req.user.role === 'Farm Admin' ? { owner: req.user._id } : {};
+    const fields = await Field.find(query).populate('machineAssigned', 'name registration type');
     return successResponse(res, 200, 'Fields retrieved successfully', fields);
   } catch (error) {
     next(error);
@@ -19,7 +20,9 @@ export const getFields = async (req, res, next) => {
 // @access  Private (Admin, Farm Owner, Manager)
 export const createField = async (req, res, next) => {
   try {
-    const { name, area, crop, owner, machineAssigned, status, boundaries } = req.body;
+    const { name, area, crop, machineAssigned, status, boundaries } = req.body;
+
+    const owner = req.user.role === 'Farm Admin' ? req.user._id : req.body.owner;
 
     const field = await Field.create({
       name,
@@ -56,6 +59,11 @@ export const updateField = async (req, res, next) => {
       return next(new Error('Field not found'));
     }
 
+    if (req.user.role === 'Farm Admin' && field.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. This field does not belong to your account.'));
+    }
+
     const updatedField = await Field.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -85,6 +93,11 @@ export const deleteField = async (req, res, next) => {
     if (!field) {
       res.status(404);
       return next(new Error('Field not found'));
+    }
+
+    if (req.user.role === 'Farm Admin' && field.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. This field does not belong to your account.'));
     }
 
     await Field.findByIdAndDelete(req.params.id);

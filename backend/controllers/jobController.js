@@ -1,4 +1,5 @@
 import Job from '../models/jobModel.js';
+import Machine from '../models/machineModel.js';
 import { successResponse } from '../utils/responseHandler.js';
 import { logActivity } from '../utils/activityLogger.js';
 
@@ -7,7 +8,13 @@ import { logActivity } from '../utils/activityLogger.js';
 // @access  Private
 export const getJobs = async (req, res, next) => {
   try {
-    const jobs = await Job.find({})
+    let query = {};
+    if (req.user.role === 'Farm Admin') {
+      const myMachines = await Machine.find({ owner: req.user._id }).select('_id');
+      const myMachineIds = myMachines.map(m => m._id);
+      query = { machineId: { $in: myMachineIds } };
+    }
+    const jobs = await Job.find(query)
       .populate('machineId', 'name registration type')
       .populate('driverId', 'name phone');
     return successResponse(res, 200, 'Jobs retrieved successfully', jobs);
@@ -22,6 +29,14 @@ export const getJobs = async (req, res, next) => {
 export const createJob = async (req, res, next) => {
   try {
     const { title, machineId, driverId, startDate, endDate, status, priority, progress, timeline } = req.body;
+
+    if (req.user.role === 'Farm Admin' && machineId) {
+      const machine = await Machine.findById(machineId);
+      if (!machine || machine.owner.toString() !== req.user._id.toString()) {
+        res.status(403);
+        return next(new Error('Access denied. Assigned vehicle does not belong to your account.'));
+      }
+    }
 
     const job = await Job.create({
       title,
@@ -58,6 +73,14 @@ export const updateJob = async (req, res, next) => {
     if (!job) {
       res.status(404);
       return next(new Error('Job not found'));
+    }
+
+    if (req.user.role === 'Farm Admin' && job.machineId) {
+      const machine = await Machine.findById(job.machineId);
+      if (!machine || machine.owner.toString() !== req.user._id.toString()) {
+        res.status(403);
+        return next(new Error('Access denied. Job vehicle does not belong to your account.'));
+      }
     }
 
     const { status, progress, timelineItem } = req.body;
@@ -105,6 +128,14 @@ export const deleteJob = async (req, res, next) => {
     if (!job) {
       res.status(404);
       return next(new Error('Job not found'));
+    }
+
+    if (req.user.role === 'Farm Admin' && job.machineId) {
+      const machine = await Machine.findById(job.machineId);
+      if (!machine || machine.owner.toString() !== req.user._id.toString()) {
+        res.status(403);
+        return next(new Error('Access denied. Job vehicle does not belong to your account.'));
+      }
     }
 
     await Job.findByIdAndDelete(req.params.id);

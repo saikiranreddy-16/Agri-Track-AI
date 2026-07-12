@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
   CartesianGrid, Legend
@@ -7,6 +7,7 @@ import {
   FaFilePdf, FaFileExcel, FaDownload, FaFilter, 
   FaCalendarAlt, FaGasPump, FaMap, FaClock, FaRoute 
 } from 'react-icons/fa';
+import api from '../utils/api';
 
 const reportData = {
   Today: [
@@ -39,8 +40,25 @@ export const Reports = () => {
   const [timeframe, setTimeframe] = useState('Today');
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [reportsDbData, setReportsDbData] = useState(null);
 
-  const activeRecords = reportData[timeframe] || reportData.Today;
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const res = await api.get('/reports');
+        if (res.data && res.data.success) {
+          setReportsDbData(res.data.data);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch backend reports, using static fallback:', err);
+      }
+    };
+    fetchReports();
+  }, []);
+
+  const activeRecords = reportsDbData 
+    ? (reportsDbData[timeframe] || []) 
+    : (reportData[timeframe] || reportData.Today);
 
   // Totals calculations
   const totalFuel = activeRecords.reduce((sum, r) => sum + r.fuel, 0);

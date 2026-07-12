@@ -7,7 +7,12 @@ import { successResponse } from '../utils/responseHandler.js';
 export const getActivityLogs = async (req, res, next) => {
   try {
     // Only return recent 100 logs to prevent overloading
-    const logs = await ActivityLog.find({})
+    let query = {};
+    if (req.user.role === 'Farm Admin') {
+      query = { user: req.user._id };
+    }
+
+    const logs = await ActivityLog.find(query)
       .populate('user', 'name email role')
       .sort({ timestamp: -1 })
       .limit(100);

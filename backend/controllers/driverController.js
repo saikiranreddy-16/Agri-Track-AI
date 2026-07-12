@@ -8,7 +8,8 @@ import { logActivity } from '../utils/activityLogger.js';
 // @access  Private
 export const getDrivers = async (req, res, next) => {
   try {
-    const drivers = await Driver.find({}).populate('assignedMachineId', 'name registration');
+    const query = req.user.role === 'Farm Admin' ? { owner: req.user._id } : {};
+    const drivers = await Driver.find(query).populate('assignedMachineId', 'name registration');
     return successResponse(res, 200, 'Drivers retrieved successfully', drivers);
   } catch (error) {
     next(error);
@@ -25,6 +26,10 @@ export const getDriverById = async (req, res, next) => {
       res.status(404);
       return next(new Error('Driver not found'));
     }
+    if (req.user.role === 'Farm Admin' && driver.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. This driver does not belong to your account.'));
+    }
     return successResponse(res, 200, 'Driver details retrieved successfully', driver);
   } catch (error) {
     next(error);
@@ -38,8 +43,11 @@ export const createDriver = async (req, res, next) => {
   try {
     const { name, phone, experience, rating, status, assignedMachineId, workingHoursToday, acresWorked, fuelEfficiency, attendance, photo, performanceData } = req.body;
 
+    const owner = req.user.role === 'Farm Admin' ? req.user._id : req.body.owner;
+
     const driver = await Driver.create({
       name,
+      owner,
       phone,
       experience,
       rating,
@@ -81,6 +89,11 @@ export const updateDriver = async (req, res, next) => {
     if (!driver) {
       res.status(404);
       return next(new Error('Driver not found'));
+    }
+
+    if (req.user.role === 'Farm Admin' && driver.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. This driver does not belong to your account.'));
     }
 
     const oldMachineId = driver.assignedMachineId ? driver.assignedMachineId.toString() : null;
@@ -127,6 +140,11 @@ export const deleteDriver = async (req, res, next) => {
     if (!driver) {
       res.status(404);
       return next(new Error('Driver not found'));
+    }
+
+    if (req.user.role === 'Farm Admin' && driver.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. This driver does not belong to your account.'));
     }
 
     // Clear reference on machine if assigned

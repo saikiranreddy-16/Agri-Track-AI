@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
 
 // Load models
 import User from '../models/userModel.js';
@@ -13,6 +12,8 @@ import FuelHistory from '../models/fuelHistoryModel.js';
 import Maintenance from '../models/maintenanceModel.js';
 import Alert from '../models/alertModel.js';
 import ActivityLog from '../models/activityLogModel.js';
+import Farm from '../models/farmModel.js';
+import GPSDevice from '../models/gpsDeviceModel.js';
 
 dotenv.config();
 
@@ -36,26 +37,34 @@ const seedDatabase = async () => {
     await Maintenance.deleteMany({});
     await Alert.deleteMany({});
     await ActivityLog.deleteMany({});
+    await Farm.deleteMany({});
+    await GPSDevice.deleteMany({});
     console.log('Database cleared.');
 
-    // 1. Seed Users
+    // 1. Seed Users (Realigned Roles)
     console.log('Seeding Users...');
     const users = await User.create([
       {
         name: 'Rajesh Patel',
         email: 'rajesh@example.com',
-        password: 'password123', // Will be hashed by userSchema pre-save hook
+        password: 'password123', // Will be hashed by user pre-save hook
         phone: '+919876543210',
         company: 'Patel Agro Farms',
-        role: 'Farm Owner',
+        role: 'Farm Admin',
+        subscriptionStatus: 'Active',
+        subscriptionPlan: 'Premium',
+        isFirstLogin: false,
       },
       {
         name: 'Gurpreet Singh',
         email: 'gurpreet@example.com',
         password: 'password123',
         phone: '+919876543211',
-        company: 'Patel Agro Farms',
-        role: 'Operator',
+        company: 'Singh operations Ludhiana',
+        role: 'Farm Admin',
+        subscriptionStatus: 'Active',
+        subscriptionPlan: 'Standard',
+        isFirstLogin: false,
       },
       {
         name: 'Admin User',
@@ -63,10 +72,33 @@ const seedDatabase = async () => {
         password: 'password123',
         phone: '+919999999999',
         company: 'AgriTrack Operations',
-        role: 'Admin',
+        role: 'Company Admin',
+        isFirstLogin: false,
       },
     ]);
     console.log(`Seeded ${users.length} users.`);
+
+    const rajesh = users[0];
+    const gurpreet = users[1];
+
+    // Seed Farms (supporting multiple farms)
+    console.log('Seeding Farms...');
+    const farms = await Farm.create([
+      {
+        name: 'Patel Agro Farms Ludhiana Block',
+        owner: rajesh._id,
+      },
+      {
+        name: 'Patel Agro Farms Jalandhar Block', // Multiple farms for Rajesh!
+        owner: rajesh._id,
+      },
+      {
+        name: 'Singh Operations Ludhiana Main',
+        owner: gurpreet._id,
+      },
+    ]);
+    console.log(`Seeded ${farms.length} farms.`);
+    const rajeshFarm = farms[0];
 
     // 2. Seed Drivers
     console.log('Seeding Drivers...');
@@ -100,118 +132,96 @@ const seedDatabase = async () => {
         rating: 4.9,
         status: 'Active',
         workingHoursToday: 5.2,
-        acresWorked: 12.8,
-        fuelEfficiency: 95,
-        attendance: '99%',
-        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&h=400&q=80',
+        acresWorked: 22.0,
+        fuelEfficiency: 96,
+        attendance: '100%',
+        photo: 'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=400&h=400&q=80',
         performanceData: [
-          { month: 'Jan', hours: 95, acres: 280 },
-          { month: 'Feb', hours: 110, acres: 340 },
-          { month: 'Mar', hours: 125, acres: 390 },
-          { month: 'Apr', hours: 130, acres: 420 },
-          { month: 'May', hours: 140, acres: 480 },
-          { month: 'Jun', hours: 135, acres: 460 },
+          { month: 'Jan', hours: 90, acres: 300 },
+          { month: 'Feb', hours: 110, acres: 380 },
+          { month: 'Mar', hours: 130, acres: 450 },
+          { month: 'Apr', hours: 120, acres: 410 },
+          { month: 'May', hours: 145, acres: 520 },
+          { month: 'Jun', hours: 135, acres: 480 },
         ],
       },
       {
         mockId: 'drv-3',
         name: 'Suresh Patel',
-        phone: '+91 99456 78901',
+        phone: '+91 98901 23456',
         experience: '12 Years',
-        rating: 4.5,
+        rating: 4.7,
         status: 'Active',
         workingHoursToday: 7.4,
-        acresWorked: 20.5,
-        fuelEfficiency: 88,
+        acresWorked: 28.5,
+        fuelEfficiency: 89,
         attendance: '95%',
-        photo: 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=400&h=400&q=80',
+        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&h=400&q=80',
         performanceData: [
-          { month: 'Jan', hours: 140, acres: 460 },
-          { month: 'Feb', hours: 150, acres: 480 },
-          { month: 'Mar', hours: 165, acres: 550 },
-          { month: 'Apr', hours: 170, acres: 580 },
-          { month: 'May', hours: 180, acres: 640 },
-          { month: 'Jun', hours: 178, acres: 630 },
+          { month: 'Jan', hours: 150, acres: 480 },
+          { month: 'Feb', hours: 140, acres: 460 },
+          { month: 'Mar', hours: 160, acres: 520 },
+          { month: 'Apr', hours: 155, acres: 500 },
+          { month: 'May', hours: 170, acres: 560 },
+          { month: 'Jun', hours: 165, acres: 540 },
         ],
       },
       {
         mockId: 'drv-4',
         name: 'Amit Sharma',
-        phone: '+91 97890 12345',
+        phone: '+91 98765 01234',
         experience: '3 Years',
-        rating: 4.7,
+        rating: 4.5,
         status: 'Active',
-        workingHoursToday: 4.8,
-        acresWorked: 11.2,
-        fuelEfficiency: 91,
-        attendance: '97%',
-        photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&h=400&q=80',
+        workingHoursToday: 0.0,
+        acresWorked: 0.0,
+        fuelEfficiency: 94,
+        attendance: '92%',
+        photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&h=400&q=80',
         performanceData: [
           { month: 'Jan', hours: 80, acres: 240 },
-          { month: 'Feb', hours: 90, acres: 270 },
-          { month: 'Mar', hours: 105, acres: 320 },
-          { month: 'Apr', hours: 115, acres: 360 },
-          { month: 'May', hours: 120, acres: 380 },
-          { month: 'Jun', hours: 118, acres: 370 },
+          { month: 'Feb', hours: 95, acres: 290 },
+          { month: 'Mar', hours: 100, acres: 310 },
+          { month: 'Apr', hours: 90, acres: 280 },
+          { month: 'May', hours: 110, acres: 350 },
+          { month: 'Jun', hours: 105, acres: 330 },
         ],
       },
       {
         mockId: 'drv-5',
         name: 'Harpreet Kaur',
-        phone: '+91 96234 56789',
+        phone: '+91 98111 22233',
         experience: '6 Years',
-        rating: 4.8,
-        status: 'Active',
-        workingHoursToday: 6.0,
-        acresWorked: 15.6,
-        fuelEfficiency: 93,
-        attendance: '98%',
-        photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&h=400&q=80',
-        performanceData: [
-          { month: 'Jan', hours: 110, acres: 340 },
-          { month: 'Feb', hours: 115, acres: 360 },
-          { month: 'Mar', hours: 125, acres: 400 },
-          { month: 'Apr', hours: 135, acres: 440 },
-          { month: 'May', hours: 150, acres: 500 },
-          { month: 'Jun', hours: 145, acres: 480 },
-        ],
-      },
-      {
-        mockId: 'drv-6',
-        name: 'Manpreet Singh',
-        phone: '+91 95123 98765',
-        experience: '10 Years',
         rating: 4.6,
         status: 'Off-duty',
-        workingHoursToday: 0,
-        acresWorked: 0,
-        fuelEfficiency: 90,
+        workingHoursToday: 0.0,
+        acresWorked: 0.0,
+        fuelEfficiency: 91,
         attendance: '96%',
-        photo: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=400&h=400&q=80',
+        photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&h=400&q=80',
         performanceData: [
-          { month: 'Jan', hours: 130, acres: 400 },
-          { month: 'Feb', hours: 140, acres: 450 },
-          { month: 'Mar', hours: 150, acres: 500 },
-          { month: 'Apr', hours: 160, acres: 540 },
-          { month: 'May', hours: 170, acres: 580 },
-          { month: 'Jun', hours: 0, acres: 0 },
+          { month: 'Jan', hours: 100, acres: 320 },
+          { month: 'Feb', hours: 115, acres: 370 },
+          { month: 'Mar', hours: 120, acres: 400 },
+          { month: 'Apr', hours: 110, acres: 360 },
+          { month: 'May', hours: 130, acres: 430 },
+          { month: 'Jun', hours: 125, acres: 415 },
         ],
       },
     ];
 
-    const driverMap = {}; // Maps mockId to Mongoose ObjectId
-    const insertedDrivers = [];
-
-    for (const d of driversData) {
-      const { mockId, ...data } = d;
+    const driverMap = {};
+    for (const data of driversData) {
+      const mockId = data.mockId;
+      delete data.mockId;
+      data.owner = rajesh._id;
       const driver = await Driver.create(data);
       driverMap[mockId] = driver._id;
-      insertedDrivers.push(driver);
     }
-    console.log(`Seeded ${insertedDrivers.length} drivers.`);
+    console.log(`Seeded ${Object.keys(driverMap).length} drivers.`);
 
-    // 3. Seed Machines
-    console.log('Seeding Machines...');
+    // 3. Seed Machines (Vehicles) & independent GPS Devices
+    console.log('Seeding Machines and GPS Devices...');
     const machinesData = [
       {
         mockId: 'mach-1',
@@ -219,31 +229,31 @@ const seedDatabase = async () => {
         type: 'Tractor',
         brand: 'Mahindra',
         model: 'Novo 755 DI',
-        registration: 'PB-10-CD-4512',
+        registration: 'PB-10-AB-1234',
         status: 'Working',
         fuel: 82,
-        battery: 96,
+        battery: 95,
         mockDriverId: 'drv-1',
         location: { lat: 30.902, lng: 75.853 },
         speed: 12,
         engineStatus: 'On',
         workingHours: 245.5,
         distanceTravelled: 1240.2,
-        nextService: new Date('2026-08-15'),
-        currentAddress: 'Sector 4, Central Wheat Block, Ludhiana, Punjab',
+        nextService: new Date('2026-07-25'),
+        currentAddress: 'Sector 4 Grain Belt, Ludhiana, Punjab',
         photo: 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
-        documents: ['Novo_755_Operator_Manual.pdf', 'Service_Warranty_Mahindra.pdf'],
+        documents: ['Mahindra_Novo_Manual.pdf', 'Insurance_PB10AB1234.pdf'],
       },
       {
         mockId: 'mach-2',
         name: 'Swaraj 963 FE',
-        type: 'Tractor',
+        type: 'Harvester',
         brand: 'Swaraj',
         model: '963 FE',
-        registration: 'PB-10-EF-8976',
+        registration: 'PB-08-CD-5678',
         status: 'Working',
         fuel: 45,
-        battery: 92,
+        battery: 88,
         mockDriverId: 'drv-2',
         location: { lat: 30.898, lng: 75.862 },
         speed: 8,
@@ -348,59 +358,56 @@ const seedDatabase = async () => {
         registration: 'PB-10-LM-1002',
         status: 'Maintenance',
         fuel: 0,
-        battery: 10,
+        battery: 60,
         mockDriverId: null,
-        location: { lat: 30.912, lng: 75.865 },
+        location: { lat: 30.890, lng: 75.840 },
         speed: 0,
         engineStatus: 'Off',
-        workingHours: 788.5,
-        distanceTravelled: 5420.1,
-        nextService: new Date('2026-07-05'),
-        currentAddress: 'North Machinery Hangar, Ludhiana, Punjab',
-        photo: 'https://images.unsplash.com/photo-1594913785162-e6785b4ddee3?auto=format&fit=crop&w=800&q=80',
-        documents: ['Kartar_4000_OperatorManual.pdf'],
-      },
-      {
-        mockId: 'mach-8',
-        name: 'Sonalika Rice Transplanter',
-        type: 'Sprayer', // Categorized as sprayer in mock list
-        brand: 'Sonalika',
-        model: 'Transplanter 4Row',
-        registration: 'PB-12-RS-5612',
-        status: 'Idle',
-        fuel: 72,
-        battery: 88,
-        mockDriverId: 'drv-6',
-        location: { lat: 30.885, lng: 75.840 },
-        speed: 0,
-        engineStatus: 'Off',
-        workingHours: 150.3,
-        distanceTravelled: 950.4,
-        nextService: new Date('2026-08-10'),
-        currentAddress: 'Chemical Load Yard, Ludhiana, Punjab',
-        photo: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=800&q=80',
-        documents: ['Sonalika_Rice_UserManual.pdf'],
+        workingHours: 852.1,
+        distanceTravelled: 5410.2,
+        nextService: new Date('2026-06-25'),
+        currentAddress: 'Maintenance Yard Depot, Ludhiana, Punjab',
+        photo: 'https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?auto=format&fit=crop&w=800&q=80',
+        documents: ['Kartar_4000_Operations.pdf'],
       },
     ];
 
-    const machineMap = {}; // Maps mockId to Mongoose ObjectId
-    const insertedMachines = [];
+    const machineMap = {};
+    for (const data of machinesData) {
+      const mockId = data.mockId;
+      const mockDriverId = data.mockDriverId;
+      delete data.mockId;
+      delete data.mockDriverId;
 
-    for (const m of machinesData) {
-      const { mockId, mockDriverId, ...data } = m;
-      data.assignedDriverId = mockDriverId ? driverMap[mockDriverId] : null;
+      // 1. Create a GPS Device
+      // Generate Device ID format dev-mach-1
+      const devId = `dev-${mockId}`;
+      const gpsDevice = await GPSDevice.create({
+        deviceId: devId,
+        owner: rajesh._id,
+        status: 'Active',
+      });
+
+      data.chassisNumber = data.registration; // Chassis Number matches registration for compat
+      data.gpsDeviceId = gpsDevice._id;
+      data.farmId = rajeshFarm._id;
+      data.owner = rajesh._id;
+
       const machine = await Machine.create(data);
       machineMap[mockId] = machine._id;
-      insertedMachines.push(machine);
 
-      // Relational update: set assignedMachineId on Driver
-      if (mockDriverId) {
-        await Driver.findByIdAndUpdate(driverMap[mockDriverId], {
-          assignedMachineId: machine._id,
-        });
+      // Update GPS Device vehicle link
+      gpsDevice.vehicleId = machine._id;
+      await gpsDevice.save();
+
+      // Relational update: Driver
+      if (mockDriverId && driverMap[mockDriverId]) {
+        machine.assignedDriverId = driverMap[mockDriverId];
+        await machine.save();
+        await Driver.findByIdAndUpdate(driverMap[mockDriverId], { assignedMachineId: machine._id });
       }
     }
-    console.log(`Seeded ${insertedMachines.length} machines.`);
+    console.log(`Seeded ${Object.keys(machineMap).length} machines and GPS Devices.`);
 
     // 4. Seed Fields
     console.log('Seeding Fields...');
@@ -409,7 +416,7 @@ const seedDatabase = async () => {
         name: 'North Wheat Block',
         area: 30,
         crop: 'Wheat',
-        owner: 'Punjab Agrotech Co.',
+        owner: rajesh._id,
         mockMachineId: 'mach-1',
         status: 'In Progress',
         boundaries: [
@@ -423,7 +430,7 @@ const seedDatabase = async () => {
         name: 'South Rice Sector',
         area: 55,
         crop: 'Rice',
-        owner: 'Singh Family Estates',
+        owner: rajesh._id,
         mockMachineId: 'mach-2',
         status: 'In Progress',
         boundaries: [
@@ -437,7 +444,7 @@ const seedDatabase = async () => {
         name: 'East Cotton Fields',
         area: 45,
         crop: 'Cotton',
-        owner: 'Punjab Agrotech Co.',
+        owner: rajesh._id,
         mockMachineId: 'mach-4',
         status: 'Completed',
         boundaries: [
@@ -451,7 +458,7 @@ const seedDatabase = async () => {
         name: 'West Sugarcane Meadows',
         area: 25,
         crop: 'Sugarcane',
-        owner: 'Karnal Farmers Trust',
+        owner: rajesh._id,
         mockMachineId: 'mach-6',
         status: 'Completed',
         boundaries: [
@@ -532,6 +539,7 @@ const seedDatabase = async () => {
       const { mockMachineId, mockDriverId, ...data } = j;
       data.machineId = mockMachineId ? machineMap[mockMachineId] : null;
       data.driverId = mockDriverId ? driverMap[mockDriverId] : null;
+      data.owner = rajesh._id;
       await Job.create(data);
     }
     console.log(`Seeded ${jobsData.length} jobs.`);
@@ -564,7 +572,7 @@ const seedDatabase = async () => {
         message: 'Swaraj Harvester service period overdue',
         mockMachineId: 'mach-2',
         driverName: 'Ramesh Kumar',
-        time: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        time: new Date(Date.now() - 2 * 60 * 65 * 1000), // ~2 hours ago
         priority: 'Medium',
         category: 'Maintenance',
         status: 'Active',
@@ -669,10 +677,6 @@ const seedDatabase = async () => {
         { level: 85, offsetDays: 1 },
         { level: 55, offsetDays: 0 },
       ],
-      'mach-8': [
-        { level: 90, offsetDays: 1 },
-        { level: 72, offsetDays: 0 },
-      ],
     };
 
     let fuelCount = 0;
@@ -689,9 +693,9 @@ const seedDatabase = async () => {
         }
       }
     }
-    console.log(`Seeded ${fuelCount} fuel log snap shots.`);
+    console.log(`Seeded ${fuelCount} fuel log snapshots.`);
 
-    // 9. Seed Maintenance tasks & completions
+    // 9. Seed Maintenance tasks
     console.log('Seeding Maintenance...');
     const maintenanceData = [
       {
@@ -726,7 +730,6 @@ const seedDatabase = async () => {
         type: 'Transmission',
         status: 'Upcoming',
       },
-      // Historical Completed records
       {
         mockMachineId: 'mach-1',
         task: 'Engine Oil & Filter Change',
@@ -749,17 +752,6 @@ const seedDatabase = async () => {
         cost: 6800,
         notes: 'Main threshing cylinder recalibrated.',
       },
-      {
-        mockMachineId: 'mach-7',
-        task: 'Coolant Hose replacement & Radiator flush',
-        date: new Date('2026-06-01'),
-        priority: 'Low',
-        type: 'Engine',
-        status: 'Completed',
-        mechanic: 'Ludhiana Workshop',
-        cost: 3500,
-        notes: 'Minor leak resolved.',
-      },
     ];
 
     for (const m of maintenanceData) {
@@ -774,10 +766,9 @@ const seedDatabase = async () => {
     // 10. Seed Activity Logs
     console.log('Seeding Activity Logs...');
     const activityData = [
-      { userName: 'System', action: 'Database Seeded', details: 'Database successfully populated with normalized schema collections.' },
-      { userName: 'Rajesh Patel', action: 'User Logged In', details: 'Web login from Ludhiana IP.' },
-      { userName: 'System', action: 'Machine Added', details: 'Registered new Mahindra Novo 755 DI vehicle.' },
-      { userName: 'System', action: 'Driver Assigned', details: 'Assigned Gurpreet Singh to Mahindra Novo 755 DI.' },
+      { user: rajesh._id, userName: 'Rajesh Patel', action: 'User Logged In', details: 'Web login from Ludhiana IP.' },
+      { user: rajesh._id, userName: 'System', action: 'Machine Added', details: 'Registered new Mahindra Novo 755 DI vehicle.' },
+      { user: rajesh._id, userName: 'System', action: 'Driver Assigned', details: 'Assigned Gurpreet Singh to Mahindra Novo 755 DI.' },
     ];
     await ActivityLog.create(activityData);
     console.log('Activity logs seeded.');

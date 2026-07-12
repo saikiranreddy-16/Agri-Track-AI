@@ -4,6 +4,7 @@ import {
   FaRobot, FaPaperPlane, FaMicrophone, FaPaperclip, 
   FaArrowRight, FaCommentAlt, FaHistory, FaTractor, FaGasPump 
 } from 'react-icons/fa';
+import api from '../utils/api';
 
 export const AIAssistant = () => {
   const [messages, setMessages] = useState([
@@ -39,9 +40,27 @@ export const AIAssistant = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const simulateAIResponse = (userPrompt) => {
+  const simulateAIResponse = async (userPrompt) => {
     setIsTyping(true);
-    
+    try {
+      const response = await api.post('/ai/query', { prompt: userPrompt });
+      if (response.data && response.data.success) {
+        setMessages(prev => [
+          ...prev,
+          { 
+            id: `m-ai-${Date.now()}`, 
+            sender: 'AI', 
+            text: response.data.data.response, 
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+          }
+        ]);
+        setIsTyping(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend AI query failed, falling back to mock rules:', err);
+    }
+
     // Choose appropriate mock response based on keyword matching
     let responseText = '';
     const cleanPrompt = userPrompt.toLowerCase();
@@ -63,7 +82,7 @@ export const AIAssistant = () => {
 | **Active Machinery** | 6 Assets deployed | Constant |
 | **Total Fuel Used** | 3180 Litres | Avg 5.4 L/ha |
 | **Active Job Hours** | 129 Hours | Nominally safe |
-
+ 
 All operations are progressing on schedule. Spraying was temporarily paused on Thursday due to elevated wind speeds (22 km/h).`;
       } else if (cleanPrompt.includes('monthly') || cleanPrompt.includes('month')) {
         responseText = `### Monthly Fleet Efficiency Review (June 2026)

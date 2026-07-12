@@ -19,7 +19,10 @@ export const PATHS = {
   MAINTENANCE: '/maintenance',
   AI_ASSISTANT: '/ai-assistant',
   SETTINGS: '/settings',
-  HELP: '/help'
+  HELP: '/help',
+  CUSTOMER_MANAGEMENT: '/customers',
+  DEVICE_ACTIVATION: '/activate',
+  DEVICE_REPLACEMENT: '/replace'
 };
 
 export const ROLES = {

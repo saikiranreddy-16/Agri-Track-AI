@@ -19,6 +19,9 @@ import maintenanceRoutes from './routes/maintenanceRoutes.js';
 import gpsRoutes from './routes/gpsHistoryRoutes.js';
 import activityLogRoutes from './routes/activityLogRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import deviceRoutes from './routes/deviceRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -104,6 +107,9 @@ app.use('/api/v1/maintenance', maintenanceRoutes);
 app.use('/api/v1/gps', gpsRoutes);
 app.use('/api/v1/activity-logs', activityLogRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/devices', deviceRoutes);
+app.use('/api/v1/customers', customerRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
 // 10. Central Error Middleware Hooking
 app.use(notFound);

@@ -10,19 +10,19 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, 'Email is required'],
-      unique: true,
       trim: true,
       lowercase: true,
+      unique: true,
+      sparse: true, // Allows null/missing emails for Farm Admins
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters long'],
+      required: [true, 'PIN/Password is required'],
     },
     phone: {
       type: String,
       required: [true, 'Phone number is required'],
+      unique: true,
       trim: true,
     },
     company: {
@@ -32,8 +32,30 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['Admin', 'Farm Owner', 'Manager', 'Operator', 'Mechanic', 'Viewer'],
-      default: 'Operator',
+      enum: ['Company Admin', 'Farm Admin'],
+      default: 'Farm Admin',
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: ['Active', 'Inactive', 'Suspended'],
+      default: 'Active',
+    },
+    subscriptionPlan: {
+      type: String,
+      default: 'Standard',
+    },
+    trustedDevices: [
+      {
+        deviceId: { type: String, required: true },
+        phoneName: { type: String, default: '' },
+        platform: { type: String, default: '' },
+        lastLogin: { type: Date, default: Date.now },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
+    isFirstLogin: {
+      type: Boolean,
+      default: true,
     },
   },
   {

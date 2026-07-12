@@ -21,6 +21,9 @@ import { Maintenance } from '../pages/Maintenance';
 import { AIAssistant } from '../pages/AIAssistant';
 import { Settings } from '../pages/Settings';
 import { Help } from '../pages/Help';
+import { CustomerManagement } from '../pages/CustomerManagement';
+import { DeviceActivation } from '../pages/DeviceActivation';
+import { DeviceReplacement } from '../pages/DeviceReplacement';
 import { PATHS } from '../constants';
 
 export const AppRoutes = () => {
@@ -29,7 +32,6 @@ export const AppRoutes = () => {
       {/* Public Auth Layout pages */}
       <Route element={<AuthLayout />}>
         <Route path={PATHS.LOGIN} element={<Login />} />
-        <Route path={PATHS.REGISTER} element={<Register />} />
         <Route path={PATHS.FORGOT_PASSWORD} element={<ForgotPassword />} />
       </Route>
 
@@ -51,6 +53,9 @@ export const AppRoutes = () => {
         <Route path={PATHS.AI_ASSISTANT} element={<AIAssistant />} />
         <Route path={PATHS.SETTINGS} element={<Settings />} />
         <Route path={PATHS.HELP} element={<Help />} />
+        <Route path={PATHS.CUSTOMER_MANAGEMENT} element={<CustomerManagement />} />
+        <Route path={PATHS.DEVICE_ACTIVATION} element={<DeviceActivation />} />
+        <Route path={PATHS.DEVICE_REPLACEMENT} element={<DeviceReplacement />} />
       </Route>
 
       {/* Redirection fallback */}

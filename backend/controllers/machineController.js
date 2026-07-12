@@ -8,7 +8,8 @@ import { logActivity } from '../utils/activityLogger.js';
 // @access  Private
 export const getMachines = async (req, res, next) => {
   try {
-    const machines = await Machine.find({}).populate('assignedDriverId', 'name phone');
+    const query = req.user.role === 'Farm Admin' ? { owner: req.user._id } : {};
+    const machines = await Machine.find(query).populate('assignedDriverId', 'name phone');
     return successResponse(res, 200, 'Machines retrieved successfully', machines);
   } catch (error) {
     next(error);
@@ -24,6 +25,10 @@ export const getMachineById = async (req, res, next) => {
     if (!machine) {
       res.status(404);
       return next(new Error('Machine not found'));
+    }
+    if (req.user.role === 'Farm Admin' && machine.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. This vehicle does not belong to your account.'));
     }
     return successResponse(res, 200, 'Machine details retrieved successfully', machine);
   } catch (error) {
@@ -91,12 +96,28 @@ export const updateMachine = async (req, res, next) => {
       return next(new Error('Machine not found'));
     }
 
+    // Check ownership
+    if (req.user.role === 'Farm Admin' && machine.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. This vehicle does not belong to your account.'));
+    }
+
+    // Restrict update parameters for Farm Admin (Only change display name)
+    let updateData = req.body;
+    if (req.user.role === 'Farm Admin') {
+      updateData = { name: req.body.name };
+    } else {
+      // Don't allow changing Chassis Number or GPS Device from standard update route
+      delete updateData.chassisNumber;
+      delete updateData.gpsDeviceId;
+    }
+
     const oldDriverId = machine.assignedDriverId ? machine.assignedDriverId.toString() : null;
-    const newDriverId = req.body.assignedDriverId || null;
+    const newDriverId = updateData.assignedDriverId || null;
 
     const updatedMachine = await Machine.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -137,6 +158,11 @@ export const deleteMachine = async (req, res, next) => {
       return next(new Error('Machine not found'));
     }
 
+    if (req.user.role === 'Farm Admin' && machine.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. This vehicle does not belong to your account.'));
+    }
+
     // Clear reference on driver if assigned
     if (machine.assignedDriverId) {
       await Driver.findByIdAndUpdate(machine.assignedDriverId, { assignedMachineId: null });
@@ -163,7 +189,8 @@ export const deleteMachine = async (req, res, next) => {
 // @access  Private
 export const getMachineLiveStatus = async (req, res, next) => {
   try {
-    const machines = await Machine.find({}, 'name type status location speed heading engineStatus fuel workingHours distanceTravelled updatedAt')
+    const query = req.user.role === 'Farm Admin' ? { owner: req.user._id } : {};
+    const machines = await Machine.find(query, 'name type status location speed heading engineStatus fuel workingHours distanceTravelled updatedAt')
       .populate('assignedDriverId', 'name phone');
     return successResponse(res, 200, 'Live status of all machines retrieved successfully', machines);
   } catch (error) {

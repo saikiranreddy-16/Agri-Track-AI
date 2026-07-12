@@ -8,7 +8,13 @@ import { logActivity } from '../utils/activityLogger.js';
 // @access  Private
 export const getMaintenanceRecords = async (req, res, next) => {
   try {
-    const records = await Maintenance.find({}).populate('machineId', 'name registration type');
+    let query = {};
+    if (req.user.role === 'Farm Admin') {
+      const myMachines = await Machine.find({ owner: req.user._id }).select('_id');
+      const myMachineIds = myMachines.map(m => m._id);
+      query = { machineId: { $in: myMachineIds } };
+    }
+    const records = await Maintenance.find(query).populate('machineId', 'name registration type');
     return successResponse(res, 200, 'Maintenance logs retrieved successfully', records);
   } catch (error) {
     next(error);
@@ -21,6 +27,14 @@ export const getMaintenanceRecords = async (req, res, next) => {
 export const createMaintenanceRecord = async (req, res, next) => {
   try {
     const { machineId, task, date, priority, type, status, mechanic, cost, notes } = req.body;
+
+    if (req.user.role === 'Farm Admin' && machineId) {
+      const machine = await Machine.findById(machineId);
+      if (!machine || machine.owner.toString() !== req.user._id.toString()) {
+        res.status(403);
+        return next(new Error('Access denied. Assigned vehicle does not belong to your account.'));
+      }
+    }
 
     const record = await Maintenance.create({
       machineId,
@@ -60,6 +74,14 @@ export const updateMaintenanceRecord = async (req, res, next) => {
     if (!record) {
       res.status(404);
       return next(new Error('Maintenance record not found'));
+    }
+
+    if (req.user.role === 'Farm Admin' && record.machineId) {
+      const machine = await Machine.findById(record.machineId);
+      if (!machine || machine.owner.toString() !== req.user._id.toString()) {
+        res.status(403);
+        return next(new Error('Access denied. Assigned vehicle does not belong to your account.'));
+      }
     }
 
     const updatedRecord = await Maintenance.findByIdAndUpdate(
@@ -102,6 +124,14 @@ export const deleteMaintenanceRecord = async (req, res, next) => {
     if (!record) {
       res.status(404);
       return next(new Error('Maintenance record not found'));
+    }
+
+    if (req.user.role === 'Farm Admin' && record.machineId) {
+      const machine = await Machine.findById(record.machineId);
+      if (!machine || machine.owner.toString() !== req.user._id.toString()) {
+        res.status(403);
+        return next(new Error('Access denied. Assigned vehicle does not belong to your account.'));
+      }
     }
 
     await Maintenance.findByIdAndDelete(req.params.id);

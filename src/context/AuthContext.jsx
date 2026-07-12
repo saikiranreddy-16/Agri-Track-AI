@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../utils/api';
 
 const AuthContext = createContext();
@@ -6,33 +6,49 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('auth_user');
-    return saved ? JSON.parse(saved) : {
-      name: 'Rajesh Patel',
-      email: 'rajesh@example.com',
-      phone: '+91 98765 01928',
-      role: 'Farm Owner',
-      company: 'Patel Agro Farms'
-    };
+    return saved ? JSON.parse(saved) : null;
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('auth_authenticated') === 'true' || true;
+    return localStorage.getItem('auth_authenticated') === 'true';
   });
 
-  const login = async (email, password, role = 'Farm Owner') => {
+  // Client device ID fingerprint for trusted device login
+  const [clientDeviceId] = useState(() => {
+    let id = localStorage.getItem('client_device_id');
+    if (!id) {
+      id = 'dev_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('client_device_id', id);
+    }
+    return id;
+  });
+
+  const login = async (identifier, password, isCompany = false, gpsDeviceId = '') => {
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const payload = isCompany
+        ? { email: identifier, password }
+        : {
+            phone: identifier,
+            password,
+            clientDeviceId,
+            phoneName: 'Web Browser Phone',
+            platform: navigator.platform || 'Web',
+            gpsDeviceId,
+          };
+
+      const response = await api.post('/auth/login', payload);
+      
       if (response.data && response.data.success) {
         const { user: backendUser, token } = response.data.data;
         
-        // Use backend user details
         const loggedUser = {
           id: backendUser._id,
           name: backendUser.name,
-          email: backendUser.email,
+          email: backendUser.email || '',
           phone: backendUser.phone,
           role: backendUser.role,
-          company: backendUser.company
+          company: backendUser.company,
+          isFirstLogin: backendUser.isFirstLogin,
         };
 
         setUser(loggedUser);
@@ -40,58 +56,53 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('auth_user', JSON.stringify(loggedUser));
         localStorage.setItem('auth_token', token);
         localStorage.setItem('auth_authenticated', 'true');
-        return loggedUser;
+        return { success: true, user: loggedUser };
+      }
+
+      if (response.data && response.data.code) {
+        return { success: false, code: response.data.code, message: response.data.message };
       }
     } catch (error) {
-      console.warn('Backend login failed, falling back to mock authentication:', error.message);
+      console.error('Login failed:', error);
+      const resData = error.response?.data;
+      if (resData && resData.code) {
+        return { success: false, code: resData.code, message: resData.message };
+      }
+      return { success: false, message: error.response?.data?.message || error.message };
     }
 
-    // Mock fallback
-    const mockUser = {
-      name: email.split('@')[0].replace('.', ' '),
-      email,
-      phone: '+91 99999 11111',
-      role,
-      company: 'Patel Agro Farms'
-    };
-    setUser(mockUser);
-    setIsAuthenticated(true);
-    localStorage.setItem('auth_user', JSON.stringify(mockUser));
-    localStorage.setItem('auth_authenticated', 'true');
-    return mockUser;
+    return { success: false, message: 'Authentication failed' };
   };
 
-  const register = async (name, email, phone, role, company, password = 'password123') => {
+  const register = async () => {
+    return { success: false, message: 'Self-registration is disabled.' };
+  };
+
+  const changePIN = async (currentPIN, newPIN) => {
     try {
-      const response = await api.post('/auth/register', { name, email, phone, role, company, password });
+      const response = await api.put('/auth/change-pin', { currentPIN, newPIN });
       if (response.data && response.data.success) {
-        const { user: backendUser, token } = response.data.data;
-        const loggedUser = {
-          id: backendUser._id,
-          name: backendUser.name,
-          email: backendUser.email,
-          phone: backendUser.phone,
-          role: backendUser.role,
-          company: backendUser.company
-        };
-        setUser(loggedUser);
-        setIsAuthenticated(true);
-        localStorage.setItem('auth_user', JSON.stringify(loggedUser));
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('auth_authenticated', 'true');
-        return loggedUser;
+        setUser(prev => {
+          const updated = { ...prev, isFirstLogin: false };
+          localStorage.setItem('auth_user', JSON.stringify(updated));
+          return updated;
+        });
+        return { success: true };
       }
     } catch (error) {
-      console.warn('Backend registration failed, falling back to mock registration:', error.message);
+      return { success: false, message: error.response?.data?.message || error.message };
     }
+  };
 
-    // Mock fallback
-    const mockUser = { name, email, phone, role, company };
-    setUser(mockUser);
-    setIsAuthenticated(true);
-    localStorage.setItem('auth_user', JSON.stringify(mockUser));
-    localStorage.setItem('auth_authenticated', 'true');
-    return mockUser;
+  const deleteTrustedDevice = async (deviceId) => {
+    try {
+      const response = await api.delete(`/auth/trusted-devices/${deviceId}`);
+      if (response.data && response.data.success) {
+        return { success: true };
+      }
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
   };
 
   const logout = async () => {
@@ -107,14 +118,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('auth_authenticated');
   };
 
-  const changeRole = (newRole) => {
-    setUser(prev => {
-      const updated = { ...prev, role: newRole };
-      localStorage.setItem('auth_user', JSON.stringify(updated));
-      return updated;
-    });
-  };
-
   const updateProfile = (updatedDetails) => {
     setUser(prev => {
       const updated = { ...prev, ...updatedDetails };
@@ -124,7 +127,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout, changeRole, updateProfile }}>
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
+      clientDeviceId,
+      login,
+      register,
+      logout,
+      updateProfile,
+      changePIN,
+      deleteTrustedDevice
+    }}>
       {children}
     </AuthContext.Provider>
   );

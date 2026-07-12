@@ -34,14 +34,9 @@ export const registerValidator = [
 ];
 
 export const loginValidator = [
-  body('email')
-    .isEmail()
-    .withMessage('Please enter a valid email address')
-    .normalizeEmail(),
-  
   body('password')
     .notEmpty()
-    .withMessage('Password is required'),
+    .withMessage('Password or PIN is required'),
   
   validateRequest,
 ];

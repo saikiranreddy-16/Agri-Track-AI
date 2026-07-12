@@ -9,6 +9,15 @@ import { emitMachineUpdate } from '../services/socketService.js';
 export const getGPSHistory = async (req, res, next) => {
   try {
     const { machineId } = req.params;
+    const machine = await Machine.findById(machineId);
+    if (!machine) {
+      res.status(404);
+      return next(new Error('Machine not found'));
+    }
+    if (req.user.role === 'Farm Admin' && machine.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. Assigned vehicle does not belong to your account.'));
+    }
     const history = await GPSHistory.find({ machineId }).sort({ timestamp: 1 });
     return successResponse(res, 200, 'GPS History paths retrieved successfully', history);
   } catch (error) {
@@ -26,6 +35,10 @@ export const getCurrentLocation = async (req, res, next) => {
     if (!machine) {
       res.status(404);
       return next(new Error('Machine not found'));
+    }
+    if (req.user.role === 'Farm Admin' && machine.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. Assigned vehicle does not belong to your account.'));
     }
     return successResponse(res, 200, 'Current GPS location and telemetry retrieved successfully', {
       machineId: machine._id,
@@ -52,6 +65,15 @@ export const getCurrentLocation = async (req, res, next) => {
 export const getRoutePlayback = async (req, res, next) => {
   try {
     const { machineId } = req.params;
+    const machine = await Machine.findById(machineId);
+    if (!machine) {
+      res.status(404);
+      return next(new Error('Machine not found'));
+    }
+    if (req.user.role === 'Farm Admin' && machine.owner.toString() !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error('Access denied. Assigned vehicle does not belong to your account.'));
+    }
     const history = await GPSHistory.find({ machineId }).sort({ timestamp: 1 });
 
     // Calculate stops dynamically: sequence of points where speed is 0 for >= 10 seconds
@@ -150,6 +172,14 @@ export const addGPSCoordinate = async (req, res, next) => {
       distanceTravelled,
       timestamp,
     } = req.body;
+
+    if (req.user.role === 'Farm Admin' && machineId) {
+      const machine = await Machine.findById(machineId);
+      if (!machine || machine.owner.toString() !== req.user._id.toString()) {
+        res.status(403);
+        return next(new Error('Access denied. Assigned vehicle does not belong to your account.'));
+      }
+    }
 
     const logTime = timestamp || new Date();
 

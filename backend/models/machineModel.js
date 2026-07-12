@@ -28,6 +28,27 @@ const machineSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    chassisNumber: {
+      type: String,
+      required: [true, 'Chassis number is required'],
+      unique: true,
+      trim: true,
+    },
+    gpsDeviceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'GPSDevice',
+      default: null,
+    },
+    farmId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Farm',
+      required: [true, 'Farm reference is required'],
+    },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Owner reference is required'],
+    },
     status: {
       type: String,
       enum: ['Working', 'Idle', 'Maintenance', 'Offline'],

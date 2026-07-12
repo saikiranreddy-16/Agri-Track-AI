@@ -1,168 +1,248 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { PATHS } from '../constants';
+import { FaPhone, FaLock, FaEnvelope, FaExclamationTriangle, FaCheckCircle, FaLaptop } from 'react-icons/fa';
 
 export const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('rajesh@example.com');
-  const [password, setPassword] = useState('password123');
-  const [selectedRole, setSelectedRole] = useState('Farm Owner');
-  const [rememberMe, setRememberMe] = useState(true);
+  const [activeTab, setActiveTab] = useState('farmer'); // 'farmer' or 'company'
+  const [identifier, setIdentifier] = useState(''); // email or mobile number
+  const [password, setPassword] = useState(''); // password or PIN
+  
+  // Untrusted device states
+  const [showGpsVerification, setShowGpsVerification] = useState(false);
+  const [gpsDeviceId, setGpsDeviceId] = useState('');
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [generalError, setGeneralError] = useState('');
 
   const validate = () => {
     const tempErrors = {};
-    if (!email) tempErrors.email = 'Email address is required.';
-    else if (!/\S+@\S+\.\S+/.test(email)) tempErrors.email = 'Email format is invalid.';
-    
-    if (!password) tempErrors.password = 'Password is required.';
-    else if (password.length < 6) tempErrors.password = 'Password must be at least 6 characters.';
+    if (!identifier) {
+      tempErrors.identifier = activeTab === 'company' ? 'Email address is required.' : 'Mobile number is required.';
+    } else if (activeTab === 'company' && !/\S+@\S+\.\S+/.test(identifier)) {
+      tempErrors.identifier = 'Email format is invalid.';
+    }
+
+    if (!password) {
+      tempErrors.password = 'Password/PIN is required.';
+    } else if (password.length < 4) {
+      tempErrors.password = 'Password/PIN must be at least 4 characters.';
+    }
+
+    if (showGpsVerification && !gpsDeviceId) {
+      tempErrors.gpsDeviceId = 'GPS Device ID is required to register this trusted device.';
+    }
 
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      login(email, password, selectedRole);
+    setGeneralError('');
+
+    try {
+      const res = await login(identifier, password, activeTab === 'company', gpsDeviceId);
       setIsLoading(false);
-      navigate(PATHS.DASHBOARD);
-    }, 1000);
+
+      if (res.success) {
+        navigate(PATHS.DASHBOARD);
+      } else {
+        if (res.code === 'untrusted_device') {
+          setShowGpsVerification(true);
+          setGeneralError('untrusted');
+        } else if (res.code === 'max_trusted_devices') {
+          setGeneralError('max_devices');
+        } else {
+          setGeneralError(res.message || 'Login failed. Please check your credentials.');
+        }
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setGeneralError('Network error occurred. Please try again.');
+    }
   };
 
   return (
     <div className="w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-          Welcome back
+        <h1 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">
+          AgriTrack AI Sign In
         </h1>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Monitor your agricultural assets with precision.
+          Access your fleet tracking systems and farm telemetry dashboard.
         </p>
       </div>
 
+      {/* Tabs */}
+      <div className="flex border-b border-gray-100 dark:border-emerald-950/20 mb-6">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('farmer');
+            setIdentifier('');
+            setPassword('');
+            setGeneralError('');
+            setShowGpsVerification(false);
+            setErrors({});
+          }}
+          className={`flex-1 pb-3 text-xs font-bold transition-all border-b-2 flex items-center justify-center gap-2 ${
+            activeTab === 'farmer'
+              ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400'
+              : 'border-transparent text-gray-450'
+          }`}
+        >
+          <FaPhone className="text-xs" />
+          Farmer Admin Login
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('company');
+            setIdentifier('');
+            setPassword('');
+            setGeneralError('');
+            setShowGpsVerification(false);
+            setErrors({});
+          }}
+          className={`flex-1 pb-3 text-xs font-bold transition-all border-b-2 flex items-center justify-center gap-2 ${
+            activeTab === 'company'
+              ? 'border-emerald-600 text-emerald-700 dark:text-emerald-400'
+              : 'border-transparent text-gray-450'
+          }`}
+        >
+          <FaLaptop className="text-xs" />
+          Company Admin Login
+        </button>
+      </div>
+
+      {/* Verification alerts */}
+      {generalError === 'untrusted' && (
+        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-xl text-[11px] text-amber-800 dark:text-amber-400 flex items-start gap-2">
+          <FaExclamationTriangle className="mt-0.5 shrink-0" />
+          <div>
+            <span className="font-bold block">Trusted Device Registration Required</span>
+            This browser/phone is not registered as a trusted device. Verify ownership by entering one of your active GPS Device IDs.
+          </div>
+        </div>
+      )}
+
+      {generalError === 'max_devices' && (
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-250 dark:border-red-900/30 rounded-xl text-[11px] text-red-800 dark:text-red-400 flex items-start gap-2">
+          <FaExclamationTriangle className="mt-0.5 shrink-0" />
+          <div>
+            <span className="font-bold block">Trusted Devices Limit Reached</span>
+            You have logged in from 3 different devices. Please contact internal Company Operations to reset your trusted devices list.
+          </div>
+        </div>
+      )}
+
+      {generalError && generalError !== 'untrusted' && generalError !== 'max_devices' && (
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-250 dark:border-red-900/30 rounded-xl text-[11px] text-red-800 dark:text-red-400 flex items-start gap-2">
+          <FaExclamationTriangle className="mt-0.5 shrink-0" />
+          <div>{generalError}</div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Email Field */}
+        {/* Identifier Field */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-            Email Address
+          <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-750 dark:text-gray-300 mb-1.5">
+            {activeTab === 'company' ? 'Email Address' : 'Mobile Number'}
           </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={`w-full px-3 py-2 text-sm bg-gray-50 dark:bg-[#121c17] border rounded-xl focus:outline-none focus:bg-white dark:text-white transition-all ${
-              errors.email 
-                ? 'border-red-500 focus:border-red-500' 
-                : 'border-gray-200 dark:border-emerald-950/40 focus:border-emerald-500'
-            }`}
-            placeholder="e.g. john.miller@farm.com"
-          />
-          {errors.email && (
-            <p className="text-[10px] text-red-500 mt-1 font-semibold">{errors.email}</p>
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none">
+              {activeTab === 'company' ? <FaEnvelope /> : <FaPhone />}
+            </span>
+            <input
+              type={activeTab === 'company' ? 'email' : 'text'}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              className={`w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-[#121c17] border rounded-xl focus:outline-none focus:bg-white dark:text-white transition-all ${
+                errors.identifier
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-gray-200 dark:border-emerald-950/40 focus:border-emerald-500'
+              }`}
+              placeholder={activeTab === 'company' ? 'e.g. admin@agritrack.in' : 'e.g. +919876543210'}
+            />
+          </div>
+          {errors.identifier && (
+            <p className="text-[10px] text-red-500 mt-1 font-semibold">{errors.identifier}</p>
           )}
         </div>
 
-        {/* Password Field */}
+        {/* Password / PIN Field */}
         <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
-              Password
-            </label>
-            <Link
-              to={PATHS.FORGOT_PASSWORD}
-              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
-            >
-              Forgot Password?
-            </Link>
+          <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-755 dark:text-gray-300 mb-1.5">
+            {activeTab === 'company' ? 'Password' : '6-Digit Security PIN'}
+          </label>
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none">
+              <FaLock />
+            </span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={`w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-[#121c17] border rounded-xl focus:outline-none focus:bg-white dark:text-white transition-all ${
+                errors.password
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-gray-200 dark:border-emerald-950/40 focus:border-emerald-500'
+              }`}
+              placeholder="••••••••"
+            />
           </div>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={`w-full px-3 py-2 text-sm bg-gray-50 dark:bg-[#121c17] border rounded-xl focus:outline-none focus:bg-white dark:text-white transition-all ${
-              errors.password 
-                ? 'border-red-500 focus:border-red-500' 
-                : 'border-gray-200 dark:border-emerald-950/40 focus:border-emerald-500'
-            }`}
-            placeholder="••••••••"
-          />
           {errors.password && (
             <p className="text-[10px] text-red-500 mt-1 font-semibold">{errors.password}</p>
           )}
         </div>
 
-        {/* Role Selector (Admin, Owner, Operator) */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-            Select Operational Role
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {['Admin', 'Farm Owner', 'Operator'].map((role) => (
-              <button
-                type="button"
-                key={role}
-                onClick={() => setSelectedRole(role)}
-                className={`py-1.5 text-xs font-semibold rounded-xl border transition-all ${
-                  selectedRole === role
-                    ? 'border-emerald-600 bg-emerald-50 text-emerald-700 dark:border-emerald-500 dark:bg-emerald-950/20 dark:text-emerald-300'
-                    : 'border-gray-200 dark:border-emerald-950/40 bg-white dark:bg-[#0e1712] text-gray-600 dark:text-gray-300 hover:border-gray-300'
-                }`}
-              >
-                {role}
-              </button>
-            ))}
+        {/* GPS Verification Field (Conditional) */}
+        {showGpsVerification && (
+          <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/5 border border-emerald-100 dark:border-emerald-900/30 rounded-xl space-y-2">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">
+              Verify GPS Device ID
+            </label>
+            <input
+              type="text"
+              value={gpsDeviceId}
+              onChange={(e) => setGpsDeviceId(e.target.value)}
+              className={`w-full px-3 py-2 text-sm bg-white dark:bg-[#121c17] border rounded-xl focus:outline-none dark:text-white transition-all ${
+                errors.gpsDeviceId
+                  ? 'border-red-500'
+                  : 'border-emerald-350 dark:border-emerald-900/40 focus:border-emerald-600'
+              }`}
+              placeholder="e.g. dev-mach-1"
+            />
+            {errors.gpsDeviceId && (
+              <p className="text-[10px] text-red-500 mt-1 font-semibold">{errors.gpsDeviceId}</p>
+            )}
           </div>
-        </div>
-
-        {/* Remember Me */}
-        <div className="flex items-center">
-          <input
-            id="remember-me"
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300"
-          />
-          <label htmlFor="remember-me" className="ml-2 text-xs font-semibold text-gray-600 dark:text-gray-400 select-none">
-            Remember me on this machine
-          </label>
-        </div>
+        )}
 
         {/* Login Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full flex justify-center items-center py-2.5 px-4 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full flex justify-center items-center py-2.5 px-4 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
         >
           {isLoading ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           ) : (
-            'Access Dashboard'
+            'Verify & Sign In'
           )}
         </button>
       </form>
-
-      <div className="mt-6 text-center text-xs text-gray-600 dark:text-gray-400">
-        New to AgriTrack AI?{' '}
-        <Link
-          to={PATHS.REGISTER}
-          className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
-        >
-          Register farm instance
-        </Link>
-      </div>
     </div>
   );
 };
+
 export default Login;

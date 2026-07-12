@@ -59,6 +59,7 @@ const formatMachine = (m) => ({
   fuelHistory: m.fuelHistory || [],
   maintenanceHistory: m.maintenanceHistory || [],
   alerts: m.alerts || [],
+  gpsDeviceId: m.gpsDeviceId,
   updatedAt: m.updatedAt,
 });
 
@@ -209,6 +210,14 @@ export const MachineDetail = () => {
                   <span className="text-gray-400">Registration ID</span>
                   <span className="font-mono">{machine.registration}</span>
                 </div>
+                {machine.gpsDeviceId && (
+                  <div className="py-2.5 flex justify-between">
+                    <span className="text-gray-400">GPS Device ID</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-450">
+                      {typeof machine.gpsDeviceId === 'object' ? machine.gpsDeviceId.deviceId : machine.gpsDeviceId}
+                    </span>
+                  </div>
+                )}
                 <div className="py-2.5 flex justify-between">
                   <span className="text-gray-400">Working Hours</span>
                   <span>{machine.workingHours} Hours</span>

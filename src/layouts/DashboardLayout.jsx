@@ -51,22 +51,32 @@ export const DashboardLayout = () => {
     setIsMobileOpen(false);
   }, [location.pathname]);
 
-  const menuItems = [
-    { name: 'Dashboard', path: PATHS.DASHBOARD, icon: FaThLarge },
-    { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaTractor },
-    { name: 'GPS History', path: PATHS.GPS_HISTORY, icon: FaRoute },
-    { name: 'Fleet Overview', path: PATHS.FLEET_OVERVIEW, icon: FaTractor, badge: 'Overview' },
-    { name: 'Machines', path: PATHS.MACHINES, icon: FaTractor },
-    { name: 'Drivers', path: PATHS.DRIVERS, icon: FaUserTie },
-    { name: 'Fields', path: PATHS.FIELDS, icon: FaMap },
-    { name: 'Jobs', path: PATHS.JOBS, icon: FaTasks },
-    { name: 'Reports', path: PATHS.REPORTS, icon: FaFileContract },
-    { name: 'Alerts', path: PATHS.ALERTS, icon: FaExclamationTriangle, badge: 'Active' },
-    { name: 'Maintenance', path: PATHS.MAINTENANCE, icon: FaTools },
-    { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, highlight: true },
-    { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
-    { name: 'Help & Support', path: PATHS.HELP, icon: FaQuestionCircle }
-  ];
+  const isCompanyAdmin = user?.role === 'Company Admin' || user?.role === 'Admin';
+
+  const menuItems = isCompanyAdmin
+    ? [
+        { name: 'Customer Accounts', path: PATHS.CUSTOMER_MANAGEMENT, icon: FaUserTie },
+        { name: 'Device Activation', path: PATHS.DEVICE_ACTIVATION, icon: FaTractor },
+        { name: 'Device Replacement', path: PATHS.DEVICE_REPLACEMENT, icon: FaTools },
+        { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
+        { name: 'Help & Support', path: PATHS.HELP, icon: FaQuestionCircle }
+      ]
+    : [
+        { name: 'Dashboard', path: PATHS.DASHBOARD, icon: FaThLarge },
+        { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaTractor },
+        { name: 'GPS History', path: PATHS.GPS_HISTORY, icon: FaRoute },
+        { name: 'Fleet Overview', path: PATHS.FLEET_OVERVIEW, icon: FaTractor, badge: 'Overview' },
+        { name: 'Machines', path: PATHS.MACHINES, icon: FaTractor },
+        { name: 'Drivers', path: PATHS.DRIVERS, icon: FaUserTie },
+        { name: 'Fields', path: PATHS.FIELDS, icon: FaMap },
+        { name: 'Jobs', path: PATHS.JOBS, icon: FaTasks },
+        { name: 'Reports', path: PATHS.REPORTS, icon: FaFileContract },
+        { name: 'Alerts', path: PATHS.ALERTS, icon: FaExclamationTriangle, badge: 'Active' },
+        { name: 'Maintenance', path: PATHS.MAINTENANCE, icon: FaTools },
+        { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, highlight: true },
+        { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
+        { name: 'Help & Support', path: PATHS.HELP, icon: FaQuestionCircle }
+      ];
 
   // Helper to generate breadcrumbs
   const getBreadcrumbs = () => {
@@ -148,28 +158,7 @@ export const DashboardLayout = () => {
         })}
       </nav>
 
-      {/* Quick Role Switcher (For Preview/Testing Phase 1) */}
-      {isSidebarExpanded && (
-        <div className="mx-4 my-2 p-3 bg-emerald-950/40 border border-emerald-800/30 rounded-xl">
-          <div className="text-[10px] uppercase font-bold text-emerald-400 mb-2 tracking-wider">Preview Role</div>
-          <div className="grid grid-cols-3 gap-1">
-            {['Admin', 'Farm Owner', 'Operator'].map((role) => (
-              <button
-                key={role}
-                onClick={() => changeRole(role)}
-                className={`text-[9px] font-semibold py-1 rounded truncate transition-all ${
-                  user?.role === role
-                    ? 'bg-orange-500 text-white shadow-sm'
-                    : 'bg-emerald-900/40 text-emerald-200 hover:bg-emerald-800/50'
-                }`}
-                title={role}
-              >
-                {role.split(' ')[0]}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* Bottom Logout */}
       <div className="px-3 pt-2 mt-auto border-t border-emerald-800/30">
