@@ -8,7 +8,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { 
   FaTractor, FaGasPump, FaBatteryThreeQuarters, FaTools, 
   FaClock, FaMapMarkerAlt, FaFileAlt, FaHistory, FaExclamationTriangle, 
-  FaChevronLeft, FaCamera, FaDownload 
+  FaChevronLeft, FaCamera, FaDownload, FaShieldAlt
 } from 'react-icons/fa';
 import { PATHS } from '../constants';
 
@@ -133,6 +133,7 @@ export const MachineDetail = () => {
 
   const tabs = [
     { id: 'overview', label: 'Overview & GPS', icon: FaTractor },
+    { id: 'device', label: 'Device Information', icon: FaShieldAlt },
     { id: 'work', label: 'Work & Drivers', icon: FaHistory },
     { id: 'fuel', label: 'Fuel Analytics', icon: FaGasPump },
     { id: 'maintenance', label: 'Maintenance & Alerts', icon: FaTools },
@@ -280,6 +281,118 @@ export const MachineDetail = () => {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* DEVICE INFORMATION TAB */}
+        {activeTab === 'device' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+            {/* Device Settings Diagnostics */}
+            <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">Device Settings</h3>
+              
+              <div className="divide-y divide-gray-100 dark:divide-emerald-950/25 text-xs font-semibold">
+                <div className="py-3 flex justify-between">
+                  <span className="text-gray-400">GPS Device ID</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-450">
+                    {typeof machine.gpsDeviceId === 'object' ? machine.gpsDeviceId.deviceId : (machine.gpsDeviceId || 'dev-mach-1')}
+                  </span>
+                </div>
+                <div className="py-3 flex justify-between">
+                  <span className="text-gray-400">Firmware Version</span>
+                  <span className="font-mono text-gray-700 dark:text-gray-300">v4.12.8-stable</span>
+                </div>
+                <div className="py-3 flex justify-between">
+                  <span className="text-gray-400">SIM Card ICCID</span>
+                  <span className="font-mono text-gray-700 dark:text-gray-300">8991123456789012345F</span>
+                </div>
+                <div className="py-3 flex justify-between">
+                  <span className="text-gray-400">Signal Strength</span>
+                  <span className="text-emerald-500 font-bold">Excellent (-85 dBm)</span>
+                </div>
+                <div className="py-3 flex justify-between items-center">
+                  <span className="text-gray-400">Network Type</span>
+                  <span className="px-2 py-0.5 rounded font-black text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">4G LTE Cat-M1</span>
+                </div>
+                <div className="py-3 flex justify-between items-center">
+                  <span className="text-gray-400">Telemetry Status</span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Active
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Custom Vector QR Graphic Preview */}
+            <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center space-y-4">
+              <h3 className="text-sm font-bold text-gray-805 dark:text-white uppercase tracking-wider self-start">Vector QR Scan Key</h3>
+              
+              <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl">
+                <svg className="w-36 h-36 text-emerald-800 dark:text-emerald-400" viewBox="0 0 100 100" fill="currentColor">
+                  {/* Outer Frame */}
+                  <path d="M5,5 h30 v10 h-20 v20 h-10 z" />
+                  <path d="M65,5 h30 v30 h-10 v-20 h-20 z" />
+                  <path d="M5,65 h10 v20 h-20 v-30 h-10 z" />
+                  <path d="M65,95 h30 v-10 h-20 v-20 h-10 z" />
+                  {/* Outer corners / Finder patterns */}
+                  <rect x="15" y="15" width="20" height="20" rx="2" />
+                  <rect x="19" y="19" width="12" height="12" rx="1" fill="none" stroke="currentColor" strokeWidth="2" />
+                  
+                  <rect x="65" y="15" width="20" height="20" rx="2" />
+                  <rect x="69" y="19" width="12" height="12" rx="1" fill="none" stroke="currentColor" strokeWidth="2" />
+                  
+                  <rect x="15" y="65" width="20" height="20" rx="2" />
+                  <rect x="19" y="69" width="12" height="12" rx="1" fill="none" stroke="currentColor" strokeWidth="2" />
+                  
+                  {/* Random QR matrix blocks */}
+                  <rect x="45" y="20" width="8" height="8" rx="1" />
+                  <rect x="45" y="32" width="12" height="6" rx="1" />
+                  <rect x="40" y="45" width="6" height="10" rx="1" />
+                  <rect x="55" y="45" width="10" height="8" rx="1" />
+                  <rect x="65" y="45" width="8" height="8" rx="1" />
+                  <rect x="45" y="65" width="12" height="8" rx="1" />
+                  <rect x="65" y="65" width="6" height="12" rx="1" />
+                  <rect x="45" y="80" width="8" height="8" rx="1" />
+                  <rect x="58" y="80" width="12" height="6" rx="1" />
+                </svg>
+              </div>
+              <p className="text-[10px] text-gray-400 font-bold leading-relaxed max-w-[200px]">
+                Scan this hardware tag to audit serial numbers or execute manual field swap logs.
+              </p>
+            </div>
+
+            {/* Vertical Onboarding Timeline */}
+            <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">Lifecycle History</h3>
+              
+              <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-emerald-500/35">
+                <div className="flex gap-3 items-start relative pl-8">
+                  <div className="absolute left-[7px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0e1712] top-1" />
+                  <div>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 block uppercase">Activated</span>
+                    <p className="text-xs font-bold dark:text-white mt-0.5">GPS tracker registered to warehouse</p>
+                    <span className="text-[9px] text-gray-400">Date: 2026-03-12 11:24 AM</span>
+                  </div>
+                </div>
+                <div className="flex gap-3 items-start relative pl-8">
+                  <div className="absolute left-[7px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0e1712] top-1" />
+                  <div>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 block uppercase">Chassis Linked</span>
+                    <p className="text-xs font-bold dark:text-white mt-0.5">Assigned to chassis {machine.registration}</p>
+                    <span className="text-[9px] text-gray-400">Date: 2026-03-12 01:45 PM</span>
+                  </div>
+                </div>
+                <div className="flex gap-3 items-start relative pl-8">
+                  <div className="absolute left-[7px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0e1712] top-1" />
+                  <div>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 block uppercase">Fleet Assigned</span>
+                    <p className="text-xs font-bold dark:text-white mt-0.5">Linked to live tracking division</p>
+                    <span className="text-[9px] text-gray-400">Date: 2026-03-15 09:00 AM</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

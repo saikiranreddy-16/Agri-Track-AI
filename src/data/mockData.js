@@ -618,3 +618,136 @@ export const mockMaintenanceSchedule = {
     { id: 'm-hi-3', machine: 'Kartar 4000 Harvester', machineId: 'mach-7', task: 'Coolant Hose replacement & Radiator flush', date: '2026-06-01', mechanic: 'Ludhiana Workshop', cost: 3500, notes: 'Minor leak resolved.' }
   ]
 };
+
+export const mockCustomers = [
+  {
+    id: 'cust-1',
+    name: 'Singh Agrotech & Farms',
+    phone: '+91 98765 43210',
+    farmsCount: 3,
+    vehiclesCount: 4,
+    activeDevicesCount: 4,
+    status: 'Active',
+    subscriptionPlan: 'Premium Enterprise',
+    subscriptionStatus: 'Active',
+    email: 'contact@singhagrotech.in',
+    company: 'Singh Farms Ltd',
+    lastLogin: '2026-07-13T10:14:00Z',
+    trustedDevices: [
+      { phoneName: 'OnePlus 11 5G', platform: 'Android 13', addedAt: '2026-04-12T08:30:00Z', browser: 'Chrome Mobile', lastLogin: 'Today, 10:14 AM', status: 'Active' },
+      { phoneName: 'Safari (MacBook Pro)', platform: 'macOS Sonoma', addedAt: '2026-05-01T14:20:00Z', browser: 'Safari 17', lastLogin: 'Yesterday, 04:30 PM', status: 'Active' }
+    ],
+    farms: [
+      { name: 'Central Ludhiana Wheat Belt', size: '120 Hectares', crop: 'Wheat', region: 'Punjab' },
+      { name: 'Jalandhar Potato Block', size: '45 Hectares', crop: 'Potatoes', region: 'Punjab' }
+    ],
+    vehicles: [
+      { id: 'mach-1', name: 'Mahindra Novo 755 DI', type: 'Tractor', active: true, status: 'Working' },
+      { id: 'mach-2', name: 'Swaraj 963 FE', type: 'Tractor', active: true, status: 'Working' },
+      { id: 'mach-3', name: 'Sonalika Tiger DI 75', type: 'Tractor', active: false, status: 'Offline' }
+    ],
+    devices: [
+      { id: 'dev-mach-1', name: 'AgriTrack GPS Pro v4', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-03-12' },
+      { id: 'dev-mach-2', name: 'AgriTrack GPS Pro v4', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-03-12' },
+      { id: 'dev-mach-3', name: 'AgriTrack GPS Lite v2', status: 'Offline', firmware: 'v2.8.1', activationDate: '2026-05-15' }
+    ],
+    recentActivities: [
+      { action: 'Driver assigned to Mahindra Novo', time: '10 mins ago', user: 'Gurpreet Singh' },
+      { action: 'GPS Signal Offline warning generated', time: '32 mins ago', user: 'System Alert' },
+      { action: 'Refueled Swaraj 963 FE', time: '2 hours ago', user: 'Ramesh Kumar' }
+    ]
+  },
+  {
+    id: 'cust-2',
+    name: 'Patel Horticulture Group',
+    phone: '+91 99456 78901',
+    farmsCount: 2,
+    vehiclesCount: 2,
+    activeDevicesCount: 2,
+    status: 'Active',
+    subscriptionPlan: 'Basic Fleet',
+    subscriptionStatus: 'Active',
+    email: 'patelfarms@gmail.com',
+    company: 'Patel Farms & Orchards',
+    lastLogin: '2026-07-12T09:22:00Z',
+    trustedDevices: [
+      { phoneName: 'Samsung S23 Ultra', platform: 'Android 14', addedAt: '2026-06-01T10:11:00Z', browser: 'Chrome Mobile', lastLogin: 'Jul 12, 09:22 AM', status: 'Active' }
+    ],
+    farms: [
+      { name: 'Anand Citrus Gardens', size: '30 Hectares', crop: 'Citrus / Orange', region: 'Gujarat' }
+    ],
+    vehicles: [
+      { id: 'mach-5', name: 'TAFE 30 DI Orchard', type: 'Tractor', active: true, status: 'Idle' }
+    ],
+    devices: [
+      { id: 'dev-mach-5', name: 'AgriTrack GPS Lite v2', status: 'Active', firmware: 'v2.8.1', activationDate: '2026-06-01' }
+    ],
+    recentActivities: [
+      { action: 'Citrus harvesting completed Block C', time: 'Yesterday', user: 'Harpreet Kaur' }
+    ]
+  },
+  {
+    id: 'cust-3',
+    name: 'Singh Family Estates',
+    phone: '+91 98123 45678',
+    farmsCount: 1,
+    vehiclesCount: 2,
+    activeDevicesCount: 1,
+    status: 'Active',
+    subscriptionPlan: 'Basic Fleet',
+    subscriptionStatus: 'Active',
+    email: 'ramesh.k@singhfamily.in',
+    company: 'Singh Family Partnership',
+    lastLogin: '2026-07-13T08:12:00Z',
+    trustedDevices: [],
+    farms: [
+      { name: 'Moga Paddy Sector', size: '55 Hectares', crop: 'Rice', region: 'Punjab' }
+    ],
+    vehicles: [
+      { id: 'mach-2', name: 'Swaraj 963 FE', type: 'Tractor', active: true, status: 'Working' }
+    ],
+    devices: [
+      { id: 'dev-mach-2', name: 'AgriTrack GPS Pro v4', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-03-12' }
+    ],
+    recentActivities: [
+      { action: 'Tractor working in paddy field', time: '1 hour ago', user: 'System GPS' }
+    ]
+  },
+  {
+    id: 'cust-4',
+    name: 'Sharma Farming Trust',
+    phone: '+91 97890 12345',
+    farmsCount: 1,
+    vehiclesCount: 1,
+    activeDevicesCount: 1,
+    status: 'Suspended',
+    subscriptionPlan: 'Basic Fleet',
+    subscriptionStatus: 'Suspended',
+    email: 'sharmatrust@yahoo.com',
+    company: 'Sharma Trust Group',
+    lastLogin: '2026-07-01T11:45:00Z',
+    trustedDevices: [],
+    farms: [
+      { name: 'Karnal Cotton Fields', size: '45 Hectares', crop: 'Cotton', region: 'Haryana' }
+    ],
+    vehicles: [
+      { id: 'mach-4', name: 'John Deere 5310 GearPro', type: 'Tractor', active: false, status: 'Offline' }
+    ],
+    devices: [
+      { id: 'dev-mach-4', name: 'AgriTrack GPS Lite v2', status: 'Suspended', firmware: 'v2.8.1', activationDate: '2026-02-14' }
+    ],
+    recentActivities: [
+      { action: 'Subscription suspended due to non-payment', time: 'Jul 01', user: 'System Billing' }
+    ]
+  }
+];
+
+export const mockNotifications = [
+  { id: 'notif-1', title: 'Tractor-07 went offline', message: 'Preet 6049 Super (mach-6) GPS telemetry signal connection was lost.', time: '10 mins ago', category: 'GPS', severity: 'High', dateGroup: 'Today', read: false },
+  { id: 'notif-2', title: 'Device battery low', message: 'GPS hardware unit dev-mach-3 has critical battery power remaining (10%).', time: '40 mins ago', category: 'Device', severity: 'Critical', dateGroup: 'Today', read: false },
+  { id: 'notif-3', title: 'Maintenance due tomorrow', message: 'Swaraj 963 FE (mach-2) engine oil & cylinder calibration is scheduled for service on 2026-07-14.', time: '2 hours ago', category: 'Maintenance', severity: 'Medium', dateGroup: 'Today', read: false },
+  { id: 'notif-4', title: 'GPS disconnected', message: 'Sonalika Tiger DI (mach-3) GPS signal has been completely disconnected.', time: '1 day ago', category: 'GPS', severity: 'High', dateGroup: 'Yesterday', read: true },
+  { id: 'notif-5', title: 'New firmware available', message: 'Firmware update v4.13.0-beta is available for onboarding on AgriTrack GPS Pro v4 units.', time: '2 days ago', category: 'System', severity: 'Low', dateGroup: 'Yesterday', read: true },
+  { id: 'notif-6', title: 'Critical fuel level warning', message: 'Kartar Harvester (mach-7) fuel dropped below 15% during operation.', time: '4 days ago', category: 'Fuel', severity: 'High', dateGroup: 'This Week', read: true },
+  { id: 'notif-7', title: 'AI Assistant report compiled', message: 'Weekly report on fleet fuel efficiency has been generated by AI helper.', time: '5 days ago', category: 'AI', severity: 'Low', dateGroup: 'This Week', read: true }
+];

@@ -2,7 +2,6 @@
 
 export const PATHS = {
   LOGIN: '/login',
-  REGISTER: '/register',
   FORGOT_PASSWORD: '/forgot-password',
   DASHBOARD: '/',
   FLEET_OVERVIEW: '/fleet',
@@ -21,8 +20,10 @@ export const PATHS = {
   SETTINGS: '/settings',
   HELP: '/help',
   CUSTOMER_MANAGEMENT: '/customers',
+  CUSTOMER_PROFILE: '/customers/:id',
   DEVICE_ACTIVATION: '/activate',
-  DEVICE_REPLACEMENT: '/replace'
+  DEVICE_REPLACEMENT: '/replace',
+  NOTIFICATIONS: '/notifications'
 };
 
 export const ROLES = {

@@ -28,6 +28,49 @@ export const Dashboard = () => {
   const { alerts, globalSearchQuery } = useUIState();
   const navigate = useNavigate();
 
+  const renderStatusBadge = (status) => {
+    switch (status) {
+      case 'Working':
+      case 'Active':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Active
+          </span>
+        );
+      case 'Idle':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-yellow-50 text-yellow-700 dark:bg-yellow-950/45 dark:text-yellow-400 border border-yellow-250 dark:border-yellow-900/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+            Idle
+          </span>
+        );
+      case 'Offline':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 dark:bg-red-950/45 dark:text-red-400 border border-red-250 dark:border-red-900/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            Offline
+          </span>
+        );
+      case 'Replaced':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/45 dark:text-blue-400 border border-blue-250 dark:border-blue-900/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            Replaced
+          </span>
+        );
+      case 'Maintenance':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-700 dark:bg-orange-950/45 dark:text-orange-400 border border-orange-250 dark:border-orange-900/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+            Maint.
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
   // Dynamic calculations based on mock data
   const totalMachines = mockMachines.length;
   const activeMachines = mockMachines.filter(m => m.status === 'Working' || m.status === 'Idle').length;
@@ -78,6 +121,21 @@ export const Dashboard = () => {
     { id: 3, text: 'Thomas Mueller completed Soil Tilling Sector 4', time: '1 hour ago', type: 'Job' },
     { id: 4, text: 'Sarah Jenkins clocked in for harvester Shift', time: '3 hours ago', type: 'Driver' },
     { id: 5, text: 'Massey Ferguson registered Engine Temp alert', time: '4 hours ago', type: 'Alert' }
+  ];
+
+  const recentlyActiveMachines = mockMachines.slice(0, 4);
+  const recentLogins = [
+    { name: 'Gurpreet Singh', role: 'Farm Admin', device: 'OnePlus 11 5G (Android)', time: 'Today, 10:14 AM' },
+    { name: 'Ramesh Kumar', role: 'Operator', device: 'Chrome (Windows 11)', time: 'Today, 08:30 AM' },
+    { name: 'Sanjay Reddy', role: 'Company Admin', device: 'Safari (MacBook Pro)', time: 'Yesterday, 04:30 PM' }
+  ];
+  const recentActivations = [
+    { deviceId: 'dev-982312', vehicle: 'Mahindra Novo 7DI', chassis: 'CH-NO-755', customer: 'Singh Agrotech', date: '2026-07-12' },
+    { deviceId: 'dev-483920', vehicle: 'TAFE Orchard 30', chassis: 'CH-TF-30D', customer: 'Patel Horticulture', date: '2026-07-10' }
+  ];
+  const recentReplacements = [
+    { vehicle: 'Swaraj 963 FE', oldDevice: 'dev-mach-2-old', newDevice: 'dev-mach-2', reason: 'GPS Antenna Fail', date: '2026-07-11' },
+    { vehicle: 'Sonalika Tiger DI', oldDevice: 'dev-mach-3-old', newDevice: 'dev-mach-3', reason: 'Battery Leak', date: '2026-07-09' }
   ];
 
   return (
@@ -341,6 +399,82 @@ export const Dashboard = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* Dynamic Activity Overview Rows */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {/* Recently Active Vehicles */}
+        <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
+          <h3 className="text-xs font-bold text-gray-405 uppercase tracking-wider">Recently Active Vehicles</h3>
+          <div className="space-y-3">
+            {recentlyActiveMachines.map(m => (
+              <div key={m.id} className="flex justify-between items-center text-xs">
+                <div>
+                  <span className="font-bold dark:text-white block">{m.name}</span>
+                  <span className="text-[10px] text-gray-400">{m.registration}</span>
+                </div>
+                {renderStatusBadge(m.status)}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Logins */}
+        <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
+          <h3 className="text-xs font-bold text-gray-405 uppercase tracking-wider">Recent Access Logins</h3>
+          <div className="space-y-3">
+            {recentLogins.map((l, idx) => (
+              <div key={idx} className="text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold dark:text-white">{l.name}</span>
+                  <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">{l.role}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px] text-gray-400 mt-1">
+                  <span>{l.device}</span>
+                  <span className="font-medium text-gray-400">{l.time}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Device Activations */}
+        <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
+          <h3 className="text-xs font-bold text-gray-405 uppercase tracking-wider">Recent GPS Onboardings</h3>
+          <div className="space-y-3">
+            {recentActivations.map((a, idx) => (
+              <div key={idx} className="text-xs">
+                <div className="flex justify-between items-center font-bold">
+                  <span className="dark:text-white">{a.vehicle}</span>
+                  <span className="text-orange-500 font-mono">{a.deviceId}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px] text-gray-400 mt-1">
+                  <span>Chassis: {a.chassis}</span>
+                  <span>{a.date}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Device Replacements */}
+        <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
+          <h3 className="text-xs font-bold text-gray-405 uppercase tracking-wider">Recent Device Replacements</h3>
+          <div className="space-y-3">
+            {recentReplacements.map((r, idx) => (
+              <div key={idx} className="text-xs">
+                <div className="font-bold dark:text-white">{r.vehicle}</div>
+                <div className="text-[10px] text-gray-400 mt-1">
+                  <div>Reason: <span className="text-orange-400 font-bold">{r.reason}</span></div>
+                  <div className="flex justify-between items-center text-[9px] mt-1 text-gray-405">
+                    <span>{r.oldDevice} &rarr; {r.newDevice}</span>
+                    <span>{r.date}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
     </div>

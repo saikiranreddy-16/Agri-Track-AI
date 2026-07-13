@@ -9,8 +9,10 @@ import {
   FaBars, FaChevronLeft, FaSun, FaMoon, FaGlobe, FaBell, FaRobot, FaSearch, 
   FaSignOutAlt, FaTractor, FaUserTie, FaMap, FaTasks, FaFileContract, 
   FaExclamationTriangle, FaTools, FaCog, FaQuestionCircle, FaUser, 
-  FaArrowRight, FaRoute, FaEnvelope, FaThLarge
+  FaArrowRight, FaRoute, FaEnvelope, FaThLarge, FaShieldAlt, FaFilter
 } from 'react-icons/fa';
+import { mockMachines, mockCustomers } from '../data/mockData';
+import { useToast } from '../context/ToastContext';
 
 export const DashboardLayout = () => {
   const { user, logout, changeRole } = useAuth();
@@ -23,6 +25,31 @@ export const DashboardLayout = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const toast = useToast();
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showFiltersPanel, setShowFiltersPanel] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('All');
+  const [filterType, setFilterType] = useState('All');
+  const [filterRegion, setFilterRegion] = useState('All');
+  const searchContainerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const suggestionMachines = globalSearchQuery
+    ? mockMachines.filter(m => m.name.toLowerCase().includes(globalSearchQuery.toLowerCase())).slice(0, 3)
+    : [];
+  const suggestionCustomers = globalSearchQuery
+    ? mockCustomers.filter(c => c.name.toLowerCase().includes(globalSearchQuery.toLowerCase())).slice(0, 3)
+    : [];
   
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -30,6 +57,7 @@ export const DashboardLayout = () => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [activeLang, setActiveLang] = useState('English');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const profileRef = useRef(null);
   const notifRef = useRef(null);
@@ -55,42 +83,67 @@ export const DashboardLayout = () => {
 
   const menuItems = isCompanyAdmin
     ? [
-        { name: 'Customer Accounts', path: PATHS.CUSTOMER_MANAGEMENT, icon: FaUserTie },
+        { name: 'Dashboard', path: PATHS.DASHBOARD, icon: FaThLarge },
+        { name: 'Customer Management', path: PATHS.CUSTOMER_MANAGEMENT, icon: FaUserTie },
         { name: 'Device Activation', path: PATHS.DEVICE_ACTIVATION, icon: FaTractor },
         { name: 'Device Replacement', path: PATHS.DEVICE_REPLACEMENT, icon: FaTools },
+        { name: 'GPS Live Tracking', path: PATHS.TRACKING, icon: FaRoute },
+        { name: 'Fleet Overview', path: PATHS.FLEET_OVERVIEW, icon: FaTractor },
+        { name: 'Reports', path: PATHS.REPORTS, icon: FaFileContract },
+        { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, highlight: true },
         { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
-        { name: 'Help & Support', path: PATHS.HELP, icon: FaQuestionCircle }
+        { name: 'Help', path: PATHS.HELP, icon: FaQuestionCircle }
       ]
     : [
         { name: 'Dashboard', path: PATHS.DASHBOARD, icon: FaThLarge },
-        { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaTractor },
+        { name: 'My Vehicles', path: PATHS.MACHINES, icon: FaTractor },
+        { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute },
         { name: 'GPS History', path: PATHS.GPS_HISTORY, icon: FaRoute },
-        { name: 'Fleet Overview', path: PATHS.FLEET_OVERVIEW, icon: FaTractor, badge: 'Overview' },
-        { name: 'Machines', path: PATHS.MACHINES, icon: FaTractor },
-        { name: 'Drivers', path: PATHS.DRIVERS, icon: FaUserTie },
-        { name: 'Fields', path: PATHS.FIELDS, icon: FaMap },
-        { name: 'Jobs', path: PATHS.JOBS, icon: FaTasks },
         { name: 'Reports', path: PATHS.REPORTS, icon: FaFileContract },
         { name: 'Alerts', path: PATHS.ALERTS, icon: FaExclamationTriangle, badge: 'Active' },
         { name: 'Maintenance', path: PATHS.MAINTENANCE, icon: FaTools },
         { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, highlight: true },
         { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
-        { name: 'Help & Support', path: PATHS.HELP, icon: FaQuestionCircle }
+        { name: 'Help', path: PATHS.HELP, icon: FaQuestionCircle }
       ];
 
   // Helper to generate breadcrumbs
   const getBreadcrumbs = () => {
     const pathnames = location.pathname.split('/').filter(x => x);
-    if (pathnames.length === 0) return [{ name: 'Dashboard', path: '/' }];
+    const crumbs = [{ name: 'Dashboard', path: '/' }];
     
-    return [
-      { name: 'Dashboard', path: '/' },
-      ...pathnames.map((val, idx) => {
-        const path = `/${pathnames.slice(0, idx + 1).join('/')}`;
-        const name = val.charAt(0).toUpperCase() + val.slice(1).replace('-', ' ');
-        return { name, path };
-      })
-    ];
+    let currentPath = '';
+    pathnames.forEach((val, idx) => {
+      currentPath += `/${val}`;
+      let name = val.charAt(0).toUpperCase() + val.slice(1).replace(/-/g, ' ');
+      
+      // Handle dynamic IDs or paths
+      if (val.startsWith('mach-') || val.startsWith('dev-') || (val.length > 10 && !isNaN(val.charAt(0)) === false)) {
+        name = 'Details';
+      } else if (val.startsWith('cust-')) {
+        name = 'Profile';
+      } else if (val === 'fleet') {
+        name = 'Fleet Overview';
+      } else if (val === 'customers') {
+        name = 'Customer Management';
+      } else if (val === 'activate') {
+        name = 'Device Activation';
+      } else if (val === 'replace') {
+        name = 'Device Replacement';
+      } else if (val === 'tracking') {
+        name = 'Live Tracking';
+      } else if (val === 'gps-history') {
+        name = 'GPS History';
+      } else if (val === 'ai-assistant') {
+        name = 'AI Assistant';
+      } else if (val === 'notifications') {
+        name = 'Notifications';
+      }
+      
+      crumbs.push({ name, path: currentPath });
+    });
+    
+    return crumbs;
   };
 
   const breadcrumbs = getBreadcrumbs();
@@ -163,8 +216,8 @@ export const DashboardLayout = () => {
       {/* Bottom Logout */}
       <div className="px-3 pt-2 mt-auto border-t border-emerald-800/30">
         <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-red-950/30 hover:text-red-300 text-emerald-200 transition-colors group relative"
+          onClick={() => setShowLogoutConfirm(true)}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-red-950/30 hover:text-red-300 text-emerald-200 transition-colors group relative cursor-pointer"
         >
           <FaSignOutAlt className="text-lg shrink-0 text-emerald-400 group-hover:text-red-400" />
           {isSidebarExpanded && <span>Logout</span>}
@@ -239,7 +292,7 @@ export const DashboardLayout = () => {
             </button>
 
             {/* Breadcrumbs */}
-            <nav className="hidden lg:flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+            <nav className="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-gray-505 dark:text-gray-400">
               {breadcrumbs.map((crumb, idx) => (
                 <div key={crumb.path} className="flex items-center gap-1.5">
                   {idx > 0 && <span className="text-gray-300 dark:text-emerald-950">/</span>}
@@ -260,33 +313,85 @@ export const DashboardLayout = () => {
           <div className="flex items-center gap-3">
             
             {/* Global Search Bar */}
-            <div className="relative max-w-[200px] sm:max-w-xs hidden sm:block">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 dark:text-gray-500">
+            <div className="relative max-w-[200px] sm:max-w-xs hidden sm:block" ref={searchContainerRef}>
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 dark:text-gray-505 pointer-events-none">
                 <FaSearch className="text-sm" />
               </span>
               <input
                 type="text"
                 value={globalSearchQuery}
-                onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setGlobalSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
                 placeholder="Search fleet, jobs, fields..."
-                className="w-full pl-9 pr-4 py-1.5 text-sm rounded-xl bg-gray-100 dark:bg-emerald-950/30 border border-transparent focus:bg-white focus:border-emerald-500 focus:outline-none dark:focus:bg-emerald-950/60 dark:text-white transition-all shadow-inner"
+                className="w-full pl-9 pr-8 py-1.5 text-sm rounded-xl bg-gray-100 dark:bg-emerald-950/30 border border-transparent focus:bg-white focus:border-emerald-500 focus:outline-none dark:focus:bg-emerald-950/60 dark:text-white transition-all shadow-inner"
               />
-              {globalSearchQuery && (
-                <button
-                  onClick={() => setGlobalSearchQuery('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-gray-400 hover:text-gray-600"
-                >
-                  Clear
-                </button>
+              <button
+                onClick={() => setShowFiltersPanel(!showFiltersPanel)}
+                className={`absolute inset-y-0 right-0 pr-3 flex items-center text-xs transition-colors cursor-pointer ${
+                  showFiltersPanel ? 'text-emerald-600 dark:text-emerald-450' : 'text-gray-400 hover:text-gray-600'
+                }`}
+                title="Toggle Filters"
+              >
+                <FaFilter className="text-[10px]" />
+              </button>
+
+              {/* Suggestions Dropdown Card */}
+              {showSuggestions && globalSearchQuery && (
+                <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-[#0f1913] border border-gray-200 dark:border-emerald-955/40 rounded-xl shadow-2xl z-50 py-1.5 overflow-hidden text-left text-[11px] max-h-60 overflow-y-auto">
+                  <div className="px-3 py-1 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[8px] border-b border-gray-100 dark:border-emerald-955/10 mb-1">
+                    Suggestions
+                  </div>
+                  
+                  {/* Matches from vehicles */}
+                  {suggestionMachines.map(m => (
+                    <Link
+                      key={m.id}
+                      to={`/machines/${m.id}`}
+                      onClick={() => {
+                        setGlobalSearchQuery(m.name);
+                        setShowSuggestions(false);
+                      }}
+                      className="flex items-center justify-between px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-bold dark:text-gray-205"
+                    >
+                      <span>{m.name}</span>
+                      <span className="text-[8px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 py-0.2 rounded font-black uppercase">{m.status}</span>
+                    </Link>
+                  ))}
+
+                  {/* Matches from customers */}
+                  {suggestionCustomers.map(c => (
+                    <Link
+                      key={c.id}
+                      to={`/customers/${c.id}`}
+                      onClick={() => {
+                        setGlobalSearchQuery(c.name);
+                        setShowSuggestions(false);
+                      }}
+                      className="flex items-center justify-between px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-bold dark:text-gray-205 border-t border-gray-100 dark:border-emerald-955/10"
+                    >
+                      <span>{c.name}</span>
+                      <span className="text-[8px] bg-orange-500/10 text-orange-600 px-1 py-0.2 rounded font-black uppercase">Customer</span>
+                    </Link>
+                  ))}
+
+                  {suggestionMachines.length === 0 && suggestionCustomers.length === 0 && (
+                    <div className="px-3 py-4 text-center text-gray-405 italic">
+                      No matching records found.
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
             {/* Messages Icon */}
             <div className="relative">
               <button 
-                onClick={() => navigate(PATHS.HELP)}
-                className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-emerald-950/40 rounded-xl relative transition-all"
-                title="Support Messages"
+                onClick={() => navigate(PATHS.NOTIFICATIONS)}
+                className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-emerald-950/40 rounded-xl relative transition-all cursor-pointer"
+                title="Notifications"
               >
                 <FaEnvelope className="text-lg" />
                 <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 border-2 border-white dark:border-[#0e1712] rounded-full" />
@@ -471,7 +576,7 @@ export const DashboardLayout = () => {
                       className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-semibold"
                     >
                       <FaUser className="text-gray-400 dark:text-emerald-600" />
-                      My Profile
+                      Profile
                     </Link>
 
                     <Link
@@ -480,18 +585,38 @@ export const DashboardLayout = () => {
                       className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-semibold"
                     >
                       <FaCog className="text-gray-400 dark:text-emerald-600" />
-                      Settings Shortcut
+                      Settings
+                    </Link>
+
+                    {!isCompanyAdmin && (
+                      <Link
+                        to={`${PATHS.SETTINGS}?tab=security`}
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-semibold"
+                      >
+                        <FaShieldAlt className="text-gray-400 dark:text-emerald-600" />
+                        Trusted Devices
+                      </Link>
+                    )}
+
+                    <Link
+                      to={PATHS.HELP}
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-semibold"
+                    >
+                      <FaQuestionCircle className="text-gray-400 dark:text-emerald-600" />
+                      Help
                     </Link>
 
                     <button
                       onClick={() => {
                         setIsProfileOpen(false);
-                        handleLogout();
+                        setShowLogoutConfirm(true);
                       }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all font-semibold border-t border-gray-100 dark:border-emerald-950/20"
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all font-semibold border-t border-gray-100 dark:border-emerald-950/20 cursor-pointer"
                     >
                       <FaSignOutAlt className="text-red-400" />
-                      Log Out
+                      Logout
                     </button>
                   </motion.div>
                 )}
@@ -501,6 +626,72 @@ export const DashboardLayout = () => {
           </div>
 
         </header>
+
+        {/* Collapsible Filter Panel */}
+        <AnimatePresence>
+          {showFiltersPanel && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-white dark:bg-[#0c120f] border-b border-gray-150 dark:border-emerald-950/20 px-6 py-4 shadow-md z-20 overflow-hidden text-xs leading-normal shrink-0"
+            >
+              <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">Vehicle Status</label>
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => {
+                      setFilterStatus(e.target.value);
+                      toast.success(`Filter Status set to: ${e.target.value}`);
+                    }}
+                    className="w-full p-2 bg-gray-50 dark:bg-emerald-955/5 border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
+                  >
+                    <option value="All">All Statuses</option>
+                    <option value="Active">🟢 Active</option>
+                    <option value="Idle">🟡 Idle</option>
+                    <option value="Offline">🔴 Offline</option>
+                    <option value="Maintenance">🟠 Maintenance</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">Vehicle Type</label>
+                  <select
+                    value={filterType}
+                    onChange={(e) => {
+                      setFilterType(e.target.value);
+                      toast.success(`Filter Type set to: ${e.target.value}`);
+                    }}
+                    className="w-full p-2 bg-gray-50 dark:bg-emerald-955/5 border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
+                  >
+                    <option value="All">All Types</option>
+                    <option value="Tractor">Tractor</option>
+                    <option value="Harvester">Harvester</option>
+                    <option value="Sprayer">Sprayer</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">Farm Block / Region</label>
+                  <select
+                    value={filterRegion}
+                    onChange={(e) => {
+                      setFilterRegion(e.target.value);
+                      toast.success(`Filter Region set to: ${e.target.value}`);
+                    }}
+                    className="w-full p-2 bg-gray-50 dark:bg-emerald-955/5 border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
+                  >
+                    <option value="All">All Regions</option>
+                    <option value="Punjab">Punjab Sector</option>
+                    <option value="Gujarat">Gujarat Block</option>
+                    <option value="Haryana">Haryana Fields</option>
+                  </select>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Global Breadcrumb for Mobile and Search alert info */}
         {globalSearchQuery && (
@@ -518,22 +709,90 @@ export const DashboardLayout = () => {
         )}
 
         {/* Viewport content section */}
-        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 bg-gray-50 dark:bg-[#0b120e] transition-colors relative">
+        <main className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 bg-gray-50 dark:bg-[#0b120e] transition-colors relative pb-20 md:pb-6">
           <Outlet />
         </main>
 
         {/* Sticky Footer */}
-        <footer className="h-10 shrink-0 bg-white dark:bg-[#0e1712] border-t border-gray-200 dark:border-emerald-950/20 flex items-center justify-between px-4 md:px-6 text-[10px] text-gray-500 dark:text-gray-400 transition-colors">
+        <footer className="h-10 shrink-0 bg-white dark:bg-[#0e1712] border-t border-gray-200 dark:border-emerald-950/20 flex items-center justify-between px-4 md:px-6 text-[10px] text-gray-550 dark:text-gray-400 transition-colors">
           <div>
-            &copy; {new Date().getFullYear()} AgriTrack AI. Fleet Operations & Tracking.
+            &copy; {new Date().getFullYear()} AgriTrack AI • Version 1.0 • Support | Privacy Policy | Terms
           </div>
-          <div className="flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-450">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             All GPS Telemetry Nominal
           </div>
         </footer>
 
       </div>
+
+      {/* Mobile Bottom Nav */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-[#0e1712] border-t border-gray-250 dark:border-emerald-950/30 flex items-center justify-around px-2 shadow-2xl z-30 transition-colors">
+        {[
+          { name: 'Dashboard', path: PATHS.DASHBOARD, icon: FaThLarge },
+          { name: 'Tracking', path: PATHS.TRACKING, icon: FaRoute },
+          { name: 'Vehicles', path: isCompanyAdmin ? PATHS.FLEET_OVERVIEW : PATHS.MACHINES, icon: FaTractor },
+          { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot },
+          { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog }
+        ].map((item) => {
+          const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.name}
+              to={item.path}
+              className={`flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-all ${
+                isActive 
+                  ? 'text-emerald-600 dark:text-emerald-400 font-bold scale-105' 
+                  : 'text-gray-400 hover:text-gray-650'
+              }`}
+            >
+              <Icon className="text-base" />
+              <span className="text-[9px] tracking-tight">{item.name}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Custom Logout Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-[#0c120f] border border-gray-200 dark:border-emerald-900/30 p-6 rounded-2xl w-full max-w-sm shadow-2xl space-y-4 text-xs"
+            >
+              <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider text-red-500 flex items-center gap-2">
+                <FaSignOutAlt />
+                Log Out Account
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
+                Are you sure you want to log out from AgriTrack AI? You will need to enter your credentials to access the telemetry dashboard again.
+              </p>
+              <div className="flex gap-2 justify-end text-xs font-bold pt-2">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:hover:bg-emerald-900/10 text-gray-650 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowLogoutConfirm(false);
+                    handleLogout();
+                  }}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl cursor-pointer"
+                >
+                  Log Out
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

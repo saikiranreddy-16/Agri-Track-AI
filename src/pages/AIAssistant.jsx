@@ -28,11 +28,9 @@ export const AIAssistant = () => {
   ];
 
   const suggestedPrompts = [
-    "Show today's work",
-    "Weekly report",
-    "Monthly report",
-    "Fuel used today",
-    "Which machine worked the most?"
+    "Analyze today's fuel efficiency",
+    "Find offline devices",
+    "Generate weekly fleet report"
   ];
 
   // Auto-scroll chat log
@@ -249,7 +247,7 @@ For now, try selecting one of our preset quick-prompts below!`;
               {suggestedPrompts.map((p) => (
                 <button
                   key={p}
-                  onClick={() => handleSend(p)}
+                  onClick={() => setInputVal(p)}
                   className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold bg-white dark:bg-emerald-950/30 border border-gray-200 dark:border-emerald-900/30 rounded-xl text-gray-600 dark:text-emerald-300 hover:border-emerald-500/50 hover:bg-emerald-50/20 transition-all cursor-pointer shadow-sm"
                 >
                   {p} <FaArrowRight className="text-[9px] text-gray-400" />

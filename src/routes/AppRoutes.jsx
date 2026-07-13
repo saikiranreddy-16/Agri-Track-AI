@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { Login } from '../pages/Login';
-import { Register } from '../pages/Register';
 import { ForgotPassword } from '../pages/ForgotPassword';
 import { Dashboard } from '../pages/Dashboard';
 import { FleetOverview } from '../pages/FleetOverview';
@@ -22,8 +21,13 @@ import { AIAssistant } from '../pages/AIAssistant';
 import { Settings } from '../pages/Settings';
 import { Help } from '../pages/Help';
 import { CustomerManagement } from '../pages/CustomerManagement';
+import { CustomerProfile } from '../pages/CustomerProfile';
 import { DeviceActivation } from '../pages/DeviceActivation';
 import { DeviceReplacement } from '../pages/DeviceReplacement';
+import { Notifications } from '../pages/Notifications';
+import { NotFound } from '../pages/NotFound';
+import { Unauthorized } from '../pages/Unauthorized';
+import { ServerError } from '../pages/ServerError';
 import { PATHS } from '../constants';
 
 export const AppRoutes = () => {
@@ -54,12 +58,19 @@ export const AppRoutes = () => {
         <Route path={PATHS.SETTINGS} element={<Settings />} />
         <Route path={PATHS.HELP} element={<Help />} />
         <Route path={PATHS.CUSTOMER_MANAGEMENT} element={<CustomerManagement />} />
+        <Route path={PATHS.CUSTOMER_PROFILE} element={<CustomerProfile />} />
         <Route path={PATHS.DEVICE_ACTIVATION} element={<DeviceActivation />} />
         <Route path={PATHS.DEVICE_REPLACEMENT} element={<DeviceReplacement />} />
+        <Route path={PATHS.NOTIFICATIONS} element={<Notifications />} />
       </Route>
 
+      {/* Error views (Unprotected / Standalone) */}
+      <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="/server-error" element={<ServerError />} />
+      <Route path="/404" element={<NotFound />} />
+
       {/* Redirection fallback */}
-      <Route path="*" element={<Navigate to={PATHS.DASHBOARD} replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
