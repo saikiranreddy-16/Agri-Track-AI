@@ -51,5 +51,9 @@ const gpsHistorySchema = new mongoose.Schema(
   }
 );
 
+// Indexes
+gpsHistorySchema.index({ timestamp: 1 });
+gpsHistorySchema.index({ machineId: 1, timestamp: -1 });
+
 const GPSHistory = mongoose.model('GPSHistory', gpsHistorySchema);
 export default GPSHistory;

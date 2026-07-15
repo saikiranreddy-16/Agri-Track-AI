@@ -22,6 +22,8 @@ import reportRoutes from './routes/reportRoutes.js';
 import deviceRoutes from './routes/deviceRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
+import hardwareRoutes from './routes/hardwareRoutes.js';
+import farmRoutes from './routes/farmRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -110,6 +112,8 @@ app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/devices', deviceRoutes);
 app.use('/api/v1/customers', customerRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/hardware', hardwareRoutes);
+app.use('/api/v1/farms', farmRoutes);
 
 // 10. Central Error Middleware Hooking
 app.use(notFound);

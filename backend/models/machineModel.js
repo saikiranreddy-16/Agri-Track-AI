@@ -33,6 +33,7 @@ const machineSchema = new mongoose.Schema(
       required: [true, 'Chassis number is required'],
       unique: true,
       trim: true,
+      immutable: true, // Enforcement of Vehicle Chassis Immutability
     },
     gpsDeviceId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -63,6 +64,12 @@ const machineSchema = new mongoose.Schema(
     battery: {
       type: Number,
       default: 100, // percentage 0-100
+      min: 0,
+      max: 100,
+    },
+    healthScore: {
+      type: Number,
+      default: 100, // calculated overall health score
       min: 0,
       max: 100,
     },
@@ -114,11 +121,43 @@ const machineSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    // Soft Delete
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Indexes
+machineSchema.index({ status: 1 });
+
+// Pre-find hook to exclude soft-deleted records
+const excludeDeleted = function (next) {
+  const query = this.getQuery();
+  if (query && query.isDeleted !== undefined) {
+    return next();
+  }
+  this.where({ isDeleted: { $ne: true } });
+  next();
+};
+
+machineSchema.pre('find', excludeDeleted);
+machineSchema.pre('findOne', excludeDeleted);
+machineSchema.pre('findOneAndUpdate', excludeDeleted);
+machineSchema.pre('countDocuments', excludeDeleted);
 
 const Machine = mongoose.model('Machine', machineSchema);
 export default Machine;

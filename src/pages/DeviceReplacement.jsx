@@ -6,10 +6,12 @@ import {
 } from 'react-icons/fa';
 import { mockMachines } from '../data/mockData';
 import { useToast } from '../context/ToastContext';
+import api from '../utils/api';
 
 export const DeviceReplacement = () => {
   const toast = useToast();
 
+  const [machines, setMachines] = useState([]);
   const [selectedVehicleId, setSelectedVehicleId] = useState('');
   const [oldDeviceId, setOldDeviceId] = useState('');
   const [newDeviceId, setNewDeviceId] = useState('');
@@ -26,20 +28,46 @@ export const DeviceReplacement = () => {
   // Custom Confirmation Modal state
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // Initialize selected vehicle and old device ID on mount
+  // Initialize selected vehicle and old device ID on mount from live API
   useEffect(() => {
-    if (mockMachines.length > 0) {
-      const defaultMach = mockMachines[0];
-      setSelectedVehicleId(defaultMach.id);
-      setOldDeviceId(defaultMach.gpsDeviceId || `dev-mach-${defaultMach.id.replace('mach-', '')}`);
-    }
+    const fetchMachines = async () => {
+      try {
+        const response = await api.get('/machines');
+        if (response.data && response.data.success) {
+          const machinesList = response.data.data;
+          setMachines(machinesList);
+          if (machinesList.length > 0) {
+            const defaultMach = machinesList[0];
+            setSelectedVehicleId(defaultMach._id);
+            const devId = defaultMach.gpsDeviceId 
+              ? (defaultMach.gpsDeviceId.deviceId || defaultMach.gpsDeviceId) 
+              : `dev-mach-${defaultMach._id.replace('mach-', '')}`;
+            setOldDeviceId(devId);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load live fleet vehicles, falling back to mock:', err);
+        // Fallback for visual safety in dev environment
+        setMachines(mockMachines.map(m => ({ ...m, _id: m.id })));
+        if (mockMachines.length > 0) {
+          const defaultMach = mockMachines[0];
+          setSelectedVehicleId(defaultMach.id);
+          setOldDeviceId(defaultMach.gpsDeviceId || `dev-mach-${defaultMach.id.replace('mach-', '')}`);
+        }
+      }
+    };
+
+    fetchMachines();
   }, []);
 
   const handleVehicleChange = (vehicleId) => {
     setSelectedVehicleId(vehicleId);
-    const mach = mockMachines.find(m => m.id === vehicleId);
+    const mach = machines.find(m => (m._id || m.id) === vehicleId);
     if (mach) {
-      setOldDeviceId(mach.gpsDeviceId || `dev-mach-${mach.id.replace('mach-', '')}`);
+      const devId = mach.gpsDeviceId 
+        ? (mach.gpsDeviceId.deviceId || mach.gpsDeviceId) 
+        : `dev-mach-${(mach._id || mach.id).replace('mach-', '')}`;
+      setOldDeviceId(devId);
     } else {
       setOldDeviceId('');
     }
@@ -71,6 +99,7 @@ export const DeviceReplacement = () => {
       return;
     }
     setIsVerifying(true);
+    // Mimic checking device registration status
     setTimeout(() => {
       setIsVerifying(false);
       setIsVerified(true);
@@ -87,21 +116,40 @@ export const DeviceReplacement = () => {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmReplacement = () => {
+  const handleConfirmReplacement = async () => {
     setShowConfirmModal(false);
     setIsReplacing(true);
-    setTimeout(() => {
+
+    try {
+      const response = await api.post('/devices/replace', {
+        vehicleId: selectedVehicleId,
+        newDeviceId: newDeviceId,
+        reason: replacementReason === 'Other' ? customReason : replacementReason
+      });
+
+      if (response.data && response.data.success) {
+        const vehicle = machines.find(m => (m._id || m.id) === selectedVehicleId);
+        toast.success(`GPS Device successfully replaced on vehicle ${vehicle?.name || 'fleet vehicle'}!`);
+        
+        // Refresh machine list from live backend
+        const refreshResponse = await api.get('/machines');
+        if (refreshResponse.data && refreshResponse.data.success) {
+          setMachines(refreshResponse.data.data);
+        }
+      } else {
+        toast.error(response.data.message || 'GPS Device replacement failed.');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to replace GPS device.');
+    } finally {
       setIsReplacing(false);
-      const vehicle = mockMachines.find(m => m.id === selectedVehicleId);
-      toast.success(`GPS Device successfully replaced on vehicle ${vehicle?.name}!`);
-      // Reset form fields
       setNewDeviceId('');
       setCustomReason('');
       setIsVerified(false);
-    }, 1500);
+    }
   };
 
-  const currentSelectedMachine = mockMachines.find(m => m.id === selectedVehicleId);
+  const currentSelectedMachine = machines.find(m => (m._id || m.id) === selectedVehicleId);
 
   return (
     <div className="space-y-6">
@@ -145,8 +193,8 @@ export const DeviceReplacement = () => {
                   onChange={(e) => handleVehicleChange(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                 >
-                  {mockMachines.map((m) => (
-                    <option key={m.id} value={m.id}>
+                  {machines.map((m) => (
+                    <option key={m._id || m.id} value={m._id || m.id}>
                       {m.name} ({m.registration})
                     </option>
                   ))}
@@ -263,7 +311,7 @@ export const DeviceReplacement = () => {
 
         {/* Right Side: Vehicle Summary Info */}
         <div className="space-y-6">
-          <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-150 dark:border-emerald-950/20 rounded-3xl shadow-sm text-xs space-y-4">
+          <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-155 dark:border-emerald-950/20 rounded-3xl shadow-sm text-xs space-y-4">
             <h3 className="text-xs font-bold text-gray-450 uppercase tracking-wider flex items-center gap-1.5">
               <FaTractor className="text-emerald-500" />
               Target Vehicle Details

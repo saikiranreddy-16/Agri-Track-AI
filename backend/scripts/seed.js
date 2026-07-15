@@ -36,7 +36,7 @@ const seedDatabase = async () => {
     await FuelHistory.deleteMany({});
     await Maintenance.deleteMany({});
     await Alert.deleteMany({});
-    await ActivityLog.deleteMany({});
+    await ActivityLog.deleteMany({}, { bypassImmutable: true });
     await Farm.deleteMany({});
     await GPSDevice.deleteMany({});
     console.log('Database cleared.');
@@ -379,11 +379,11 @@ const seedDatabase = async () => {
       delete data.mockId;
       delete data.mockDriverId;
 
-      // 1. Create a GPS Device
-      // Generate Device ID format dev-mach-1
       const devId = `dev-${mockId}`;
       const gpsDevice = await GPSDevice.create({
         deviceId: devId,
+        imei: `imei-${devId}`,
+        simNumber: `sim-${devId}`,
         owner: rajesh._id,
         status: 'Active',
       });

@@ -1,12 +1,7 @@
-import Machine from '../models/machineModel.js';
-import Farm from '../models/farmModel.js';
-import Job from '../models/jobModel.js';
-import Alert from '../models/alertModel.js';
-import Maintenance from '../models/maintenanceModel.js';
-import { getOperationsMetrics } from '../services/reportService.js';
+import { collectAIContextData } from '../services/aiDataAccessService.js';
 import { successResponse } from '../utils/responseHandler.js';
 
-// @desc    Secure query to operations AI copilot (filters data by owner first)
+// @desc    Secure query to operations AI copilot (filters data by owner first via AI Data Access Layer)
 // @route   POST /api/v1/ai/query
 // @access  Private
 export const queryAI = async (req, res, next) => {
@@ -18,66 +13,17 @@ export const queryAI = async (req, res, next) => {
   }
 
   try {
-    const isFarmAdmin = req.user.role === 'Farm Admin';
-    const ownerId = isFarmAdmin ? req.user._id : null;
+    // Collect context parameters securely via the AI Data Access Service
+    const filteredJSON = await collectAIContextData(req.user);
 
-    // 1. Authenticate & Filter MongoDB records
-    let machinesQuery = {};
-    let farmsQuery = {};
-    if (ownerId) {
-      machinesQuery = { owner: ownerId };
-      farmsQuery = { owner: ownerId };
-    }
-
-    const machines = await Machine.find(machinesQuery).lean();
-    const machineIds = machines.map(m => m._id);
-
-    const farms = await Farm.find(farmsQuery).lean();
-    const jobs = await Job.find({ machineId: { $in: machineIds } }).lean();
-    const alerts = await Alert.find({ machineId: { $in: machineIds } }).lean();
-    const maintenance = await Maintenance.find({ machineId: { $in: machineIds } }).lean();
-
-    // Calculate dynamic reports
-    const reportToday = await getOperationsMetrics('Today', ownerId);
-    const reportWeekly = await getOperationsMetrics('Weekly', ownerId);
-    const reportMonthly = await getOperationsMetrics('Monthly', ownerId);
-
-    // 2. Create filtered JSON (This is the only data that would be sent to the AI model)
-    const filteredJSON = {
-      userRole: req.user.role,
-      userName: req.user.name,
-      farmsCount: farms.length,
-      machinesCount: machines.length,
-      activeFarms: farms.map(f => f.name),
-      machines: machines.map(m => ({
-        id: m._id,
-        name: m.name,
-        type: m.type,
-        chassisNumber: m.chassisNumber || m.registration,
-        status: m.status,
-        fuel: m.fuel,
-        battery: m.battery,
-        speed: m.speed,
-        workingHours: m.workingHours,
-        distanceTravelled: m.distanceTravelled,
-        currentAddress: m.currentAddress,
-      })),
-      jobs: jobs.map(j => ({ title: j.title, status: j.status, progress: j.progress })),
-      alerts: alerts.map(a => ({ type: a.type, message: a.message, priority: a.priority, status: a.status })),
-      maintenance: maintenance.map(m => ({ task: m.task, status: m.status, date: m.date })),
-      reportToday,
-      reportWeekly,
-      reportMonthly,
-    };
-
-    // 3. Process Prompt using ONLY the filtered JSON data (Simulating LLM behavior)
+    // Process Prompt using ONLY the filtered JSON data (Simulating LLM behavior)
     let aiResponseText = '';
     const cleanPrompt = prompt.toLowerCase();
 
     if (cleanPrompt.includes('work') || cleanPrompt.includes("today's work") || cleanPrompt.includes('today')) {
       const activeCount = filteredJSON.machines.filter(m => m.status === 'Working').length;
       const machineList = filteredJSON.machines
-        .map(m => `* **${m.name}** (${m.type}): Status: ${m.status}, Fuel: ${m.fuel}%, Engine: ${m.workingHours}h`)
+        .map(m => `* **${m.name}** (${m.type}): Status: ${m.status}, Fuel: ${m.fuel}%, Health: ${m.healthScore}%, Engine: ${m.workingHours}h`)
         .join('\n');
       
       aiResponseText = `Here is your operations summary for today:
@@ -142,6 +88,7 @@ ${lowFuelList || 'No vehicles are below 20% fuel capacity.'}`;
 * **Total Hours Logged**: ${top.workingHours} Hours active.
 * **Status**: ${top.status}
 * **Current Fuel Level**: ${top.fuel}%
+* **Overall Health**: ${top.healthScore}%
 * **Total Distance**: ${top.distanceTravelled} km`;
       }
     } else {

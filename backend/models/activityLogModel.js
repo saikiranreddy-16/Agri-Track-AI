@@ -36,5 +36,27 @@ const activityLogSchema = new mongoose.Schema(
   }
 );
 
+// Pre-save hook to prevent modifications of existing activity logs
+activityLogSchema.pre('save', function (next) {
+  if (!this.isNew) {
+    return next(new Error('Activity logs are immutable audit records and cannot be modified.'));
+  }
+  next();
+});
+
+// Query middleware to block update actions
+activityLogSchema.pre(['updateOne', 'findByIdAndUpdate', 'findOneAndUpdate', 'updateMany'], function (next) {
+  next(new Error('Activity logs are immutable audit records and cannot be updated.'));
+});
+
+// Query middleware to block delete actions
+activityLogSchema.pre(['deleteOne', 'deleteMany', 'findOneAndDelete', 'findByIdAndDelete', 'remove'], function (next) {
+  const options = this.getOptions();
+  if (options && options.bypassImmutable) {
+    return next();
+  }
+  next(new Error('Activity logs are immutable audit records and cannot be deleted.'));
+});
+
 const ActivityLog = mongoose.model('ActivityLog', activityLogSchema);
 export default ActivityLog;

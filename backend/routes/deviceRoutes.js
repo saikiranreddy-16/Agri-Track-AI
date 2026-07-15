@@ -1,14 +1,24 @@
 import express from 'express';
-import { activateDevice, replaceDevice } from '../controllers/deviceController.js';
+import {
+  activateDevice,
+  replaceDevice,
+  getDevices,
+  getDeviceById,
+  deleteDevice,
+} from '../controllers/deviceController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Both operations require login and Company Admin authority
 router.use(protect);
-router.use(authorize('Company Admin', 'Admin'));
 
-router.post('/activate', activateDevice);
-router.post('/replace', replaceDevice);
+// Shared authenticated endpoints (Controller isolates records based on role)
+router.get('/', getDevices);
+router.get('/:id', getDeviceById);
+
+// Company Admin/Admin only endpoints
+router.post('/activate', authorize('Company Admin', 'Admin'), activateDevice);
+router.post('/replace', authorize('Company Admin', 'Admin'), replaceDevice);
+router.delete('/:id', authorize('Company Admin', 'Admin'), deleteDevice);
 
 export default router;

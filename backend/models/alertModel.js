@@ -41,6 +41,7 @@ const alertSchema = new mongoose.Schema(
       type: String,
       enum: ['Active', 'Resolved'],
       default: 'Active',
+      index: true, // Indexed for performance
     },
   },
   {
