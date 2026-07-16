@@ -4,6 +4,7 @@ import app from './app.js';
 import connectDB from './config/db.js';
 import { initSocket } from './services/socketService.js';
 import { startGPSSimulator } from './services/gpsSimulator.js';
+import { startHeartbeatMonitor } from './services/heartbeatMonitor.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -24,6 +25,8 @@ server.listen(PORT, () => {
   console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
   // Start simulated machinery movement timer
   startGPSSimulator();
+  // Start heartbeat monitoring checks
+  startHeartbeatMonitor();
 });
 
 // Handle unhandled promise rejections (e.g. database connection errors)

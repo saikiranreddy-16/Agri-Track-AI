@@ -11,9 +11,39 @@ import { logActivity } from '../utils/activityLogger.js';
 // @access  Private
 export const getDevices = async (req, res, next) => {
   try {
-    const query = req.user.role === 'Farm Admin' ? { owner: req.user._id } : {};
-    const devices = await GPSDevice.find(query).populate('currentVehicle', 'name registration type');
-    return successResponse(res, 200, 'GPS Devices retrieved successfully', devices);
+    const { page = 1, limit = 10, search, status } = req.query;
+    let query = {};
+    
+    if (req.user.role === 'Farm Admin') {
+      query.owner = req.user._id;
+    } else {
+      if (status) {
+        query.activationStatus = status; // e.g. Activated or Deactivated
+      }
+      if (search) {
+        query.$or = [
+          { deviceId: { $regex: search, $options: 'i' } },
+          { imei: { $regex: search, $options: 'i' } },
+          { simNumber: { $regex: search, $options: 'i' } },
+        ];
+      }
+    }
+
+    const count = await GPSDevice.countDocuments(query);
+    const devices = await GPSDevice.find(query)
+      .populate('currentVehicle', 'name registration type')
+      .populate('owner', 'name phone email')
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return successResponse(res, 200, 'GPS Devices retrieved successfully', devices, {
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
+      totalResults: count
+    });
   } catch (error) {
     next(error);
   }
@@ -65,7 +95,7 @@ export const activateDevice = async (req, res, next) => {
 
   try {
     // 1. Validation rules
-    const existingDevice = await GPSDevice.findOne({ deviceId });
+    const existingDevice = await GPSDevice.findOne({ deviceId, isDeleted: { $in: [true, false] } });
     if (existingDevice) {
       res.status(400);
       return next(new Error('This GPS Device ID is already registered in the platform.'));
@@ -99,7 +129,7 @@ export const activateDevice = async (req, res, next) => {
       await logActivity(
         req.user._id,
         req.user.name,
-        'Customer Added',
+        'Customer Creation',
         `Registered customer ${customerName} (Phone: ${mobileNumber})`,
         req
       );
@@ -154,7 +184,7 @@ export const activateDevice = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Device Activated',
+      'Device Activation',
       `Activated Device ID ${deviceId} on vehicle ${displayName} (Chassis: ${chassisNumber}) for customer ${customerName}`,
       req
     );
@@ -192,10 +222,10 @@ export const replaceDevice = async (req, res, next) => {
     }
 
     // 2. Validate New Device ID is not already active
-    const existingDevice = await GPSDevice.findOne({ deviceId: newDeviceId });
-    if (existingDevice && existingDevice.activationStatus === 'Activated') {
+    const existingDevice = await GPSDevice.findOne({ deviceId: newDeviceId, isDeleted: { $in: [true, false] } });
+    if (existingDevice) {
       res.status(400);
-      return next(new Error('The new GPS Device ID is already active on another vehicle.'));
+      return next(new Error('The new GPS Device ID is already registered in the platform.'));
     }
 
     // 3. Find and Deactivate Old GPS Device(s) linked to this vehicle
@@ -262,7 +292,7 @@ export const replaceDevice = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Device Replaced',
+      'Device Replacement',
       `Replaced GPS hardware on vehicle ${vehicle.name}. New Device ID: ${newDeviceId}. Reason: ${reason}`,
       req
     );
@@ -301,12 +331,46 @@ export const deleteDevice = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Settings Changed',
+      'Settings Update',
       `Soft deleted GPS device (ID: ${device.deviceId})`,
       req
     );
 
     return successResponse(res, 200, 'GPS Device soft deleted successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get device replacement history
+// @route   GET /api/v1/devices/replacement-history
+// @access  Private (Company Admin only)
+export const getReplacementHistory = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, search } = req.query;
+    let query = {};
+    if (search) {
+      query.$or = [
+        { oldDeviceId: { $regex: search, $options: 'i' } },
+        { newDeviceId: { $regex: search, $options: 'i' } },
+        { replacementReason: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const count = await DeviceReplacementHistory.countDocuments(query);
+    const history = await DeviceReplacementHistory.find(query)
+      .populate('companyAdmin', 'name email')
+      .populate('previousVehicle', 'name registration')
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .sort({ replacementDate: -1 })
+      .lean();
+
+    return successResponse(res, 200, 'Device replacement history retrieved successfully', history, {
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
+      totalResults: count
+    });
   } catch (error) {
     next(error);
   }

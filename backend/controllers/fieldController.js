@@ -37,7 +37,7 @@ export const createField = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Field Added',
+      'Settings Update',
       `Registered new field block: ${name} (${area} ha, crop: ${crop})`,
       req
     );
@@ -73,7 +73,7 @@ export const updateField = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Field Updated',
+      'Settings Update',
       `Updated details/boundaries for field: ${updatedField.name}`,
       req
     );
@@ -105,7 +105,7 @@ export const deleteField = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Field Deleted',
+      'Settings Update',
       `Deleted field registry: ${field.name}`,
       req
     );

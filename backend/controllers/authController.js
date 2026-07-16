@@ -171,27 +171,19 @@ export const loginUser = async (req, res, next) => {
           return next(new Error('GPS Device verification failed. Device ID does not match any vehicle in your account.'));
         }
 
-        // Validate max trusted devices limit (Max 3 active Trusted ones)
+        // Automatically prune oldest trusted device if limit exceeded (Max 3 active Trusted ones)
         const activeTrustedCount = user.trustedDevices.filter(d => d.trustedStatus === 'Trusted').length;
-        if (activeTrustedCount >= 3) {
-          await LoginHistory.create({
-            user: user._id,
-            userPhone: phone,
-            time: new Date(),
-            device: deviceDisplayName,
-            browser,
-            ip,
-            success: false,
-          });
-          res.status(403);
-          return res.json({
-            success: false,
-            code: 'max_trusted_devices',
-            message: 'Maximum 3 trusted devices allowed. Please remove a trusted device before logging in.',
-            data: null,
-            pagination: null,
-            timestamp: new Date().toISOString(),
-          });
+        const isCurrentlyTrusted = user.trustedDevices.some(d => d.deviceId === clientDeviceId && d.trustedStatus === 'Trusted');
+        
+        if (!isCurrentlyTrusted && activeTrustedCount >= 3) {
+          const activeTrustedDevices = user.trustedDevices
+            .filter(d => d.trustedStatus === 'Trusted')
+            .sort((a, b) => new Date(a.loginTime) - new Date(b.loginTime));
+          
+          if (activeTrustedDevices.length > 0) {
+            const oldestDevice = activeTrustedDevices[0];
+            user.trustedDevices = user.trustedDevices.filter(d => d.deviceId !== oldestDevice.deviceId);
+          }
         }
 
         // Register or re-activate trusted device
@@ -299,7 +291,7 @@ export const changePIN = async (req, res, next) => {
     await logActivity(
       user._id,
       user.name,
-      'Password Changed',
+      'Password Change',
       `PIN updated successfully for user ${user.name}`,
       req
     );

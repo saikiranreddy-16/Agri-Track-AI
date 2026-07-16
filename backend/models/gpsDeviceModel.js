@@ -104,6 +104,23 @@ const gpsDeviceSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    lastSeen: {
+      type: Date,
+      default: null,
+    },
+    connectionStatus: {
+      type: String,
+      enum: ['Online', 'Offline'],
+      default: 'Offline',
+    },
+    batteryVoltage: {
+      type: Number,
+      default: null,
+    },
+    gsmSignalStrength: {
+      type: Number,
+      default: null,
+    },
     // Soft Delete
     isDeleted: {
       type: Boolean,

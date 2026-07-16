@@ -65,7 +65,7 @@ export const createFarm = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Settings Changed',
+      'Settings Update',
       `Registered new farm block: "${name}"`,
       req
     );
@@ -100,7 +100,7 @@ export const updateFarm = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Settings Changed',
+      'Settings Update',
       `Updated farm details for: "${farm.name}"`,
       req
     );
@@ -144,7 +144,7 @@ export const deleteFarm = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Settings Changed',
+      'Settings Update',
       `Soft deleted farm: "${farm.name}" and archived associated assets.`,
       req
     );

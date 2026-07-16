@@ -41,12 +41,42 @@ export const getMachineById = async (req, res, next) => {
 // @access  Private (Admin, Farm Owner, Manager)
 export const createMachine = async (req, res, next) => {
   try {
-    const { name, type, brand, model, registration, status, fuel, battery, assignedDriverId, location, nextService, currentAddress, photo, documents } = req.body;
+    const { 
+      name, type, brand, model, registration, chassisNumber, 
+      status, fuel, battery, assignedDriverId, location, 
+      nextService, currentAddress, photo, documents 
+    } = req.body;
 
-    const existingMachine = await Machine.findOne({ registration });
-    if (existingMachine) {
+    const checkChassis = chassisNumber || registration;
+    if (!checkChassis) {
+      res.status(400);
+      return next(new Error('Chassis number is required.'));
+    }
+
+    const existingRegistration = await Machine.findOne({ registration });
+    if (existingRegistration) {
       res.status(400);
       return next(new Error('Machine with this registration number already exists'));
+    }
+
+    const existingChassis = await Machine.findOne({ chassisNumber: checkChassis });
+    if (existingChassis) {
+      res.status(400);
+      return next(new Error('This Vehicle Chassis Number is already registered in the platform.'));
+    }
+
+    const owner = req.user.role === 'Farm Admin' ? req.user._id : (req.body.owner || req.user._id);
+
+    let farmId = req.body.farmId;
+    if (!farmId) {
+      let farm = await Farm.findOne({ owner });
+      if (!farm) {
+        farm = await Farm.create({
+          name: 'My Farm',
+          owner,
+        });
+      }
+      farmId = farm._id;
     }
 
     const machine = await Machine.create({
@@ -55,18 +85,20 @@ export const createMachine = async (req, res, next) => {
       brand,
       model,
       registration,
-      status,
-      fuel,
-      battery,
+      chassisNumber: checkChassis,
+      farmId,
+      owner,
+      status: status || 'Offline',
+      fuel: fuel !== undefined ? fuel : 100,
+      battery: battery !== undefined ? battery : 100,
       assignedDriverId: assignedDriverId || null,
-      location,
+      location: location || { lat: 30.902, lng: 75.853 },
       nextService,
       currentAddress,
       photo,
       documents,
     });
 
-    // Relational update: If driver assigned, update driver too
     if (assignedDriverId) {
       await Driver.findByIdAndUpdate(assignedDriverId, { assignedMachineId: machine._id });
     }
@@ -74,8 +106,8 @@ export const createMachine = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Machine Added',
-      `Registered new vehicle ${name} (${registration})`,
+      'Vehicle Creation',
+      `Registered new vehicle ${name} (Chassis: ${checkChassis})`,
       req
     );
 
@@ -136,7 +168,7 @@ export const updateMachine = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Machine Updated',
+      'Vehicle Update',
       `Updated details for machine: ${updatedMachine.name}`,
       req
     );
@@ -173,7 +205,7 @@ export const deleteMachine = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Machine Deleted',
+      'Vehicle Delete',
       `Deleted machine: ${machine.name} (${machine.registration})`,
       req
     );

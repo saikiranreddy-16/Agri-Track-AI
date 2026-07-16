@@ -40,3 +40,23 @@ export const loginValidator = [
   
   validateRequest,
 ];
+
+export const changePINValidator = [
+  body('currentPIN')
+    .notEmpty()
+    .withMessage('Current PIN is required')
+    .isNumeric()
+    .isLength({ min: 6, max: 6 })
+    .withMessage('Current PIN must be a 6-digit numeric code')
+    .trim(),
+  
+  body('newPIN')
+    .notEmpty()
+    .withMessage('New PIN is required')
+    .isNumeric()
+    .isLength({ min: 6, max: 6 })
+    .withMessage('New PIN must be a 6-digit numeric code')
+    .trim(),
+  
+  validateRequest,
+];

@@ -11,7 +11,23 @@ import { logActivity } from '../utils/activityLogger.js';
 // @access  Private (Company Admin only)
 export const getCustomers = async (req, res, next) => {
   try {
-    const users = await User.find({ role: 'Farm Admin' }).lean();
+    const { page = 1, limit = 10, search } = req.query;
+    let filter = { role: 'Farm Admin' };
+    
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const count = await User.countDocuments(filter);
+    const users = await User.find(filter)
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 })
+      .lean();
 
     const customerDetails = [];
 
@@ -23,8 +39,12 @@ export const getCustomers = async (req, res, next) => {
       // Determine last login across trusted devices
       let lastLoginDate = null;
       if (customer.trustedDevices && customer.trustedDevices.length > 0) {
-        const logins = customer.trustedDevices.map(d => new Date(d.lastLogin).getTime());
-        lastLoginDate = new Date(Math.max(...logins));
+        const logins = customer.trustedDevices
+          .filter(d => d.lastLogin)
+          .map(d => new Date(d.lastLogin).getTime());
+        if (logins.length > 0) {
+          lastLoginDate = new Date(Math.max(...logins));
+        }
       }
 
       customerDetails.push({
@@ -44,7 +64,12 @@ export const getCustomers = async (req, res, next) => {
       });
     }
 
-    return successResponse(res, 200, 'Customers retrieved successfully', customerDetails);
+    return successResponse(res, 200, 'Customers retrieved successfully', customerDetails, {
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
+      totalResults: count
+    });
   } catch (error) {
     next(error);
   }
@@ -70,7 +95,7 @@ export const resetCustomerPassword = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Customer PIN Reset',
+      'Settings Update',
       `Reset security PIN code for customer: ${customer.name} (Phone: ${customer.phone})`,
       req
     );
@@ -100,7 +125,7 @@ export const resetTrustedDevices = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Customer Trusted Devices Reset',
+      'Settings Update',
       `Cleared all registered trusted login devices for customer: ${customer.name}`,
       req
     );
@@ -151,7 +176,7 @@ export const deleteCustomer = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Settings Changed',
+      'Settings Update',
       `Soft deleted customer ${customer.name} (Phone: ${customer.phone}) and archived associated farms, vehicles, and tracking hardware.`,
       req
     );
@@ -198,7 +223,7 @@ export const requestMobileChange = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Settings Changed',
+      'Settings Update',
       `Submitted mobile change request from ${req.user.phone} to ${newMobile}`,
       req
     );
@@ -263,7 +288,7 @@ export const approveMobileChange = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Settings Changed',
+      'Settings Update',
       `Approved mobile change request for ${user.name}. Updated phone from ${request.currentMobile} to ${request.requestedMobile}`,
       req
     );
@@ -307,12 +332,103 @@ export const rejectMobileChange = async (req, res, next) => {
     await logActivity(
       req.user._id,
       req.user.name,
-      'Settings Changed',
+      'Settings Update',
       `Rejected mobile change request for ${customerName} (from ${request.currentMobile} to ${request.requestedMobile}). Reason: ${request.rejectionReason}`,
       req
     );
 
     return successResponse(res, 200, 'Mobile change request rejected.', request);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get customer details
+// @route   GET /api/v1/customers/:id
+// @access  Private (Company Admin only)
+export const getCustomerDetails = async (req, res, next) => {
+  try {
+    const customer = await User.findById(req.params.id).lean();
+    if (!customer || customer.role !== 'Farm Admin') {
+      res.status(404);
+      return next(new Error('Customer not found.'));
+    }
+
+    const farms = await Farm.find({ owner: customer._id }).lean();
+    const vehicles = await Machine.find({ owner: customer._id }).lean();
+    const devices = await GPSDevice.find({ owner: customer._id }).lean();
+
+    return successResponse(res, 200, 'Customer details retrieved successfully', {
+      customer,
+      farms,
+      vehicles,
+      devices,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get customer vehicles (paginated and searchable)
+// @route   GET /api/v1/customers/:id/vehicles
+// @access  Private (Company Admin only)
+export const getCustomerVehicles = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, search } = req.query;
+    let filter = { owner: req.params.id };
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { type: { $regex: search, $options: 'i' } },
+        { registration: { $regex: search, $options: 'i' } },
+        { chassisNumber: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const count = await Machine.countDocuments(filter);
+    const vehicles = await Machine.find(filter)
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return successResponse(res, 200, 'Customer vehicles retrieved successfully', vehicles, {
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
+      totalResults: count,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get customer farms (paginated and searchable)
+// @route   GET /api/v1/customers/:id/farms
+// @access  Private (Company Admin only)
+export const getCustomerFarms = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, search } = req.query;
+    let filter = { owner: req.params.id };
+
+    if (search) {
+      filter.name = { $regex: search, $options: 'i' };
+    }
+
+    const count = await Farm.countDocuments(filter);
+    const farms = await Farm.find(filter)
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return successResponse(res, 200, 'Customer farms retrieved successfully', farms, {
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
+      totalResults: count,
+    });
   } catch (error) {
     next(error);
   }

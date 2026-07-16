@@ -43,8 +43,15 @@ export const hardwareGPSUpload = async (req, res, next) => {
     gpsDevice.lastSeen = logTime;
     gpsDevice.lastHeartbeat = logTime;
     gpsDevice.currentStatus = 'Online';
-    if (battery !== undefined) gpsDevice.battery = battery;
-    if (signalStrength !== undefined) gpsDevice.signalStrength = signalStrength;
+    gpsDevice.connectionStatus = 'Online';
+    if (battery !== undefined) {
+      gpsDevice.battery = battery;
+      gpsDevice.batteryVoltage = battery;
+    }
+    if (signalStrength !== undefined) {
+      gpsDevice.signalStrength = signalStrength;
+      gpsDevice.gsmSignalStrength = signalStrength;
+    }
     if (network) gpsDevice.network = network;
     await gpsDevice.save();
 
@@ -121,9 +128,17 @@ export const hardwareHeartbeat = async (req, res, next) => {
 
     gpsDevice.lastHeartbeat = new Date();
     gpsDevice.lastCommunicationTime = new Date();
+    gpsDevice.lastSeen = new Date();
     gpsDevice.currentStatus = 'Online';
-    if (battery !== undefined) gpsDevice.battery = battery;
-    if (signalStrength !== undefined) gpsDevice.signalStrength = signalStrength;
+    gpsDevice.connectionStatus = 'Online';
+    if (battery !== undefined) {
+      gpsDevice.battery = battery;
+      gpsDevice.batteryVoltage = battery;
+    }
+    if (signalStrength !== undefined) {
+      gpsDevice.signalStrength = signalStrength;
+      gpsDevice.gsmSignalStrength = signalStrength;
+    }
     if (network) gpsDevice.network = network;
     await gpsDevice.save();
 
