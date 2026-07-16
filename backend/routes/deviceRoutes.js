@@ -16,9 +16,9 @@ router.use(protect);
 router.get('/', getDevices);
 router.get('/:id', getDeviceById);
 
-// Company Admin/Admin only endpoints
-router.post('/activate', authorize('Company Admin', 'Admin'), activateDevice);
-router.post('/replace', authorize('Company Admin', 'Admin'), replaceDevice);
-router.delete('/:id', authorize('Company Admin', 'Admin'), deleteDevice);
+// Company Admin only endpoints
+router.post('/activate', authorize('Company Admin'), activateDevice);
+router.post('/replace', authorize('Company Admin'), replaceDevice);
+router.delete('/:id', authorize('Company Admin'), deleteDevice);
 
 export default router;

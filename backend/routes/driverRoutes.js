@@ -15,12 +15,12 @@ router.use(protect);
 router
   .route('/')
   .get(getDrivers)
-  .post(authorize('Admin', 'Farm Owner', 'Manager'), createDriver);
+  .post(authorize('Company Admin', 'Farm Admin'), createDriver);
 
 router
   .route('/:id')
   .get(getDriverById)
-  .put(authorize('Admin', 'Farm Owner', 'Manager'), updateDriver)
-  .delete(authorize('Admin', 'Farm Owner'), deleteDriver);
+  .put(authorize('Company Admin', 'Farm Admin'), updateDriver)
+  .delete(authorize('Company Admin', 'Farm Admin'), deleteDriver);
 
 export default router;

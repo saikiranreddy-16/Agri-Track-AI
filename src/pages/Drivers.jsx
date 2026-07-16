@@ -129,14 +129,12 @@ export const Drivers = () => {
           </p>
         </div>
 
-        {user?.role !== 'Operator' && (
-          <button
-            onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
-          >
-            <FaPlus className="text-xs" /> Register Driver
-          </button>
-        )}
+        <button
+          onClick={handleOpenAdd}
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+        >
+          <FaPlus className="text-xs" /> Register Driver
+        </button>
       </div>
 
       {/* Search and Filters */}
@@ -221,24 +219,20 @@ export const Drivers = () => {
                 >
                   <FaEye /> View Profile
                 </Link>
-                {user?.role !== 'Operator' && (
-                  <>
-                    <button
-                      onClick={() => handleOpenEdit(driver)}
-                      className="p-2 border border-gray-200 dark:border-emerald-905/30 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-emerald-950/40 transition-colors"
-                      title="Edit Profile"
-                    >
-                      <FaPen />
-                    </button>
-                    <button
-                      onClick={() => handleOpenDelete(driver)}
-                      className="p-2 border border-red-200 dark:border-red-950/30 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                      title="De-register Operator"
-                    >
-                      <FaTrash />
-                    </button>
-                  </>
-                )}
+                <button
+                  onClick={() => handleOpenEdit(driver)}
+                  className="p-2 border border-gray-200 dark:border-emerald-905/30 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-emerald-950/40 transition-colors"
+                  title="Edit Profile"
+                >
+                  <FaPen />
+                </button>
+                <button
+                  onClick={() => handleOpenDelete(driver)}
+                  className="p-2 border border-red-200 dark:border-red-950/30 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                  title="De-register Operator"
+                >
+                  <FaTrash />
+                </button>
               </div>
             </div>
           </motion.div>

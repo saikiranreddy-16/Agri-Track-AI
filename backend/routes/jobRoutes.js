@@ -14,11 +14,11 @@ router.use(protect);
 router
   .route('/')
   .get(getJobs)
-  .post(authorize('Admin', 'Farm Owner', 'Manager'), createJob);
+  .post(authorize('Company Admin', 'Farm Admin'), createJob);
 
 router
   .route('/:id')
-  .put(protect, updateJob) // Allows operator to update progress as well
-  .delete(authorize('Admin', 'Farm Owner'), deleteJob);
+  .put(authorize('Company Admin', 'Farm Admin'), updateJob) // Realigned from Operator / Admin Owner
+  .delete(authorize('Company Admin', 'Farm Admin'), deleteJob);
 
 export default router;

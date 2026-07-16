@@ -14,11 +14,11 @@ router.use(protect);
 router
   .route('/')
   .get(getFields)
-  .post(authorize('Admin', 'Farm Owner', 'Manager'), createField);
+  .post(authorize('Company Admin', 'Farm Admin'), createField);
 
 router
   .route('/:id')
-  .put(authorize('Admin', 'Farm Owner', 'Manager'), updateField)
-  .delete(authorize('Admin', 'Farm Owner'), deleteField);
+  .put(authorize('Company Admin', 'Farm Admin'), updateField)
+  .delete(authorize('Company Admin', 'Farm Admin'), deleteField);
 
 export default router;

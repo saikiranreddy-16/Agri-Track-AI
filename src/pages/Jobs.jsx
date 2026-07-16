@@ -115,14 +115,12 @@ export const Jobs = () => {
           </p>
         </div>
 
-        {user?.role !== 'Operator' && (
-          <button
-            onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
-          >
-            <FaPlus className="text-xs" /> Dispatch New Job
-          </button>
-        )}
+        <button
+          onClick={handleOpenAdd}
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+        >
+          <FaPlus className="text-xs" /> Dispatch New Job
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.use(protect);
 
-router.get('/', authorize('Admin', 'Farm Owner'), getActivityLogs);
+router.get('/', authorize('Company Admin', 'Farm Admin'), getActivityLogs);
 
 export default router;

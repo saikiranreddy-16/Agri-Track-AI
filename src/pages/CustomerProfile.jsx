@@ -213,24 +213,70 @@ export const CustomerProfile = () => {
           <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-150 dark:border-emerald-950/20 rounded-3xl shadow-sm space-y-4">
             <h3 className="text-xs font-bold text-gray-450 uppercase tracking-wider flex items-center gap-2">
               <FaTractor className="text-emerald-500" />
-              Registered Vehicles
+              Registered Vehicles & GPS Kits
             </h3>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {customer.vehicles.map((vehicle) => (
-                <div key={vehicle.id} className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/15 rounded-2xl flex flex-col justify-between space-y-3">
-                  <div>
-                    <span className="text-[9px] uppercase font-bold text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded inline-block mb-1.5">
-                      {vehicle.type}
-                    </span>
-                    <h4 className="text-xs font-black dark:text-white leading-tight">{vehicle.name}</h4>
+              {customer.vehicles.map((vehicle) => {
+                let gpsStatus = 'Online';
+                let lastPing = '2 mins ago';
+                let simStatus = 'Active';
+                
+                if (vehicle.status === 'Offline') {
+                  gpsStatus = 'Offline';
+                  lastPing = '18 hours ago';
+                  simStatus = 'Active';
+                } else if (vehicle.status === 'Maintenance') {
+                  gpsStatus = 'Replacement Pending';
+                  lastPing = '2 days ago';
+                  simStatus = 'Suspended';
+                }
+                
+                const gpsKitId = 'KIT-' + vehicle.id.toUpperCase();
+                
+                return (
+                  <div key={vehicle.id} className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/15 rounded-2xl flex flex-col justify-between space-y-4">
+                    <div>
+                      <div className="flex justify-between items-start">
+                        <span className="text-[8px] uppercase font-black text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded">
+                          {vehicle.type}
+                        </span>
+                        <span className="text-[10px] font-mono text-gray-450">{vehicle.id}</span>
+                      </div>
+                      <h4 className="text-xs font-black dark:text-white leading-tight mt-1.5">{vehicle.name}</h4>
+                    </div>
+                    
+                    {/* GPS Kit Telemetry Panel */}
+                    <div className="p-2.5 bg-white dark:bg-emerald-950/20 rounded-xl border border-gray-100 dark:border-emerald-950/30 text-[10px] space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400 font-bold uppercase tracking-wider text-[8px]">GPS Kit ID</span>
+                        <span className="font-mono text-gray-700 dark:text-gray-300 font-black">{gpsKitId}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-400 font-bold uppercase tracking-wider text-[8px]">SIM Status</span>
+                        <span className={`px-1 rounded-sm text-[8px] font-black uppercase ${
+                          simStatus === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-750'
+                        }`}>{simStatus}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400 font-bold uppercase tracking-wider text-[8px]">Last GPS Ping</span>
+                        <span className="font-semibold text-gray-600 dark:text-gray-450">{lastPing}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pt-2.5 border-t border-gray-150 dark:border-emerald-950/10">
+                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Kit Status</span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                        gpsStatus === 'Online' ? 'bg-emerald-50 text-emerald-700 border border-emerald-250 dark:bg-emerald-950/40 dark:text-emerald-400' :
+                        gpsStatus === 'Offline' ? 'bg-red-50 text-red-700 border border-red-250 dark:bg-red-950/40 dark:text-red-400' :
+                        'bg-orange-50 text-orange-700 border border-orange-250 dark:bg-orange-950/40 dark:text-orange-400'
+                      }`}>
+                        {gpsStatus}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-150 dark:border-emerald-950/10">
-                    <span className="text-[10px] font-bold text-gray-400">{vehicle.id}</span>
-                    {renderStatusBadge(vehicle.status)}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

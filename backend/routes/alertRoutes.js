@@ -7,6 +7,6 @@ const router = express.Router();
 router.use(protect);
 
 router.get('/', getAlerts);
-router.put('/:id/resolve', authorize('Admin', 'Farm Owner', 'Manager', 'Mechanic'), resolveAlert);
+router.put('/:id/resolve', authorize('Company Admin', 'Farm Admin'), resolveAlert);
 
 export default router;

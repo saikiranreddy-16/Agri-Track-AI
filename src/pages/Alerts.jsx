@@ -197,14 +197,12 @@ export const Alerts = () => {
                 <div className="mt-6 pt-3.5 border-t border-gray-100 dark:border-emerald-950/10 flex gap-2 justify-end">
                   {!isResolved ? (
                     <>
-                      {user?.role !== 'Operator' && (
-                        <button
-                          onClick={() => handleResolve(alert.id)}
-                          className="flex items-center gap-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer"
-                        >
-                          <FaCheckCircle className="text-[10px]" /> Resolve Code
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleResolve(alert.id)}
+                        className="flex items-center gap-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer"
+                      >
+                        <FaCheckCircle className="text-[10px]" /> Resolve Code
+                      </button>
                       <button
                         onClick={() => handleDelete(alert.id)}
                         className="px-4 py-2 border border-gray-200 dark:border-emerald-905/30 rounded-xl font-bold text-xs text-gray-500 hover:bg-gray-50"

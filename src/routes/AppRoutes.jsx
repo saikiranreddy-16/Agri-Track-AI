@@ -10,10 +10,6 @@ import { LiveTracking } from '../pages/LiveTracking';
 import { GPSHistory } from '../pages/GPSHistory';
 import { Machines } from '../pages/Machines';
 import { MachineDetail } from '../pages/MachineDetail';
-import { Drivers } from '../pages/Drivers';
-import { DriverDetail } from '../pages/DriverDetail';
-import { Fields } from '../pages/Fields';
-import { Jobs } from '../pages/Jobs';
 import { Reports } from '../pages/Reports';
 import { Alerts } from '../pages/Alerts';
 import { Maintenance } from '../pages/Maintenance';
@@ -29,6 +25,22 @@ import { NotFound } from '../pages/NotFound';
 import { Unauthorized } from '../pages/Unauthorized';
 import { ServerError } from '../pages/ServerError';
 import { PATHS } from '../constants';
+import { useAuth } from '../context/AuthContext';
+
+// Protected route wrapper component
+const RoleProtectedRoute = ({ allowedRoles, children }) => {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated || !user) {
+    return <Navigate to={PATHS.LOGIN} replace />;
+  }
+  
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+  
+  return children;
+};
 
 export const AppRoutes = () => {
   return (
@@ -40,28 +52,65 @@ export const AppRoutes = () => {
       </Route>
 
       {/* Protected dashboard system pages */}
-      <Route element={<DashboardLayout />}>
+      <Route element={
+        <RoleProtectedRoute>
+          <DashboardLayout />
+        </RoleProtectedRoute>
+      }>
+        {/* Shared / Accessible by both */}
         <Route path={PATHS.DASHBOARD} element={<Dashboard />} />
-        <Route path={PATHS.FLEET_OVERVIEW} element={<FleetOverview />} />
         <Route path={PATHS.TRACKING} element={<LiveTracking />} />
-        <Route path={PATHS.GPS_HISTORY} element={<GPSHistory />} />
-        <Route path={PATHS.MACHINES} element={<Machines />} />
-        <Route path={PATHS.MACHINE_DETAIL} element={<MachineDetail />} />
-        <Route path={PATHS.DRIVERS} element={<Drivers />} />
-        <Route path={PATHS.DRIVER_DETAIL} element={<DriverDetail />} />
-        <Route path={PATHS.FIELDS} element={<Fields />} />
-        <Route path={PATHS.JOBS} element={<Jobs />} />
         <Route path={PATHS.REPORTS} element={<Reports />} />
-        <Route path={PATHS.ALERTS} element={<Alerts />} />
-        <Route path={PATHS.MAINTENANCE} element={<Maintenance />} />
         <Route path={PATHS.AI_ASSISTANT} element={<AIAssistant />} />
         <Route path={PATHS.SETTINGS} element={<Settings />} />
         <Route path={PATHS.HELP} element={<Help />} />
-        <Route path={PATHS.CUSTOMER_MANAGEMENT} element={<CustomerManagement />} />
-        <Route path={PATHS.CUSTOMER_PROFILE} element={<CustomerProfile />} />
-        <Route path={PATHS.DEVICE_ACTIVATION} element={<DeviceActivation />} />
-        <Route path={PATHS.DEVICE_REPLACEMENT} element={<DeviceReplacement />} />
         <Route path={PATHS.NOTIFICATIONS} element={<Notifications />} />
+        <Route path={PATHS.ALERTS} element={<Alerts />} />
+        <Route path={PATHS.MAINTENANCE} element={<Maintenance />} />
+
+        {/* Company Admin Only */}
+        <Route path={PATHS.FLEET_OVERVIEW} element={
+          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+            <FleetOverview />
+          </RoleProtectedRoute>
+        } />
+        <Route path={PATHS.CUSTOMER_MANAGEMENT} element={
+          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+            <CustomerManagement />
+          </RoleProtectedRoute>
+        } />
+        <Route path={PATHS.CUSTOMER_PROFILE} element={
+          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+            <CustomerProfile />
+          </RoleProtectedRoute>
+        } />
+        <Route path={PATHS.DEVICE_ACTIVATION} element={
+          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+            <DeviceActivation />
+          </RoleProtectedRoute>
+        } />
+        <Route path={PATHS.DEVICE_REPLACEMENT} element={
+          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+            <DeviceReplacement />
+          </RoleProtectedRoute>
+        } />
+
+        {/* Farm Admin Only */}
+        <Route path={PATHS.MACHINES} element={
+          <RoleProtectedRoute allowedRoles={['Farm Admin']}>
+            <Machines />
+          </RoleProtectedRoute>
+        } />
+        <Route path={PATHS.MACHINE_DETAIL} element={
+          <RoleProtectedRoute allowedRoles={['Farm Admin']}>
+            <MachineDetail />
+          </RoleProtectedRoute>
+        } />
+        <Route path={PATHS.GPS_HISTORY} element={
+          <RoleProtectedRoute allowedRoles={['Farm Admin']}>
+            <GPSHistory />
+          </RoleProtectedRoute>
+        } />
       </Route>
 
       {/* Error views (Unprotected / Standalone) */}

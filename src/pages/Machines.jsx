@@ -225,14 +225,12 @@ export const Machines = () => {
         </div>
 
         {/* Create Action button: Disabled for viewers */}
-        {user?.role !== 'Operator' && (
-          <button
-            onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
-          >
-            <FaPlus className="text-xs" /> Register Vehicle
-          </button>
-        )}
+        <button
+          onClick={handleOpenAdd}
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+        >
+          <FaPlus className="text-xs" /> Register Vehicle
+        </button>
       </div>
 
       {/* Filter and Search Panel */}
@@ -376,24 +374,20 @@ export const Machines = () => {
                     <FaEye /> View
                   </Link>
 
-                  {user?.role !== 'Operator' && (
-                    <>
-                      <button
-                        onClick={() => handleOpenEdit(machine)}
-                        className="p-2 border border-gray-200 dark:border-emerald-905/30 rounded-xl text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-emerald-950/40 transition-colors"
-                        title="Edit Machine"
-                      >
-                        <FaPen />
-                      </button>
-                      <button
-                        onClick={() => handleOpenDelete(machine)}
-                        className="p-2 border border-red-200 dark:border-red-950/30 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                        title="De-register"
-                      >
-                        <FaTrash />
-                      </button>
-                    </>
-                  )}
+                  <button
+                    onClick={() => handleOpenEdit(machine)}
+                    className="p-2 border border-gray-200 dark:border-emerald-905/30 rounded-xl text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-emerald-950/40 transition-colors"
+                    title="Edit Machine"
+                  >
+                    <FaPen />
+                  </button>
+                  <button
+                    onClick={() => handleOpenDelete(machine)}
+                    className="p-2 border border-red-200 dark:border-red-950/30 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                    title="De-register"
+                  >
+                    <FaTrash />
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -445,24 +439,20 @@ export const Machines = () => {
                     >
                       <FaEye />
                     </Link>
-                    {user?.role !== 'Operator' && (
-                      <>
-                        <button
-                          onClick={() => handleOpenEdit(machine)}
-                          className="p-1.5 text-blue-500 hover:text-blue-700"
-                          title="Edit"
-                        >
-                          <FaPen />
-                        </button>
-                        <button
-                          onClick={() => handleOpenDelete(machine)}
-                          className="p-1.5 text-red-500 hover:text-red-700"
-                          title="Delete"
-                        >
-                          <FaTrash />
-                        </button>
-                      </>
-                    )}
+                    <button
+                      onClick={() => handleOpenEdit(machine)}
+                      className="p-1.5 text-blue-500 hover:text-blue-700"
+                      title="Edit"
+                    >
+                      <FaPen />
+                    </button>
+                    <button
+                      onClick={() => handleOpenDelete(machine)}
+                      className="p-1.5 text-red-500 hover:text-red-700"
+                      title="Delete"
+                    >
+                      <FaTrash />
+                    </button>
                   </td>
                 </tr>
               ))}

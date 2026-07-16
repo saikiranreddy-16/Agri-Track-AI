@@ -67,7 +67,7 @@ export const loginUser = async (req, res, next) => {
         success: !!(user && passwordMatch),
       });
 
-      if (user && (user.role === 'Company Admin' || user.role === 'Admin') && passwordMatch) {
+      if (user && user.role === 'Company Admin' && passwordMatch) {
         const token = generateToken(res, user._id);
         
         await logActivity(user._id, user.name, 'User Logged In', `Company Admin logged in from IP ${ip}`, req);
@@ -109,7 +109,7 @@ export const loginUser = async (req, res, next) => {
         return next(new Error('Invalid mobile number or PIN'));
       }
 
-      if (user.role !== 'Farm Admin' && user.role !== 'Farm Owner' && user.role !== 'Operator') {
+      if (user.role !== 'Farm Admin') {
         await LoginHistory.create({
           user: user._id,
           userPhone: phone,

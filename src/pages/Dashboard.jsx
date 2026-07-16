@@ -10,9 +10,10 @@ import {
   FaGasPump, FaClock, FaRoute, FaArrowRight, FaTasks, FaPlus,
   FaChartBar, FaTools, FaRobot
 } from 'react-icons/fa';
-import { mockMachines, mockDrivers, mockJobs } from '../data/mockData';
+import { mockMachines, mockCustomers } from '../data/mockData';
 import { useUIState } from '../context/UIStateContext';
 import { PATHS } from '../constants';
+import { useAuth } from '../context/AuthContext';
 
 const areaData = [
   { day: 'Mon', acres: 210, fuel: 140 },
@@ -71,13 +72,15 @@ export const Dashboard = () => {
     }
   };
 
+  const { user } = useAuth();
+  const isCompanyAdmin = user?.role === 'Company Admin';
+
   // Dynamic calculations based on mock data
   const totalMachines = mockMachines.length;
   const activeMachines = mockMachines.filter(m => m.status === 'Working' || m.status === 'Idle').length;
   const offlineMachines = mockMachines.filter(m => m.status === 'Offline').length;
   const workingMachines = mockMachines.filter(m => m.status === 'Working').length;
   const maintenanceMachines = mockMachines.filter(m => m.status === 'Maintenance').length;
-  const totalDrivers = mockDrivers.length;
   
   const totalAreaCovered = 582; // hectares
   const totalFuelUsed = 3180; // Litres
@@ -89,45 +92,53 @@ export const Dashboard = () => {
     m.type.toLowerCase().includes(globalSearchQuery.toLowerCase())
   );
 
-  const filteredJobs = mockJobs.filter(j => 
-    j.title.toLowerCase().includes(globalSearchQuery.toLowerCase())
+  const filteredCustomers = mockCustomers.filter(c => 
+    c.name.toLowerCase().includes(globalSearchQuery.toLowerCase()) || 
+    c.company.toLowerCase().includes(globalSearchQuery.toLowerCase())
   );
 
   const stats = [
     { title: 'Total Machines', value: totalMachines, sub: `${activeMachines} Active`, icon: FaTractor, color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/20' },
     { title: 'Working Machines', value: workingMachines, sub: `${activeMachines - workingMachines} Idle, ${maintenanceMachines} Maint.`, icon: FaTractor, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20' },
     { title: 'Offline Machines', value: offlineMachines, sub: 'Needs Inspection', icon: FaExclamationTriangle, color: 'text-red-500 bg-red-50 dark:bg-red-950/20' },
-    { title: 'Active Drivers', value: totalDrivers, sub: '5 On Shift', icon: FaUserTie, color: 'text-purple-500 bg-purple-50 dark:bg-purple-950/20' },
+    { title: 'Farms Connected', value: '3 Farms', sub: 'Ludhiana Sector', icon: FaMap, color: 'text-purple-500 bg-purple-50 dark:bg-purple-950/20' },
     { title: 'Area Covered Today', value: `${totalAreaCovered} ha`, sub: '+12% from yesterday', icon: FaMap, color: 'text-orange-500 bg-orange-50 dark:bg-orange-950/20' },
     { title: 'Fuel Used Today', value: `${totalFuelUsed} L`, sub: 'Avg 5.4 L/ha', icon: FaGasPump, color: 'text-yellow-500 bg-yellow-50 dark:bg-yellow-950/20' },
-    { title: 'Working Hours Today', value: `${totalHoursWorked} hrs`, sub: 'Across 6 active crews', icon: FaClock, color: 'text-sky-500 bg-sky-50 dark:bg-sky-950/20' },
+    { title: 'Working Hours Today', value: `${totalHoursWorked} hrs`, sub: 'Avg 8.3 hrs/vehicle', icon: FaClock, color: 'text-sky-500 bg-sky-50 dark:bg-sky-950/20' },
     { title: 'Recent Warnings', value: alerts.filter(a => a.status === 'Active').length, sub: 'Active GPS alerts', icon: FaExclamationTriangle, color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/20' }
   ];
 
-  const quickActions = [
-    { name: 'Start Job', path: PATHS.JOBS, icon: FaPlus, bgClass: 'bg-emerald-500 shadow-emerald-500/20 shadow-md' },
-    { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute, bgClass: 'bg-blue-500 shadow-blue-500/20 shadow-md' },
-    { name: 'Reports', path: PATHS.REPORTS, icon: FaChartBar, bgClass: 'bg-indigo-500 shadow-indigo-500/20 shadow-md' },
-    { name: 'Machine List', path: PATHS.MACHINES, icon: FaTractor, bgClass: 'bg-amber-500 shadow-amber-500/20 shadow-md' },
-    { name: 'Drivers', path: PATHS.DRIVERS, icon: FaUserTie, bgClass: 'bg-purple-500 shadow-purple-500/20 shadow-md' },
-    { name: 'Maintenance', path: PATHS.MAINTENANCE, icon: FaTools, bgClass: 'bg-red-500 shadow-red-500/20 shadow-md' },
-    { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, bgClass: 'bg-teal-500 shadow-teal-500/20 shadow-md' }
-  ];
+  const quickActions = isCompanyAdmin
+    ? [
+        { name: 'Customer Management', path: PATHS.CUSTOMER_MANAGEMENT, icon: FaUserTie, bgClass: 'bg-emerald-500 shadow-emerald-500/20 shadow-md' },
+        { name: 'Device Activation', path: PATHS.DEVICE_ACTIVATION, icon: FaTractor, bgClass: 'bg-blue-500 shadow-blue-500/20 shadow-md' },
+        { name: 'Device Replacement', path: PATHS.DEVICE_REPLACEMENT, icon: FaTools, bgClass: 'bg-red-500 shadow-red-500/20 shadow-md' },
+        { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute, bgClass: 'bg-indigo-500 shadow-indigo-500/20 shadow-md' },
+        { name: 'Reports', path: PATHS.REPORTS, icon: FaChartBar, bgClass: 'bg-amber-500 shadow-amber-500/20 shadow-md' },
+        { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, bgClass: 'bg-teal-500 shadow-teal-500/20 shadow-md' }
+      ]
+    : [
+        { name: 'My Vehicles', path: PATHS.MACHINES, icon: FaTractor, bgClass: 'bg-amber-500 shadow-amber-500/20 shadow-md' },
+        { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute, bgClass: 'bg-blue-500 shadow-blue-500/20 shadow-md' },
+        { name: 'Reports', path: PATHS.REPORTS, icon: FaChartBar, bgClass: 'bg-indigo-500 shadow-indigo-500/20 shadow-md' },
+        { name: 'Maintenance', path: PATHS.MAINTENANCE, icon: FaTools, bgClass: 'bg-red-500 shadow-red-500/20 shadow-md' },
+        { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, bgClass: 'bg-teal-500 shadow-teal-500/20 shadow-md' }
+      ];
 
   // Activities Feed
   const recentActivities = [
-    { id: 1, text: 'David Chen started job Sowing Barley', time: '10 mins ago', type: 'Job' },
+    { id: 1, text: 'Mahindra tractor completed daily route checklist', time: '10 mins ago', type: 'System' },
     { id: 2, text: 'John Deere 8R fuel dropped below 15%', time: '15 mins ago', type: 'Alert' },
-    { id: 3, text: 'Thomas Mueller completed Soil Tilling Sector 4', time: '1 hour ago', type: 'Job' },
-    { id: 4, text: 'Sarah Jenkins clocked in for harvester Shift', time: '3 hours ago', type: 'Driver' },
+    { id: 3, text: 'Swaraj 963 FE oil pressure nominal', time: '1 hour ago', type: 'System' },
+    { id: 4, text: 'Harvester active telemetry ping success', time: '3 hours ago', type: 'GPS' },
     { id: 5, text: 'Massey Ferguson registered Engine Temp alert', time: '4 hours ago', type: 'Alert' }
   ];
 
   const recentlyActiveMachines = mockMachines.slice(0, 4);
   const recentLogins = [
     { name: 'Gurpreet Singh', role: 'Farm Admin', device: 'OnePlus 11 5G (Android)', time: 'Today, 10:14 AM' },
-    { name: 'Ramesh Kumar', role: 'Operator', device: 'Chrome (Windows 11)', time: 'Today, 08:30 AM' },
-    { name: 'Sanjay Reddy', role: 'Company Admin', device: 'Safari (MacBook Pro)', time: 'Yesterday, 04:30 PM' }
+    { name: 'Ramesh Kumar', role: 'Farm Admin', device: 'Chrome (Windows 11)', time: 'Today, 08:30 AM' },
+    { name: 'Sanjay Reddy', role: 'AgriTrack Admin', device: 'Safari (MacBook Pro)', time: 'Yesterday, 04:30 PM' }
   ];
   const recentActivations = [
     { deviceId: 'dev-982312', vehicle: 'Mahindra Novo 7DI', chassis: 'CH-NO-755', customer: 'Singh Agrotech', date: '2026-07-12' },
@@ -242,17 +253,19 @@ export const Dashboard = () => {
                 ))
               )}
             </div>
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Matching Jobs ({filteredJobs.length})</h3>
-              {filteredJobs.length === 0 ? <p className="text-xs text-gray-400">No jobs found.</p> : (
-                filteredJobs.map(j => (
-                  <div key={j.id} className="p-2 border border-gray-100 dark:border-emerald-950/20 rounded-xl text-xs flex justify-between items-center">
-                    <span className="font-semibold">{j.title}</span>
-                    <span className="text-[10px] uppercase font-bold text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded">{j.status}</span>
-                  </div>
-                ))
-              )}
-            </div>
+            {isCompanyAdmin ? (
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Matching Customers ({filteredCustomers.length})</h3>
+                {filteredCustomers.length === 0 ? <p className="text-xs text-gray-400">No customers found.</p> : (
+                  filteredCustomers.map(c => (
+                    <div key={c.id} className="p-2 border border-gray-100 dark:border-emerald-950/20 rounded-xl text-xs flex justify-between items-center">
+                      <span className="font-semibold">{c.name}</span>
+                      <Link to={`/customers/${c.id}`} className="text-emerald-600 font-bold hover:underline">View Profile</Link>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : null}
           </div>
         </div>
       )}
@@ -342,39 +355,35 @@ export const Dashboard = () => {
       {/* Grid: Recent Job Schedules & Activities Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Active Jobs Progress Widget */}
+        {/* Active Telemetry Status Widget */}
         <div className="lg:col-span-2 p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-base font-bold dark:text-white">Current Active Jobs</h2>
-            <Link to={PATHS.JOBS} className="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
-              View Schedules
-            </Link>
+            <h2 className="text-base font-bold dark:text-white">Active Vehicle Telemetry</h2>
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-350">
+              All Systems Nominal
+            </span>
           </div>
 
           <div className="space-y-4">
-            {mockJobs.filter(j => j.status === 'In Progress').slice(0, 3).map((job) => {
-              const machine = mockMachines.find(m => m.id === job.machineId);
-              const driver = mockDrivers.find(d => d.id === job.driverId);
+            {mockMachines.slice(0, 3).map((machine) => {
+              const gpsStatus = machine.status === 'Offline' ? 'Offline' : 'Online';
+              const pingTime = machine.status === 'Offline' ? '18 hrs ago' : 'Active';
+              const simStatus = machine.status === 'Maintenance' ? 'Suspended' : 'Active';
+              
               return (
-                <div key={job.id} className="p-3 bg-gray-50 dark:bg-emerald-950/10 rounded-xl border border-gray-100 dark:border-emerald-950/20">
+                <div key={machine.id} className="p-3 bg-gray-50 dark:bg-emerald-950/10 rounded-xl border border-gray-100 dark:border-emerald-950/20">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="text-xs font-bold dark:text-white">{job.title}</h3>
+                      <h3 className="text-xs font-bold dark:text-white">{machine.name}</h3>
                       <span className="text-[10px] text-gray-400">
-                        {machine?.name} &bull; Operator: {driver?.name || 'Unassigned'}
+                        Kit ID: KIT-{machine.id.toUpperCase()} &bull; SIM Status: {simStatus}
                       </span>
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
-                      {job.progress}%
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                      gpsStatus === 'Offline' ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-600'
+                    }`}>
+                      {pingTime}
                     </span>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="w-full bg-gray-200 dark:bg-emerald-950/60 rounded-full h-1.5 overflow-hidden">
-                    <div 
-                      className="bg-emerald-500 h-1.5 rounded-full" 
-                      style={{ width: `${job.progress}%` }}
-                    />
                   </div>
                 </div>
               );

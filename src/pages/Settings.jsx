@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { PATHS } from '../constants';
+import { PATHS, ROLES } from '../constants';
 import { useToast } from '../context/ToastContext';
 import { mockMachines } from '../data/mockData';
 
@@ -42,7 +42,7 @@ export const Settings = () => {
   const [units, setUnits] = useState('Metric');
   const [themePref, setThemePref] = useState(localStorage.getItem('theme_preference') || 'system');
 
-  const isCompanyAdmin = user?.role === 'Company Admin' || user?.role === 'Admin';
+  const isCompanyAdmin = user?.role === ROLES.COMPANY_ADMIN;
 
   // Apply theme preference helper
   const applyThemePreference = (pref) => {

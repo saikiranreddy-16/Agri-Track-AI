@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useUIState } from '../context/UIStateContext';
 import { useTheme } from '../context/ThemeContext';
-import { PATHS } from '../constants';
+import { PATHS, ROLES } from '../constants';
 import { 
   FaBars, FaChevronLeft, FaSun, FaMoon, FaGlobe, FaBell, FaRobot, FaSearch, 
   FaSignOutAlt, FaTractor, FaUserTie, FaMap, FaTasks, FaFileContract, 
@@ -79,7 +79,7 @@ export const DashboardLayout = () => {
     setIsMobileOpen(false);
   }, [location.pathname]);
 
-  const isCompanyAdmin = user?.role === 'Company Admin' || user?.role === 'Admin';
+  const isCompanyAdmin = user?.role === ROLES.COMPANY_ADMIN;
 
   const menuItems = isCompanyAdmin
     ? [
@@ -87,8 +87,8 @@ export const DashboardLayout = () => {
         { name: 'Customer Management', path: PATHS.CUSTOMER_MANAGEMENT, icon: FaUserTie },
         { name: 'Device Activation', path: PATHS.DEVICE_ACTIVATION, icon: FaTractor },
         { name: 'Device Replacement', path: PATHS.DEVICE_REPLACEMENT, icon: FaTools },
-        { name: 'GPS Live Tracking', path: PATHS.TRACKING, icon: FaRoute },
-        { name: 'Fleet Overview', path: PATHS.FLEET_OVERVIEW, icon: FaTractor },
+        { name: 'Fleet Overview (Read Only)', path: PATHS.FLEET_OVERVIEW, icon: FaTractor },
+        { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute },
         { name: 'Reports', path: PATHS.REPORTS, icon: FaFileContract },
         { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, highlight: true },
         { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
@@ -553,7 +553,9 @@ export const DashboardLayout = () => {
                 </div>
                 <div className="text-left hidden lg:block pr-1 select-none">
                   <div className="text-xs font-bold leading-none dark:text-white">{user?.name}</div>
-                  <div className="text-[10px] text-orange-500 font-semibold mt-0.5 uppercase leading-none">{user?.role}</div>
+                  <div className="text-[10px] text-orange-500 font-semibold mt-0.5 uppercase leading-none">
+                    {user?.role === 'Company Admin' ? 'AgriTrack Admin' : user?.role}
+                  </div>
                 </div>
               </button>
 

@@ -14,11 +14,11 @@ router.use(protect);
 router
   .route('/')
   .get(getMaintenanceRecords)
-  .post(authorize('Admin', 'Farm Owner', 'Manager', 'Mechanic'), createMaintenanceRecord);
+  .post(authorize('Company Admin', 'Farm Admin'), createMaintenanceRecord);
 
 router
   .route('/:id')
-  .put(authorize('Admin', 'Farm Owner', 'Manager', 'Mechanic'), updateMaintenanceRecord)
-  .delete(authorize('Admin', 'Farm Owner'), deleteMaintenanceRecord);
+  .put(authorize('Company Admin', 'Farm Admin'), updateMaintenanceRecord)
+  .delete(authorize('Company Admin', 'Farm Admin'), deleteMaintenanceRecord);
 
 export default router;

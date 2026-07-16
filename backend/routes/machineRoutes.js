@@ -19,12 +19,12 @@ router.get('/live-status', getMachineLiveStatus);
 router
   .route('/')
   .get(getMachines)
-  .post(authorize('Admin', 'Farm Owner', 'Manager'), createMachine);
+  .post(authorize('Company Admin', 'Farm Admin'), createMachine);
 
 router
   .route('/:id')
   .get(getMachineById)
-  .put(authorize('Admin', 'Farm Owner', 'Manager'), updateMachine)
-  .delete(authorize('Admin', 'Farm Owner'), deleteMachine);
+  .put(authorize('Company Admin', 'Farm Admin'), updateMachine)
+  .delete(authorize('Company Admin', 'Farm Admin'), deleteMachine);
 
 export default router;

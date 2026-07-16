@@ -27,8 +27,8 @@ export const registerValidator = [
   
   body('role')
     .optional()
-    .isIn(['Admin', 'Farm Owner', 'Manager', 'Operator', 'Mechanic', 'Viewer'])
-    .withMessage('Role must be one of: Admin, Farm Owner, Manager, Operator, Mechanic, Viewer'),
+    .isIn(['Company Admin', 'Farm Admin'])
+    .withMessage('Role must be one of: Company Admin, Farm Admin'),
   
   validateRequest,
 ];

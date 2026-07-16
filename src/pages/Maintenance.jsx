@@ -97,14 +97,12 @@ export const Maintenance = () => {
                   <div className="text-[10px] text-gray-400">Target Date: {task.date}</div>
                 </div>
 
-                {user?.role !== 'Operator' && (
-                  <button
-                    onClick={() => handleOpenComplete(task)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm font-bold shrink-0 self-center"
-                  >
-                    <FaCheckCircle className="text-[10px]" /> Complete
-                  </button>
-                )}
+                <button
+                  onClick={() => handleOpenComplete(task)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm font-bold shrink-0 self-center"
+                >
+                  <FaCheckCircle className="text-[10px]" /> Complete
+                </button>
               </div>
             ))}
             {upcoming.length === 0 && (

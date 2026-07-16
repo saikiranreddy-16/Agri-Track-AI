@@ -27,9 +27,8 @@ export const PATHS = {
 };
 
 export const ROLES = {
-  ADMIN: 'Admin',
-  OWNER: 'Farm Owner',
-  OPERATOR: 'Operator'
+  COMPANY_ADMIN: 'Company Admin',
+  FARM_ADMIN: 'Farm Admin',
 };
 
 export const MACHINE_STATUS = {
