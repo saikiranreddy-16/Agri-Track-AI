@@ -1,112 +1,171 @@
 import { collectAIContextData } from '../services/aiDataAccessService.js';
 import { successResponse } from '../utils/responseHandler.js';
+import aiService from '../ai/aiService.js';
+import AIConversation from '../models/aiConversationModel.js';
+import { getAIConfig } from '../config/aiConfig.js';
 
-// @desc    Secure query to operations AI copilot (filters data by owner first via AI Data Access Layer)
-// @route   POST /api/v1/ai/query
+/**
+ * Builds an enriched operational snapshot prompt.
+ */
+export const buildPrompt = (prompt, context) => {
+  return `
+You are the AgriTrack AI Copilot. Assist the user with their agricultural fleet and farm operations using the verified live data context below.
+
+=== LIVE OPERATIONAL DATA CONTEXT ===
+User Name: ${context.userName}
+User Role: ${context.userRole}
+Farms (${context.farmsCount}): ${context.activeFarms.join(', ') || 'None'}
+Vehicles Count: ${context.machinesCount}
+
+Vehicles Status:
+${context.machines.map(m => `- ${m.name} (${m.type}) [Chassis: ${m.chassisNumber}]: Status=${m.status}, Fuel=${m.fuel}%, Battery=${m.battery}%, Health=${m.healthScore}%, Speed=${m.speed || 0} km/h, Logged Hours=${m.workingHours || 0}h`).join('\n')}
+
+Active Jobs:
+${context.jobs.map(j => `- ${j.title}: Status=${j.status}, Progress=${j.progress}%`).join('\n') || 'None'}
+
+Active Alerts:
+${context.alerts.map(a => `- [${a.priority}] ${a.type}: ${a.message} (Status=${a.status})`).join('\n') || 'None'}
+
+Maintenance Schedule:
+${context.maintenance.map(m => `- ${m.task}: Status=${m.status}, Date=${m.date}`).join('\n') || 'None'}
+
+=== USER QUESTION ===
+${prompt}
+  `.trim();
+};
+
+// @desc    Process chat request using the registered AI provider
+// @route   POST /api/v1/ai/chat
 // @access  Private
-export const queryAI = async (req, res, next) => {
-  const { prompt } = req.body;
+export const chatAI = async (req, res, next) => {
+  const { prompt, vehicleId } = req.body;
 
   if (!prompt || !prompt.trim()) {
     res.status(400);
-    return next(new Error('Query prompt is required'));
+    return next(new Error('Prompt text is required'));
   }
 
+  const config = getAIConfig();
+  const startTime = Date.now();
+  let aiResponseText = '';
+  let errorMsg = null;
+  let tokensUsed = 0;
+
   try {
-    // Collect context parameters securely via the AI Data Access Service
-    const filteredJSON = await collectAIContextData(req.user);
+    // 1. Fetch user context securely based on roles
+    const context = await collectAIContextData(req.user);
 
-    // Process Prompt using ONLY the filtered JSON data (Simulating LLM behavior)
-    let aiResponseText = '';
-    const cleanPrompt = prompt.toLowerCase();
+    // 2. Format context prompt
+    const richPrompt = buildPrompt(prompt, context);
 
-    if (cleanPrompt.includes('work') || cleanPrompt.includes("today's work") || cleanPrompt.includes('today')) {
-      const activeCount = filteredJSON.machines.filter(m => m.status === 'Working').length;
-      const machineList = filteredJSON.machines
-        .map(m => `* **${m.name}** (${m.type}): Status: ${m.status}, Fuel: ${m.fuel}%, Health: ${m.healthScore}%, Engine: ${m.workingHours}h`)
-        .join('\n');
-      
-      aiResponseText = `Here is your operations summary for today:
-      
-* **Total Farms**: ${filteredJSON.farmsCount} (${filteredJSON.activeFarms.join(', ') || 'None'})
-* **Total Vehicles**: ${filteredJSON.machinesCount} (${activeCount} currently active/working)
-* **Active Jobs**: ${filteredJSON.jobs.filter(j => j.status === 'In Progress').length} in progress
-* **Recent Alerts**: ${filteredJSON.alerts.filter(a => a.status === 'Active').length} active alerts
+    // 3. Call the AI service
+    const aiResult = await aiService.chat(richPrompt);
+    aiResponseText = aiResult.text;
+    tokensUsed = aiResult.tokens || 0;
 
-**Machinery Telemetry & Status**:
-${machineList || 'No vehicles found in your farm context.'}`;
-
-    } else if (cleanPrompt.includes('weekly') || cleanPrompt.includes('week')) {
-      const totalFuel = filteredJSON.reportWeekly.reduce((sum, item) => sum + item.fuel, 0);
-      const totalDistance = filteredJSON.reportWeekly.reduce((sum, item) => sum + item.distance, 0);
-      const totalHours = filteredJSON.reportWeekly.reduce((sum, item) => sum + item.hours, 0);
-      
-      aiResponseText = `### Weekly Operational Performance Report (Filtered for ${filteredJSON.userName})
-      
-| Parameter | Value | Details |
-| :--- | :--- | :--- |
-| **Total Distance Covered** | ${totalDistance.toFixed(1)} km | Calculated from GPS coordinate history |
-| **Total Fuel Consumed** | ${totalFuel.toFixed(1)} L | Aggregate engine burn rate calculations |
-| **Total Engine Hours** | ${totalHours.toFixed(1)} hrs | Machine task timelines |
-| **Active Machinery** | ${filteredJSON.machinesCount} assets | Tractor/harvester units deployed |
-
-All operations are progressing on schedule. We registered ${filteredJSON.alerts.filter(a => a.priority === 'Critical').length} critical hardware warnings this week.`;
-
-    } else if (cleanPrompt.includes('monthly') || cleanPrompt.includes('month')) {
-      const totalFuel = filteredJSON.reportMonthly.reduce((sum, item) => sum + item.fuel, 0);
-      const totalDistance = filteredJSON.reportMonthly.reduce((sum, item) => sum + item.distance, 0);
-      const totalHours = filteredJSON.reportMonthly.reduce((sum, item) => sum + item.hours, 0);
-      
-      aiResponseText = `### Monthly Fleet Efficiency Review (Filtered for ${filteredJSON.userName})
-      
-* **Aggregate Distance**: ${totalDistance.toFixed(1)} km covered by fleet.
-* **Aggregate Fuel Consumption**: ${totalFuel.toFixed(1)} Litres.
-* **Total Machine Hours Logged**: ${totalHours.toFixed(1)} hours.
-* **Maintenance Events Scheduled**: ${filteredJSON.maintenance.length} tasks registered.`;
-
-    } else if (cleanPrompt.includes('fuel')) {
-      const totalFuelToday = filteredJSON.reportToday.reduce((sum, item) => sum + item.fuel, 0);
-      const lowFuelMachines = filteredJSON.machines.filter(m => m.fuel < 20);
-      const lowFuelList = lowFuelMachines
-        .map(m => `* **${m.name}** is at **${m.fuel}%** fuel capacity.`)
-        .join('\n');
-      
-      aiResponseText = `**Fuel Consumption Diagnostics (Today)**:
-      
-* **Aggregate Burned**: ${totalFuelToday} Litres across the fleet today.
-* **Low Fuel Warnings**:
-${lowFuelList || 'No vehicles are below 20% fuel capacity.'}`;
-
-    } else if (cleanPrompt.includes('machine worked') || cleanPrompt.includes('worked the most') || cleanPrompt.includes('tractor')) {
-      if (filteredJSON.machines.length === 0) {
-        aiResponseText = `No machinery records found for account: ${filteredJSON.userName}.`;
-      } else {
-        const sorted = [...filteredJSON.machines].sort((a, b) => b.workingHours - a.workingHours);
-        const top = sorted[0];
-        aiResponseText = `Based on log records, the asset that has worked the most is the **${top.name}** (${top.type}).
-        
-* **Total Hours Logged**: ${top.workingHours} Hours active.
-* **Status**: ${top.status}
-* **Current Fuel Level**: ${top.fuel}%
-* **Overall Health**: ${top.healthScore}%
-* **Total Distance**: ${top.distanceTravelled} km`;
-      }
-    } else {
-      aiResponseText = `Hello ${filteredJSON.userName}! I am your AgriTrack Farm Operations AI Copilot.
-I can analyze your fleet data, fuel usage, and job progress based on the records in your account.
-Your account has ${filteredJSON.machinesCount} machines and ${filteredJSON.farmsCount} farms.
-
-Try asking:
-- "Show today's work"
-- "Weekly report"
-- "Monthly report"
-- "Fuel used today"
-- "Which machine worked the most?"`;
-    }
-
+    // Return response
     return successResponse(res, 200, 'AI response generated', {
       response: aiResponseText,
     });
+  } catch (error) {
+    errorMsg = error.message;
+    next(error);
+  } finally {
+    // 4. Log conversation details asynchronously for diagnostics and auditing
+    try {
+      const latency = Date.now() - startTime;
+      await AIConversation.create({
+        user: req.user._id,
+        vehicle: vehicleId || null,
+        prompt: prompt,
+        response: aiResponseText,
+        tokens: tokensUsed,
+        provider: config.provider,
+        latency: latency,
+        error: errorMsg,
+        temperature: config.temperature,
+        maxTokens: config.maxTokens,
+        model: config.model,
+        language: config.language,
+      });
+    } catch (logError) {
+      console.error('Failed to log AI conversation record:', logError.message);
+    }
+  }
+};
+
+// @desc    Secure query to operations AI copilot (backward compatibility wrapper)
+// @route   POST /api/v1/ai/query
+// @access  Private
+export const queryAI = async (req, res, next) => {
+  return await chatAI(req, res, next);
+};
+
+// @desc    Get AI chat conversation history
+// @route   GET /api/v1/ai/history
+// @access  Private
+export const getChatHistory = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const query = { user: req.user._id };
+
+    const count = await AIConversation.countDocuments(query);
+    const history = await AIConversation.find(query)
+      .skip((page - 1) * limit)
+      .limit(Number(limit))
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return successResponse(res, 200, 'AI chat history retrieved successfully', history, {
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
+      totalResults: count,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Clear AI conversation history
+// @route   DELETE /api/v1/ai/history
+// @access  Private
+export const clearChatHistory = async (req, res, next) => {
+  try {
+    await AIConversation.deleteMany({ user: req.user._id });
+    return successResponse(res, 200, 'AI chat history cleared successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Submit feedback on an AI message
+// @route   POST /api/v1/ai/feedback
+// @access  Private
+export const submitFeedback = async (req, res, next) => {
+  const { conversationId, feedback } = req.body;
+
+  if (!conversationId) {
+    res.status(400);
+    return next(new Error('Conversation ID is required'));
+  }
+
+  if (feedback !== undefined && feedback !== null && !['Thumb Up', 'Thumb Down'].includes(feedback)) {
+    res.status(400);
+    return next(new Error("Feedback must be one of: 'Thumb Up', 'Thumb Down', or null"));
+  }
+
+  try {
+    const conversation = await AIConversation.findOne({ _id: conversationId, user: req.user._id });
+    if (!conversation) {
+      res.status(404);
+      return next(new Error('AI Conversation message not found or access denied.'));
+    }
+
+    conversation.feedback = feedback;
+    await conversation.save();
+
+    return successResponse(res, 200, 'Feedback recorded successfully', conversation);
   } catch (error) {
     next(error);
   }
