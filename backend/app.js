@@ -21,7 +21,7 @@ import activityLogRoutes from './routes/activityLogRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import deviceRoutes from './routes/deviceRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
-import aiRoutes from './routes/aiRoutes.js';
+import aiRoutes from './ai/aiRoutes.js';
 import hardwareRoutes from './routes/hardwareRoutes.js';
 import farmRoutes from './routes/farmRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
