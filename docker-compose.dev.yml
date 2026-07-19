@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  mongodb-service:
+    ports:
+      - "27017:27017"
+
+  backend-service:
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      # Avoid overwriting node_modules inside container
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongodb-service:27017/agri-track-dev
+      - LOG_LEVEL=debug
+    command: npm run dev
+
+  proxy-service:
+    ports:
+      - "5173:80" # Maps local Vite dev port to proxy

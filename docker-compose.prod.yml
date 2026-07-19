@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mongodb-service:
+    # Ensure production database is never exposed externally
+    restart: always
+
+  backend-service:
+    env_file:
+      - ./backend/.env.production
+    restart: always
+    environment:
+      - NODE_ENV=production
+
+  proxy-service:
+    ports:
+      - "80:80"
+      - "443:443" # Expose SSL port for secure connections
+    restart: always

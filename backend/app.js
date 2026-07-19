@@ -5,6 +5,9 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
+import { requestTimeout, xssClean } from './middleware/securityMiddleware.js';
+import requestLogger from './middleware/requestLogger.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,8 +25,11 @@ import reportRoutes from './routes/reportRoutes.js';
 import deviceRoutes from './routes/deviceRoutes.js';
 import customerRoutes from './routes/customerRoutes.js';
 import aiRoutes from './ai/aiRoutes.js';
+import aiAdminRoutes from './routes/aiAdminRoutes.js';
 import hardwareRoutes from './routes/hardwareRoutes.js';
 import farmRoutes from './routes/farmRoutes.js';
+import healthRoutes from './routes/healthRoutes.js';
+import { getLiveness, getReadiness, getVersion, getMetrics, logFrontendCrash } from './controllers/healthController.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,22 +43,43 @@ if (!fs.existsSync(logDir)) {
 
 const app = express();
 
+// Enable Trust Proxy to capture real client IPs behind Nginx
+app.set('trust proxy', true);
+
+// Mount request logger to trace performance timings
+app.use(requestLogger);
+
 // 1. Security Headers protection
 app.use(helmet());
 
-// 2. Enable CORS with credentials support (important for HTTP-only cookies)
+// 2. Response Compression
+app.use(compression());
+
+// 3. Enable CORS with credentials support (important for HTTP-only cookies)
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:5173', // Vite default port
+  origin: process.env.CORS_ORIGIN || process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 app.use(cors(corsOptions));
 
-// 3. Response Compression
-app.use(compression());
+// 4. Request timeout protection
+app.use(requestTimeout);
 
-// 4. Request Logging (Morgan stream to server.log)
+// 5. Request Body Parsers with configurable size limits
+const payloadLimit = process.env.REQUEST_LIMIT || '2mb';
+app.use(express.json({ limit: payloadLimit }));
+app.use(express.urlencoded({ extended: true, limit: payloadLimit }));
+app.use(cookieParser());
+
+// 6. MongoDB query sanitization
+app.use(mongoSanitize());
+
+// 7. XSS sanitization
+app.use(xssClean);
+
+// 8. Request Logging (Morgan stream to server.log)
 const accessLogStream = fs.createWriteStream(path.join(logDir, 'server.log'), {
   flags: 'a',
 });
@@ -63,23 +90,21 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
-// 5. Rate Limiting for Auth Routes
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per 15 minutes
+// 9. Rate Limiting (Global with dynamic configuration)
+const windowMin = Number(process.env.RATE_LIMIT_WINDOW) || 15;
+const maxRequests = Number(process.env.RATE_LIMIT_MAX) || 100;
+const rateLimiter = rateLimit({
+  windowMs: windowMin * 60 * 1000,
+  max: maxRequests,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many authentication attempts from this IP. Please try again in 15 minutes.',
+    message: 'Too many requests from this IP. Please try again later.',
+    statusCode: 429
   },
 });
-app.use('/api/v1/auth', authLimiter);
-
-// 6. Request Body Parsers & Cookie Parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use('/api', rateLimiter);
 
 // 7. Serve Static Uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -112,8 +137,17 @@ app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/devices', deviceRoutes);
 app.use('/api/v1/customers', customerRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/ai-admin', aiAdminRoutes);
 app.use('/api/v1/hardware', hardwareRoutes);
 app.use('/api/v1/farms', farmRoutes);
+app.use('/api/v1/health', healthRoutes);
+
+// Root level infrastructure status routes
+app.get('/health', getLiveness);
+app.get('/ready', getReadiness);
+app.get('/version', getVersion);
+app.get('/metrics', getMetrics);
+app.post('/api/v1/log/frontend', logFrontendCrash);
 
 // 10. Central Error Middleware Hooking
 app.use(notFound);

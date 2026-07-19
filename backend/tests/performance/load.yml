@@ -1,0 +1,24 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 20
+      name: "Warm up phase"
+    - duration: 120
+      arrivalRate: 20
+      rampTo: 100
+      name: "Load phase (100 concurrent requests)"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Public health check load ping"
+    flow:
+      - get:
+          url: "/health"
+      - get:
+          url: "/ready"
+      - get:
+          url: "/version"

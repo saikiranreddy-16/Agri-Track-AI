@@ -38,6 +38,12 @@ export const protect = async (req, res, next) => {
     next();
   } catch (error) {
     res.status(401);
+    if (error.name === 'TokenExpiredError') {
+      return next(new Error('Session expired, please login again'));
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return next(new Error('Session invalid, authorization token is malformed'));
+    }
     return next(new Error('Session expired or invalid token'));
   }
 };

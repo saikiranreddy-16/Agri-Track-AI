@@ -1,157 +1,399 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaRobot, FaPaperPlane, FaMicrophone, FaPaperclip, 
-  FaArrowRight, FaCommentAlt, FaHistory, FaTractor, FaGasPump, FaRedo, FaTrash 
+  FaArrowRight, FaCommentAlt, FaHistory, 
+  FaRedo, FaTrash, FaPen, FaArchive, FaPlus, FaCopy, 
+  FaThumbsUp, FaThumbsDown, FaSearch
 } from 'react-icons/fa';
 import { 
-  chat, 
-  getDailyReport, 
-  getWeeklyReport, 
-  analyzeFuel, 
-  summarizeMachine 
+  createConversation,
+  sendMessage,
+  getConversation,
+  getConversationList,
+  renameConversation,
+  archiveConversation,
+  deleteConversation,
+  clearConversation,
+  submitFeedback
 } from '../services/aiService';
 
 export const AIAssistant = () => {
-  const [messages, setMessages] = useState([
-    { 
-      id: 'm-init', 
-      sender: 'AI', 
-      text: "Hello! I am your AgriTrack Farm Operations AI Copilot. I can compile fuel statistics, fetch machinery diagnostic codes, analyze operator shifts, and predict service schedules. Ask me anything about your active fields or vehicle fleet.", 
-      time: '12:00 PM' 
-    }
-  ]);
+  const [conversations, setConversations] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showArchived, setShowArchived] = useState(false);
+  
   const [inputVal, setInputVal] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState(null);
   const [lastAction, setLastAction] = useState(null);
+  
+  const [renamingId, setRenamingId] = useState(null);
+  const [renameText, setRenameText] = useState('');
+
   const messagesEndRef = useRef(null);
 
-  const [activeSession, setActiveSession] = useState('Active Session 1');
-  const pastSessions = [
-    'Active Session 1',
-    'Fuel Analysis Jun 12',
-    'Driver Safety Check',
-    'Yield Report Sectors'
-  ];
-
   const suggestedPrompts = [
-    { text: "Analyze today's fuel efficiency", serviceOverride: 'fuel' },
-    { text: "Generate weekly fleet report", serviceOverride: 'weekly' },
-    { text: "Generate daily status report", serviceOverride: 'daily' }
+    { text: "Today's Report" },
+    { text: "Weekly Report" },
+    { text: "Monthly Report" },
+    { text: "Inactive Vehicles" },
+    { text: "Fuel Report" },
+    { text: "Maintenance" },
+    { text: "Compare Two Days" },
+    { text: "Compare Two Months" },
+    { text: "GPS Summary" },
+    { text: "Fleet Summary" }
   ];
 
   // Auto-scroll chat log
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+  }, [selectedConversation?.messages, isTyping]);
 
-  const handleSendMessage = async (text, serviceOverride = null) => {
-    const queryText = text || '';
-    if (!queryText.trim() && !serviceOverride) return;
+  // Load chat sessions on mount
+  useEffect(() => {
+    loadConversations();
+  }, []);
 
-    const userMessage = {
-      id: `m-u-${Date.now()}`,
-      sender: 'User',
-      text: queryText || `Trigger: ${serviceOverride} analysis`,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputVal('');
-    setIsTyping(true);
-    setError(null);
-    setLastAction({ text: queryText, serviceOverride });
-
-    try {
-      let result;
-      // Dynamically select target endpoint based on input text or serviceOverride
-      if (serviceOverride === 'fuel' || queryText.toLowerCase().includes('fuel')) {
-        result = await analyzeFuel();
-      } else if (serviceOverride === 'weekly' || queryText.toLowerCase().includes('weekly')) {
-        result = await getWeeklyReport();
-      } else if (serviceOverride === 'daily' || queryText.toLowerCase().includes('daily')) {
-        result = await getDailyReport();
-      } else if (serviceOverride === 'machine' || queryText.toLowerCase().includes('machine') || queryText.toLowerCase().includes('tractor')) {
-        result = await summarizeMachine();
-      } else {
-        result = await chat(queryText);
-      }
-
-      if (result && result.success) {
-        setMessages(prev => [
-          ...prev,
-          { 
-            id: `m-ai-${Date.now()}`, 
-            sender: 'AI', 
-            text: result.response, 
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+  // Fetch full conversation when ID changes
+  useEffect(() => {
+    if (selectedId) {
+      const fetchDetail = async () => {
+        try {
+          const response = await getConversation(selectedId);
+          if (response && response.success) {
+            setSelectedConversation(response.data);
+            setError(null);
           }
-        ]);
-      } else {
-        throw new Error(result?.message || 'Failed to generate response.');
+        } catch (err) {
+          console.error('Error fetching conversation detail:', err);
+          setError('Failed to load conversation messages.');
+        }
+      };
+      fetchDetail();
+    } else {
+      setSelectedConversation(null);
+    }
+  }, [selectedId]);
+
+  const loadConversations = async () => {
+    try {
+      const response = await getConversationList();
+      if (response && response.success) {
+        setConversations(response.data);
+        if (response.data.length > 0 && !selectedId) {
+          // Select the first active chat by default
+          const activeChats = response.data.filter(c => !c.isArchived);
+          if (activeChats.length > 0) {
+            setSelectedId(activeChats[0]._id);
+          } else {
+            setSelectedId(response.data[0]._id);
+          }
+        }
       }
     } catch (err) {
-      console.error('AI assistant request failed:', err);
-      const errMsg = err.response?.data?.message || err.message || 'Failed to connect to the AI service.';
-      setError(errMsg);
+      console.error('Error loading conversations:', err);
+      setError('Failed to load chat list.');
+    }
+  };
+
+  const handleSendMessage = async (text, serviceOverride = null) => {
+    const queryText = text || inputVal;
+    if (!queryText.trim() && !serviceOverride) return;
+
+    let activeId = selectedId;
+
+    if (!activeId) {
+      // 1. Create a conversation session dynamically
+      try {
+        const createRes = await createConversation(queryText.substring(0, 24) || 'New Chat');
+        if (createRes && createRes.success) {
+          const newConv = createRes.data;
+          setConversations(prev => [newConv, ...prev]);
+          setSelectedId(newConv._id);
+          activeId = newConv._id;
+        } else {
+          throw new Error('Failed to create new conversation session.');
+        }
+      } catch (err) {
+        console.error(err);
+        setError('Could not initialize conversation.');
+        return;
+      }
+    }
+
+    await performSendMessage(activeId, queryText, serviceOverride);
+  };
+
+  const performSendMessage = async (convId, queryText, serviceOverride) => {
+    setIsTyping(true);
+    setError(null);
+    setLastAction({ convId, text: queryText, serviceOverride });
+
+    // Append temporary query turn to UI for immediate visual feedback
+    const tempUserTurn = {
+      sender: 'user',
+      originalQuestion: queryText,
+      timestamp: new Date().toISOString()
+    };
+    setSelectedConversation(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        messages: [...(prev.messages || []), tempUserTurn]
+      };
+    });
+    setInputVal('');
+
+    try {
+      const result = await sendMessage(convId, queryText);
+      if (result && result.success) {
+        // Update messages with backend response (includes optimized prompt, response time etc)
+        setSelectedConversation(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            messages: result.messages || []
+          };
+        });
+
+        // Refresh lists to sync titles or update timestamps
+        const listRes = await getConversationList();
+        if (listRes && listRes.success) {
+          setConversations(listRes.data);
+        }
+      } else {
+        throw new Error(result?.message || 'Empty response.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || err.message || 'Error communicating with AI service.');
     } finally {
       setIsTyping(false);
     }
   };
 
-  const handleRetry = () => {
-    if (lastAction) {
-      handleSendMessage(lastAction.text, lastAction.serviceOverride);
+  const handleCreateNewChat = async () => {
+    try {
+      const response = await createConversation('New Chat');
+      if (response && response.success) {
+        setConversations(prev => [response.data, ...prev]);
+        setSelectedId(response.data._id);
+        setError(null);
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Failed to start a new chat session.');
     }
   };
 
-  const handleClearChat = () => {
-    setMessages([
-      { 
-        id: 'm-init', 
-        sender: 'AI', 
-        text: "Hello! I am your AgriTrack Farm Operations AI Copilot. I can compile fuel statistics, fetch machinery diagnostic codes, analyze operator shifts, and predict service schedules. Ask me anything about your active fields or vehicle fleet.", 
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+  const handleRenameChat = async (id) => {
+    if (!renameText.trim()) {
+      setRenamingId(null);
+      return;
+    }
+    try {
+      const response = await renameConversation(id, renameText);
+      if (response && response.success) {
+        setConversations(prev => prev.map(c => c._id === id ? { ...c, title: renameText } : c));
+        if (selectedId === id) {
+          setSelectedConversation(prev => prev ? { ...prev, title: renameText } : null);
+        }
+        setRenamingId(null);
+        setRenameText('');
       }
-    ]);
-    setError(null);
-    setLastAction(null);
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  const handleArchiveChat = async (id, e) => {
+    e.stopPropagation();
+    try {
+      const response = await archiveConversation(id);
+      if (response && response.success) {
+        setConversations(prev => prev.map(c => c._id === id ? { ...c, isArchived: response.data.isArchived } : c));
+        // Reset selected if archived
+        if (selectedId === id) {
+          setSelectedId(null);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteChat = async (id, e) => {
+    e.stopPropagation();
+    try {
+      const response = await deleteConversation(id);
+      if (response && response.success) {
+        setConversations(prev => prev.filter(c => c._id !== id));
+        if (selectedId === id) {
+          setSelectedId(null);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleClearChat = async (id) => {
+    if (!window.confirm('Are you sure you want to clear all message logs?')) return;
+    try {
+      const response = await clearConversation(id);
+      if (response && response.success) {
+        setSelectedConversation(prev => {
+          if (!prev) return null;
+          return { ...prev, messages: [] };
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleFeedback = async (id, feedbackType) => {
+    try {
+      const currentFeedback = selectedConversation?.feedback;
+      const newFeedback = currentFeedback === feedbackType ? null : feedbackType;
+      
+      const response = await submitFeedback(id, newFeedback);
+      if (response && response.success) {
+        setSelectedConversation(prev => {
+          if (!prev) return null;
+          return { ...prev, feedback: newFeedback };
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCopyText = (text) => {
+    navigator.clipboard.writeText(text);
+    alert('Copied AI Response to clipboard!');
+  };
+
+  const handleRetry = () => {
+    if (lastAction) {
+      performSendMessage(lastAction.convId, lastAction.text, lastAction.serviceOverride);
+    }
+  };
+
+  const startRenameFlow = (id, currentTitle, e) => {
+    e.stopPropagation();
+    setRenamingId(id);
+    setRenameText(currentTitle);
+  };
+
+  // Filter sidebar logs
+  const filteredConversations = conversations.filter(c => {
+    const matchesSearch = c.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch && (showArchived ? c.isArchived : !c.isArchived);
+  });
 
   return (
     <div className="h-[calc(100vh-8.5rem)] flex gap-4 relative overflow-hidden -m-4 md:-m-6">
       
       {/* Session History Sidebar */}
-      <div className="w-60 shrink-0 bg-white dark:bg-[#0e1712] border-r border-gray-200 dark:border-emerald-950/30 hidden md:flex flex-col h-full z-10 select-none">
-        <div className="p-4 border-b border-gray-100 dark:border-emerald-950/20">
-          <h2 className="text-xs font-bold text-gray-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
-            <FaHistory /> Chat Sessions
-          </h2>
-        </div>
-        <div className="flex-1 p-2 space-y-1 overflow-y-auto custom-scrollbar">
-          {pastSessions.map((session) => (
+      <div className="w-64 shrink-0 bg-white dark:bg-[#0e1712] border-r border-gray-200 dark:border-emerald-950/30 hidden md:flex flex-col h-full z-10 select-none">
+        <div className="p-4 border-b border-gray-100 dark:border-emerald-950/20 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold text-gray-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <FaHistory /> {showArchived ? 'Archived Chats' : 'Chat Sessions'}
+            </h2>
             <button
-              key={session}
-              onClick={() => setActiveSession(session)}
-              className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2.5 ${
-                activeSession === session
-                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400'
-                  : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-emerald-950/10 dark:text-gray-400'
-              }`}
+              onClick={() => setShowArchived(!showArchived)}
+              className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 hover:underline cursor-pointer"
             >
-              <FaCommentAlt className="text-[10px] shrink-0" />
-              <span className="truncate">{session}</span>
+              {showArchived ? 'Active list' : 'Archived list'}
             </button>
-          ))}
-        </div>
-        <div className="p-4 border-t border-gray-150 dark:border-emerald-950/25">
+          </div>
+          
           <button
-            onClick={handleClearChat}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-bold bg-gray-50 hover:bg-red-50 dark:bg-emerald-950/10 dark:hover:bg-red-950/20 text-gray-600 dark:text-gray-300 hover:text-red-650 dark:hover:text-red-400 border border-gray-200 dark:border-emerald-900/30 hover:border-red-200 dark:hover:border-red-950/30 rounded-xl transition-all shadow-sm"
+            onClick={handleCreateNewChat}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-sm cursor-pointer"
           >
-            <FaTrash className="text-[10px]" /> Clear Chat History
+            <FaPlus className="text-[10px]" /> New Chat
           </button>
+
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search chat..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-gray-55 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-950/40 focus:outline-none focus:border-emerald-500 focus:bg-white dark:text-white"
+            />
+            <FaSearch className="absolute left-2.5 top-2.5 text-gray-400 text-[10px]" />
+          </div>
+        </div>
+
+        {/* Conversation List */}
+        <div className="flex-1 p-2 space-y-1 overflow-y-auto custom-scrollbar">
+          {filteredConversations.length === 0 ? (
+            <div className="p-4 text-center text-xs text-gray-400 font-semibold">
+              No sessions found.
+            </div>
+          ) : (
+            filteredConversations.map((session) => (
+              <div
+                key={session._id}
+                onClick={() => { if (renamingId !== session._id) setSelectedId(session._id); }}
+                className={`group w-full text-left px-3 py-2 text-xs font-semibold rounded-xl transition-all flex items-center justify-between cursor-pointer ${
+                  selectedId === session._id
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400'
+                    : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-emerald-950/10 dark:text-gray-400'
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate flex-1">
+                  <FaCommentAlt className="text-[10px] shrink-0" />
+                  {renamingId === session._id ? (
+                    <input
+                      type="text"
+                      value={renameText}
+                      onChange={(e) => setRenameText(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleRenameChat(session._id); }}
+                      onBlur={() => handleRenameChat(session._id)}
+                      className="bg-transparent border-b border-emerald-500 outline-none text-xs w-full text-gray-800 dark:text-white font-semibold"
+                      autoFocus
+                    />
+                  ) : (
+                    <span className="truncate">{session.title}</span>
+                  )}
+                </div>
+
+                {renamingId !== session._id && (
+                  <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                    <button
+                      onClick={(e) => startRenameFlow(session._id, session.title, e)}
+                      className="p-1 hover:text-emerald-600"
+                      title="Rename"
+                    >
+                      <FaPen className="text-[9px]" />
+                    </button>
+                    <button
+                      onClick={(e) => handleArchiveChat(session._id, e)}
+                      className="p-1 hover:text-emerald-600"
+                      title={session.isArchived ? 'Unarchive' : 'Archive'}
+                    >
+                      <FaArchive className="text-[9px]" />
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteChat(session._id, e)}
+                      className="p-1 hover:text-red-500"
+                      title="Delete"
+                    >
+                      <FaTrash className="text-[9px]" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -163,62 +405,135 @@ export const AIAssistant = () => {
           <div className="p-2.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
             <FaRobot className="text-lg animate-pulse" />
           </div>
-          <div>
-            <h2 className="text-sm font-extrabold dark:text-white">AgriTrack AI Assistant</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-sm font-extrabold dark:text-white truncate">
+              {selectedConversation ? selectedConversation.title : 'AI Operational Copilot'}
+            </h2>
             <span className="text-[10px] text-gray-400 font-semibold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> Central AI Service Module
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> Prompt Optimization & Security Engine
             </span>
           </div>
-          
-          <button
-            onClick={handleClearChat}
-            className="ml-auto md:hidden text-xs font-bold p-2.5 border border-gray-200 hover:bg-red-50 dark:border-emerald-950/40 dark:hover:bg-red-950/25 text-gray-500 hover:text-red-650 dark:text-emerald-450 dark:hover:text-red-400 rounded-xl transition-all"
-            title="Clear Chat"
-          >
-            <FaTrash className="text-[10px]" />
-          </button>
+
+          {selectedId && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleClearChat(selectedId)}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 border border-red-200 dark:border-red-950/30 hover:bg-red-50 dark:hover:bg-red-950/15 text-red-650 dark:text-red-400 text-[10px] font-bold rounded-xl transition-all cursor-pointer"
+                title="Clear Message Log"
+              >
+                Clear Log
+              </button>
+              <button
+                onClick={(e) => handleDeleteChat(selectedId, e)}
+                className="flex items-center justify-center p-2 border border-gray-200 dark:border-emerald-950/45 hover:bg-red-50 dark:hover:bg-red-950/15 text-gray-500 hover:text-red-500 rounded-xl transition-all cursor-pointer"
+                title="Delete Chat Session"
+              >
+                <FaTrash className="text-[10px]" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Messages Stream */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar bg-gray-50/20 dark:bg-[#080d0a]/20">
-          {messages.map((msg) => {
-            const isAI = msg.sender === 'AI';
-            return (
-              <div
-                key={msg.id}
-                className={`flex gap-3 max-w-[85%] md:max-w-[75%] ${isAI ? 'mr-auto' : 'ml-auto flex-row-reverse'}`}
-              >
-                {isAI && (
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200/20">
-                    <FaRobot className="text-sm" />
-                  </div>
-                )}
-                
-                <div className="space-y-1">
-                  <div className={`p-3.5 rounded-2xl shadow-sm text-xs leading-relaxed ${
-                    isAI
-                      ? 'bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 text-gray-800 dark:text-gray-100'
-                      : 'bg-emerald-600 text-white font-semibold'
-                  }`}>
-                    {/* Render raw strings with simple markdown formats (lists & tables) */}
-                    {msg.text.split('\n').map((line, lIdx) => {
-                      if (line.startsWith('* ')) {
-                        return <li key={lIdx} className="ml-4 list-disc my-0.5">{line.substring(2)}</li>;
-                      }
-                      if (line.startsWith('|')) {
-                        // Very simple tables formatting helper
-                        return <div key={lIdx} className="font-mono text-[10px] leading-normal">{line}</div>;
-                      }
-                      return <p key={lIdx} className={line === '' ? 'h-2' : 'my-1'}>{line}</p>;
-                    })}
-                  </div>
-                  <span className={`text-[9px] text-gray-400 font-semibold block ${isAI ? 'text-left pl-1' : 'text-right pr-1'}`}>
-                    {msg.time}
-                  </span>
-                </div>
+          {!selectedConversation || !selectedConversation.messages || selectedConversation.messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-6">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 shadow-sm">
+                <FaRobot className="text-3xl animate-bounce" />
               </div>
-            );
-          })}
+              <h3 className="text-sm font-extrabold text-gray-800 dark:text-white mb-1.5">No Messages Yet</h3>
+              <p className="text-xs text-gray-400 font-semibold max-w-sm mb-6 leading-relaxed">
+                Start typing below or select a preset operational analysis. The Prompt Engine will convert your request dynamically.
+              </p>
+              
+              <div className="flex flex-wrap gap-2 justify-center max-w-md">
+                {suggestedPrompts.map((p) => (
+                  <button
+                    key={p.text}
+                    onClick={() => handleSendMessage(p.text, p.serviceOverride)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/40 rounded-xl text-gray-650 dark:text-emerald-350 hover:border-emerald-500/50 hover:bg-emerald-50/10 transition-all cursor-pointer shadow-sm"
+                  >
+                    {p.text} <FaArrowRight className="text-[9px]" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            selectedConversation.messages.map((msg, idx) => {
+              const isAI = msg.sender === 'assistant';
+              return (
+                <div
+                  key={msg._id || idx}
+                  className={`flex gap-3 max-w-[85%] md:max-w-[75%] ${isAI ? 'mr-auto' : 'ml-auto flex-row-reverse'}`}
+                >
+                  {isAI && (
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200/20">
+                      <FaRobot className="text-sm" />
+                    </div>
+                  )}
+                  
+                  <div className="space-y-1 group">
+                    <div className={`p-3.5 rounded-2xl shadow-sm text-xs leading-relaxed ${
+                      isAI
+                        ? 'bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 text-gray-800 dark:text-gray-100'
+                        : 'bg-emerald-600 text-white font-semibold'
+                    }`}>
+                      {isAI ? (
+                        <div>
+                          {msg.aiResponse.split('\n').map((line, lIdx) => {
+                            if (line.startsWith('* ')) {
+                              return <li key={lIdx} className="ml-4 list-disc my-0.5">{line.substring(2)}</li>;
+                            }
+                            if (line.startsWith('|')) {
+                              return <div key={lIdx} className="font-mono text-[10px] leading-normal">{line}</div>;
+                            }
+                            return <p key={lIdx} className={line === '' ? 'h-2' : 'my-1'}>{line}</p>;
+                          })}
+                        </div>
+                      ) : (
+                        <p>{msg.originalQuestion}</p>
+                      )}
+                    </div>
+                    
+                    <div className={`flex items-center gap-3 text-[9px] text-gray-400 font-semibold px-1 ${!isAI ? 'justify-end' : 'justify-between'}`}>
+                      <span>
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      
+                      {isAI && (
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                          <button 
+                            onClick={() => handleCopyText(msg.aiResponse)}
+                            className="hover:text-emerald-500 flex items-center gap-1.5"
+                            title="Copy Response"
+                          >
+                            <FaCopy className="text-[10px]" /> Copy
+                          </button>
+                          
+                          <div className="flex gap-1.5 items-center pl-1 border-l border-gray-200 dark:border-emerald-950/40">
+                            <button
+                              onClick={() => handleFeedback(selectedId, 'Like')}
+                              className={`hover:text-emerald-600 ${selectedConversation?.feedback === 'Like' ? 'text-emerald-605' : ''}`}
+                              title="Like"
+                            >
+                              <FaThumbsUp />
+                            </button>
+                            <button
+                              onClick={() => handleFeedback(selectedId, 'Dislike')}
+                              className={`hover:text-red-500 ${selectedConversation?.feedback === 'Dislike' ? 'text-red-500' : ''}`}
+                              title="Dislike"
+                            >
+                              <FaThumbsDown />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
 
           {/* Typing dots */}
           {isTyping && (
@@ -250,24 +565,6 @@ export const AIAssistant = () => {
           </div>
         )}
 
-        {/* Suggested Prompts helper grid */}
-        {messages.length === 1 && !isTyping && (
-          <div className="p-4 border-t border-gray-100 dark:border-emerald-950/20 bg-gray-50/50 dark:bg-[#080d0a]/20 shrink-0">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2.5">Suggested Prompts</span>
-            <div className="flex flex-wrap gap-2">
-              {suggestedPrompts.map((p) => (
-                <button
-                  key={p.text}
-                  onClick={() => handleSendMessage(p.text, p.serviceOverride)}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold bg-white dark:bg-emerald-950/30 border border-gray-200 dark:border-emerald-900/30 rounded-xl text-gray-600 dark:text-emerald-300 hover:border-emerald-500/50 hover:bg-emerald-50/20 transition-all cursor-pointer shadow-sm"
-                >
-                  {p.text} <FaArrowRight className="text-[9px] text-gray-400" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Input Text Form Area */}
         <div className="p-4 border-t border-gray-100 dark:border-emerald-950/25 shrink-0 bg-white dark:bg-[#0e1712] flex gap-2">
           
@@ -283,7 +580,7 @@ export const AIAssistant = () => {
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSendMessage(inputVal); }}
-            placeholder="Ask AI Copilot about fuel, alerts, or machine logs..."
+            placeholder={selectedId ? "Ask AI Copilot about fuel, alerts, or machine logs..." : "Start a conversation to chat..."}
             className="flex-1 px-4 py-2.5 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/30 border border-gray-200 dark:border-emerald-950/40 focus:outline-none focus:border-emerald-500 focus:bg-white dark:text-white"
             disabled={isTyping}
           />
@@ -297,7 +594,7 @@ export const AIAssistant = () => {
 
           <button
             onClick={() => handleSendMessage(inputVal)}
-            className="p-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md shrink-0 flex items-center justify-center"
+            className="p-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md shrink-0 flex items-center justify-center cursor-pointer"
             title="Send Message"
             disabled={isTyping}
           >

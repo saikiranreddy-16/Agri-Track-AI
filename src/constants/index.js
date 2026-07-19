@@ -17,6 +17,7 @@ export const PATHS = {
   ALERTS: '/alerts',
   MAINTENANCE: '/maintenance',
   AI_ASSISTANT: '/ai-assistant',
+  AI_ADMINISTRATION: '/ai-admin',
   SETTINGS: '/settings',
   HELP: '/help',
   CUSTOMER_MANAGEMENT: '/customers',

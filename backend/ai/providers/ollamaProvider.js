@@ -1,8 +1,10 @@
+import BaseProvider from './baseProvider.js';
 import axios from 'axios';
+import { estimateTokens } from '../utils/tokenEstimator.js';
 
-export class OllamaProvider {
+export class OllamaProvider extends BaseProvider {
   constructor(config) {
-    this.config = config;
+    super(config);
   }
 
   async generateResponse(prompt) {
@@ -20,7 +22,7 @@ export class OllamaProvider {
       }
     };
 
-    const response = await axios.post(url, payload, { timeout: 20000 });
+    const response = await axios.post(url, payload, { timeout: this.config.timeout || 20000 });
     const text = response.data?.response;
 
     if (!text) {
@@ -29,7 +31,22 @@ export class OllamaProvider {
 
     return {
       text,
-      tokens: Math.ceil(text.length / 4),
+      tokens: this.estimateTokens(text),
     };
   }
+
+  async healthCheck() {
+    try {
+      const baseUrl = this.config.ollamaBaseUrl || 'http://localhost:11434';
+      const response = await axios.get(`${baseUrl}/`, { timeout: 3000 });
+      return response.status === 200;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  estimateTokens(text) {
+    return estimateTokens(text);
+  }
 }
+export default OllamaProvider;

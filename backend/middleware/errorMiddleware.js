@@ -40,6 +40,12 @@ export const errorHandler = (err, req, res, next) => {
     message = Object.values(err.errors).map((val) => val.message).join(', ');
   }
 
+  // Mask raw system/DB details from the client response in production
+  let responseMessage = message;
+  if (process.env.NODE_ENV === 'production' && statusCode === 500) {
+    responseMessage = 'An unexpected server error occurred.';
+  }
+
   // Create log message with details
   const timestamp = new Date().toISOString();
   const logMessage = `[${timestamp}] ${req.method} ${req.originalUrl} - status: ${statusCode} - message: ${message}\nStack: ${err.stack}\n\n`;
@@ -53,5 +59,5 @@ export const errorHandler = (err, req, res, next) => {
 
   const debugDetails = process.env.NODE_ENV === 'production' ? null : { stack: err.stack };
 
-  return errorResponse(res, statusCode, message, debugDetails);
+  return errorResponse(res, statusCode, responseMessage, debugDetails);
 };

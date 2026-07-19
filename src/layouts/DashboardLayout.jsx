@@ -91,6 +91,7 @@ export const DashboardLayout = () => {
         { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute },
         { name: 'Reports', path: PATHS.REPORTS, icon: FaFileContract },
         { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, highlight: true },
+        { name: 'AI Administration', path: PATHS.AI_ADMINISTRATION, icon: FaShieldAlt, highlight: true },
         { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
         { name: 'Help', path: PATHS.HELP, icon: FaQuestionCircle }
       ]
@@ -213,8 +214,8 @@ export const DashboardLayout = () => {
 
 
 
-      {/* Bottom Logout */}
-      <div className="px-3 pt-2 mt-auto border-t border-emerald-800/30">
+      {/* Bottom Logout & Version */}
+      <div className="px-3 pt-2 pb-3 mt-auto border-t border-emerald-800/30 text-center">
         <button
           onClick={() => setShowLogoutConfirm(true)}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-red-950/30 hover:text-red-300 text-emerald-200 transition-colors group relative cursor-pointer"
@@ -227,6 +228,11 @@ export const DashboardLayout = () => {
             </div>
           )}
         </button>
+        {isSidebarExpanded && (
+          <div className="mt-2 text-[10px] font-semibold text-emerald-400/60 uppercase tracking-wider">
+            v1.0.0 (Production)
+          </div>
+        )}
       </div>
     </div>
   );

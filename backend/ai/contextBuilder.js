@@ -26,7 +26,9 @@ export const sanitizeData = (data) => {
     const keysToOmit = new Set([
       '_id', 'id', 'deviceId', 'gpsDeviceId', 'farmId', 'owner', 'ownerId', 
       'userId', 'user', 'jwt', 'password', 'passwordHash', 'trustedDevices', 
-      'internalNotes', 'token', '__v'
+      'internalNotes', 'token', '__v', 'hiddenSettings', 'settings',
+      'apiKey', 'apiKeys', 'secret', 'secrets', 'sessionToken', 'sessionTokens',
+      'env', 'environment', 'process'
     ]);
     
     for (const key of Object.keys(obj)) {
@@ -174,7 +176,10 @@ export const buildAIContext = async (user) => {
       status: j.status,
       progress: j.progress,
       machine: j.machineId ? j.machineId.name : 'Unknown'
-    }))
+    })),
+    currentDate: new Date().toISOString().split('T')[0],
+    currentTime: new Date().toLocaleTimeString(),
+    userRole: user.role
   };
 
   // Perform recursive cleanup of sensitive properties

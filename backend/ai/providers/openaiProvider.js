@@ -1,8 +1,10 @@
+import BaseProvider from './baseProvider.js';
 import axios from 'axios';
+import { estimateTokens } from '../utils/tokenEstimator.js';
 
-export class OpenAIProvider {
+export class OpenAIProvider extends BaseProvider {
   constructor(config) {
-    this.config = config;
+    super(config);
   }
 
   async generateResponse(prompt) {
@@ -41,7 +43,27 @@ export class OpenAIProvider {
 
     return {
       text,
-      tokens: response.data?.usage?.total_tokens || Math.ceil(text.length / 4),
+      tokens: response.data?.usage?.total_tokens || this.estimateTokens(text),
     };
   }
+
+  async healthCheck() {
+    try {
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) return false;
+      const url = 'https://api.openai.com/v1/models';
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+        timeout: 3000
+      });
+      return response.status === 200;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  estimateTokens(text) {
+    return estimateTokens(text);
+  }
 }
+export default OpenAIProvider;

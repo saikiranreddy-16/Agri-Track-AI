@@ -7,28 +7,30 @@ const aiLogSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    timestamp: {
-      type: Date,
-      default: Date.now,
-    },
-    promptType: {
+    action: {
       type: String,
       required: true,
-      enum: ['chat', 'report', 'analysis', 'summary'],
-    },
-    executionTime: {
-      type: Number,
-      required: true, // in milliseconds
+      enum: [
+        'Conversation Created',
+        'Conversation Deleted',
+        'Conversation Archived',
+        'Message Sent',
+        'AI Response Generated',
+        'Feedback Submitted'
+      ]
     },
     provider: {
       type: String,
       required: true,
       default: 'mock',
     },
-    status: {
-      type: String,
-      required: true,
-      enum: ['success', 'error'],
+    responseTime: {
+      type: Number,
+      default: 0, // response/execution time in milliseconds
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now,
     },
   },
   {

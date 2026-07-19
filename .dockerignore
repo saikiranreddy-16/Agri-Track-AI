@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+build
+dist
+.git
+.github
+*.log
+backend/logs
+backend/backups
+backend/.env
+backend/.env.development
+backend/.env.staging
+backend/.env.production

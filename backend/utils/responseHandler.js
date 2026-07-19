@@ -27,6 +27,7 @@ export const errorResponse = (res, statusCode = 500, message = 'Error', errors =
   return res.status(statusCode).json({
     success: false,
     message,
+    statusCode,
     data: errors || null,
     pagination: null,
     timestamp: new Date().toISOString(),

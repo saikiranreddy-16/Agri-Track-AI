@@ -1,6 +1,9 @@
-export class MockProvider {
+import BaseProvider from './baseProvider.js';
+import { estimateTokens } from '../utils/tokenEstimator.js';
+
+export class MockProvider extends BaseProvider {
   constructor(config) {
-    this.config = config;
+    super(config);
   }
 
   async generateResponse(prompt) {
@@ -50,7 +53,16 @@ I can analyze your fleet data, fuel usage, and job progress. Try asking:
 
     return {
       text,
-      tokens: Math.ceil(text.length / 4),
+      tokens: this.estimateTokens(text)
     };
   }
+
+  async healthCheck() {
+    return true; // Mock is always healthy
+  }
+
+  estimateTokens(text) {
+    return estimateTokens(text);
+  }
 }
+export default MockProvider;

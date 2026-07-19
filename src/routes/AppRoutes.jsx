@@ -14,6 +14,7 @@ import { Reports } from '../pages/Reports';
 import { Alerts } from '../pages/Alerts';
 import { Maintenance } from '../pages/Maintenance';
 import { AIAssistant } from '../pages/AIAssistant';
+import { AIAdministration } from '../pages/AIAdministration';
 import { Settings } from '../pages/Settings';
 import { Help } from '../pages/Help';
 import { CustomerManagement } from '../pages/CustomerManagement';
@@ -69,6 +70,11 @@ export const AppRoutes = () => {
         <Route path={PATHS.MAINTENANCE} element={<Maintenance />} />
 
         {/* Company Admin Only */}
+        <Route path={PATHS.AI_ADMINISTRATION} element={
+          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+            <AIAdministration />
+          </RoleProtectedRoute>
+        } />
         <Route path={PATHS.FLEET_OVERVIEW} element={
           <RoleProtectedRoute allowedRoles={['Company Admin']}>
             <FleetOverview />

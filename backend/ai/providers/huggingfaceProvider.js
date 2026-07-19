@@ -1,8 +1,10 @@
+import BaseProvider from './baseProvider.js';
 import axios from 'axios';
+import { estimateTokens } from '../utils/tokenEstimator.js';
 
-export class HuggingFaceProvider {
+export class HuggingFaceProvider extends BaseProvider {
   constructor(config) {
-    this.config = config;
+    super(config);
   }
 
   async generateResponse(prompt) {
@@ -19,7 +21,7 @@ export class HuggingFaceProvider {
       { inputs: prompt },
       {
         headers: { Authorization: `Bearer ${apiKey}` },
-        timeout: 20000,
+        timeout: this.config.timeout || 20000,
       }
     );
 
@@ -31,7 +33,30 @@ export class HuggingFaceProvider {
 
     return {
       text,
-      tokens: Math.ceil(text.length / 4),
+      tokens: this.estimateTokens(text),
     };
   }
+
+  async healthCheck() {
+    try {
+      const apiKey = process.env.HF_API_KEY;
+      if (!apiKey) return false;
+      const modelName = this.config.model || 'gpt2';
+      const url = `https://api-inference.huggingface.co/models/${modelName}`;
+      // Just check if we can query api endpoints (using empty inputs or headers)
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+        timeout: 3000
+      });
+      return response.status === 200;
+    } catch (err) {
+      // API endpoints might return 400 for get but if it reaches the service it's up
+      return err.response && err.response.status !== 404;
+    }
+  }
+
+  estimateTokens(text) {
+    return estimateTokens(text);
+  }
 }
+export default HuggingFaceProvider;
