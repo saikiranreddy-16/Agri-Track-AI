@@ -44,4 +44,44 @@
   .dark body {
     @apply text-gray-100 bg-[#0b130e];
   }
+
+  /* Global input/textarea contrast and placeholder fixes on focus */
+  input, textarea, select {
+    @apply transition-all duration-150;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: #9ca3af !important;
+    opacity: 1 !important;
+  }
+
+  .dark input::placeholder, .dark textarea::placeholder {
+    color: #4b5563 !important; /* gray-600 for contrast in dark mode */
+    opacity: 1 !important;
+  }
+
+  /* Prevent focus:bg-white override from rendering white-on-white text in dark mode */
+  .dark input:focus,
+  .dark textarea:focus,
+  .dark select:focus {
+    background-color: #121c17 !important;
+    color: #ffffff !important;
+    border-color: #059669 !important; /* emerald-600 border */
+  }
+
+  /* Chrome/Safari Autocomplete autofill background and text overrides */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
+    -webkit-text-fill-color: inherit !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  .dark input:-webkit-autofill,
+  .dark textarea:-webkit-autofill {
+    -webkit-text-fill-color: #ffffff !important;
+  }
 }
