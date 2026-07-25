@@ -7,7 +7,9 @@ const vehicleBrandSchema = new mongoose.Schema({
 const vehicleModelSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   brand: { type: mongoose.Schema.Types.ObjectId, ref: 'VehicleBrand', required: true },
-  vehicleType: { type: String, required: true, trim: true } // e.g. Tractor, Harvester, Car, etc.
+  vehicleType: { type: String, required: true, trim: true }, // e.g. Tractor, Harvester, Car, etc.
+  engineConfig: { type: String, enum: ['None', 'Integrated', 'External'], default: 'None' },
+  series: { type: String, default: '' }
 }, { timestamps: true });
 
 const hpMasterSchema = new mongoose.Schema({

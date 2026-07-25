@@ -158,7 +158,6 @@ export const CustomerProfile = () => {
           { id: 'profile', label: 'Client Profile', icon: FaUser },
           { id: 'billing', label: 'Billing & Subscriptions', icon: FaCreditCard },
           { id: 'vehicles', label: 'Vehicles & Trackers', icon: FaTractor },
-          { id: 'documents', label: 'Document Hub', icon: FaFileContract },
           { id: 'timeline', label: 'Live Device Timeline', icon: FaClock }
         ].map(tab => {
           const Icon = tab.icon;
@@ -224,16 +223,8 @@ export const CustomerProfile = () => {
             </div>
             
             <div className="space-y-4">
-              <h3 className="text-sm font-black text-emerald-600 uppercase tracking-wider">Identity Details</h3>
+              <h3 className="text-sm font-black text-emerald-600 uppercase tracking-wider">Account Information</h3>
               <div className="space-y-3 bg-gray-50 dark:bg-[#121c17] p-4 border border-gray-100 dark:border-emerald-950/30 rounded-2xl">
-                <div className="flex justify-between border-b border-gray-100 dark:border-emerald-950/10 pb-2">
-                  <span className="text-gray-450 font-bold uppercase tracking-wider text-[10px]">Aadhaar (UIDAI)</span>
-                  <span className="font-mono font-bold dark:text-white">{customer.aadhaarNumber || 'Not Configured'}</span>
-                </div>
-                <div className="flex justify-between border-b border-gray-100 dark:border-emerald-950/10 pb-2">
-                  <span className="text-gray-450 font-bold uppercase tracking-wider text-[10px]">GST Identification</span>
-                  <span className="font-mono font-bold dark:text-white">{customer.gstNumber || 'Not Registered'}</span>
-                </div>
                 <div className="flex justify-between">
                   <span className="text-gray-450 font-bold uppercase tracking-wider text-[10px]">Registered Date</span>
                   <span className="font-semibold dark:text-white">{new Date(customer.createdAt).toLocaleDateString()}</span>
@@ -346,34 +337,7 @@ export const CustomerProfile = () => {
           </div>
         )}
 
-        {/* Documents Tab */}
-        {activeTab === 'documents' && (
-          <div className="space-y-4 text-xs">
-            <h3 className="text-sm font-black text-emerald-600 uppercase tracking-wider">Verification Documents</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {customer.documents && customer.documents.length > 0 ? (
-                customer.documents.map((doc, idx) => (
-                  <div key={idx} className="p-4 bg-gray-50 dark:bg-[#121c17] border border-gray-150 dark:border-emerald-950/20 rounded-2xl flex justify-between items-center">
-                    <div>
-                      <span className="font-bold text-gray-800 dark:text-gray-200 block text-xs">{doc.fileName}</span>
-                      <span className="text-[10px] text-gray-400 font-semibold uppercase">{doc.documentType}</span>
-                    </div>
-                    <a
-                      href={doc.filePath}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
-                    >
-                      View Document File
-                    </a>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-400 py-8 text-center col-span-2">No uploaded verification documents registered on this account.</p>
-              )}
-            </div>
-          </div>
-        )}
+
 
         {/* Event Timeline Tab */}
         {activeTab === 'timeline' && (

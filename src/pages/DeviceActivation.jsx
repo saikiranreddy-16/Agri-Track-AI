@@ -47,6 +47,13 @@ export const DeviceActivation = () => {
   const [rcOwnerName, setRcOwnerName] = useState('');
   const [insuranceExpiry, setInsuranceExpiry] = useState('');
   const [fitnessExpiry, setFitnessExpiry] = useState('');
+  
+  // Custom Service & Engine Configs
+  const [engineType, setEngineType] = useState('Factory Integrated Engine');
+  const [firstServiceHours, setFirstServiceHours] = useState(50);
+  const [regularServiceInterval, setRegularServiceInterval] = useState(250);
+  const [lastServiceHours, setLastServiceHours] = useState(0);
+  const [registrationNumber, setRegistrationNumber] = useState('');
 
   // Geographic dropdowns state
   const [states, setStates] = useState([]);
@@ -74,7 +81,7 @@ export const DeviceActivation = () => {
       try {
         const metadataRes = await api.get('/machines/vehicle-metadata');
         if (metadataRes.data && metadataRes.data.success) {
-          setTypes(metadataRes.data.data.types);
+          setTypes(['Tractor', 'Track Harvester', 'Combine Harvester']);
           setBrands(metadataRes.data.data.brands);
         }
 
@@ -89,17 +96,29 @@ export const DeviceActivation = () => {
     fetchMetadata();
   }, []);
 
+  const handleVehicleTypeChange = (typeVal) => {
+    setVehicleType(typeVal);
+    setSelectedBrand('');
+    setSelectedModel('');
+    setSelectedHP('');
+    setModels([]);
+    setHpOptions([]);
+    setEngineType('Factory Integrated Engine');
+  };
+
   // Handle cascaded vehicle metadata dropdown changes
   const handleBrandChange = (brandId) => {
     setSelectedBrand(brandId);
     setSelectedModel('');
     setSelectedHP('');
-    setModels([]);
     setHpOptions([]);
-    if (!brandId) return;
+    if (!brandId) {
+      setModels([]);
+      return;
+    }
     const foundBrand = brands.find(b => b._id === brandId);
     if (foundBrand) {
-      setModels(foundBrand.models);
+      setModels(foundBrand.models.filter(m => m.vehicleType === vehicleType));
     }
   };
 
@@ -110,10 +129,15 @@ export const DeviceActivation = () => {
     if (!modelId) return;
     const foundModel = models.find(m => m._id === modelId);
     if (foundModel) {
-      setHpOptions(foundModel.hpOptions);
-      // Pre-select type from model mapping if matching
-      if (foundModel.vehicleType) {
-        setVehicleType(foundModel.vehicleType);
+      setHpOptions(foundModel.hpOptions || []);
+      if (vehicleType === 'Combine Harvester') {
+        if (foundModel.engineConfig === 'External') {
+          setEngineType('John Deere Engine');
+        } else {
+          setEngineType('Factory Integrated Engine');
+        }
+      } else {
+        setEngineType('Factory Integrated Engine');
       }
     }
   };
@@ -222,6 +246,7 @@ export const DeviceActivation = () => {
       const payload = {
         deviceId,
         chassisNumber,
+        registration: registrationNumber || '',
         displayName,
         vehicleType,
         customerName,
@@ -253,7 +278,13 @@ export const DeviceActivation = () => {
         mandal: selectedMandal,
         village: selectedVillage,
         pincode,
-        addressLine
+        addressLine,
+
+        // Service thresholds and configuration
+        firstServiceHours: firstServiceHours !== undefined ? Number(firstServiceHours) : 50,
+        regularServiceInterval: regularServiceInterval !== undefined ? Number(regularServiceInterval) : 250,
+        lastServiceHours: lastServiceHours !== undefined ? Number(lastServiceHours) : 0,
+        engineType: engineType || 'Factory Integrated Engine'
       };
 
       const response = await api.post('/devices/activate', payload);
@@ -299,6 +330,11 @@ export const DeviceActivation = () => {
     setPincode('');
     setAddressLine('');
     setIsVerified(false);
+    setEngineType('Factory Integrated Engine');
+    setFirstServiceHours(50);
+    setRegularServiceInterval(250);
+    setLastServiceHours(0);
+    setRegistrationNumber('');
   };
 
   return (
@@ -385,7 +421,7 @@ export const DeviceActivation = () => {
                 <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">Vehicle Type*</label>
                 <select
                   value={vehicleType}
-                  onChange={(e) => setVehicleType(e.target.value)}
+                  onChange={(e) => handleVehicleTypeChange(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                 >
                   {types.map(t => <option key={t} value={t}>{t}</option>)}
@@ -400,7 +436,7 @@ export const DeviceActivation = () => {
                   className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                 >
                   <option value="">Select Brand</option>
-                  {brands.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+                  {brands.filter(b => b.models.some(m => m.vehicleType === vehicleType)).map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
                 </select>
               </div>
               <div>
@@ -431,10 +467,90 @@ export const DeviceActivation = () => {
               </div>
             </div>
 
-            {/* Vehicle Registration & Logistics specifics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Dynamic Series & Engine Configuration */}
+            {(vehicleType === 'Tractor' || vehicleType === 'Combine Harvester') && selectedModel && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 bg-gray-50/50 dark:bg-emerald-955/5 p-4 rounded-2xl border border-gray-150 dark:border-emerald-950/20">
+                {vehicleType === 'Tractor' && (
+                  <div>
+                    <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Series</label>
+                    <input
+                      type="text"
+                      readOnly
+                      value={models.find(m => m._id === selectedModel)?.series || 'Standard Series'}
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-150 dark:bg-emerald-900/10 dark:text-gray-300 font-bold focus:outline-none"
+                    />
+                  </div>
+                )}
+                {vehicleType === 'Combine Harvester' && (
+                  <div>
+                    <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Engine Configuration / Type</label>
+                    {models.find(m => m._id === selectedModel)?.engineConfig === 'External' ? (
+                      <select
+                        value={engineType}
+                        onChange={(e) => setEngineType(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                      >
+                        <option value="John Deere Engine">John Deere Engine</option>
+                        <option value="Ashok Leyland Engine">Ashok Leyland Engine</option>
+                        <option value="Cummins Engine">Cummins Engine</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        readOnly
+                        value="Factory Integrated Engine"
+                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-150 dark:bg-emerald-900/10 dark:text-gray-300 font-bold focus:outline-none"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 3. Service reminder intervals configuration */}
+            <h2 className="text-sm font-black uppercase tracking-wider text-emerald-600 border-b border-gray-100 dark:border-emerald-950/15 pb-2 pt-2 mt-4">
+              3. Service Reminder Thresholds (Hours)
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">Chassis Number (Immutable Registration ID)*</label>
+                <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">First Service Threshold (Hours)*</label>
+                <input
+                  type="number"
+                  required
+                  value={firstServiceHours}
+                  onChange={(e) => setFirstServiceHours(Number(e.target.value))}
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Regular Service Interval (Hours)*</label>
+                <input
+                  type="number"
+                  required
+                  value={regularServiceInterval}
+                  onChange={(e) => setRegularServiceInterval(Number(e.target.value))}
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Last Service Hours (Optional)</label>
+                <input
+                  type="number"
+                  value={lastServiceHours}
+                  onChange={(e) => setLastServiceHours(Number(e.target.value))}
+                  placeholder="e.g. 0 or last done hours"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                />
+              </div>
+            </div>
+
+            {/* Vehicle Registration & Logistics specifics */}
+            <h2 className="text-sm font-black uppercase tracking-wider text-emerald-600 border-b border-gray-100 dark:border-emerald-950/15 pb-2 pt-2 mt-4">
+              4. Vehicle Registration & Logistics Details
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Chassis Number (Immutable ID)*</label>
                 <input
                   type="text"
                   required
@@ -445,7 +561,7 @@ export const DeviceActivation = () => {
                 />
               </div>
               <div>
-                <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5">Vehicle Display Custom Name*</label>
+                <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Vehicle Display Custom Name*</label>
                 <input
                   type="text"
                   required
@@ -453,6 +569,16 @@ export const DeviceActivation = () => {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Registration Number (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. TS-05-EA-1234"
+                  value={registrationNumber}
+                  onChange={(e) => setRegistrationNumber(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white uppercase font-bold"
                 />
               </div>
               <div>

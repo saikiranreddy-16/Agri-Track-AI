@@ -43,19 +43,12 @@ export const CustomerManagement = () => {
     mandal: '',
     village: '',
     pincode: '',
-    aadhaarNumber: '',
-    gstNumber: '',
     planName: 'Standard',
     planExpiryDate: '',
     devicesAllowed: 5,
     paymentStatus: 'Paid',
     status: 'Active'
   });
-
-  // Document upload state
-  const [docType, setDocType] = useState('Aadhaar');
-  const [docName, setDocName] = useState('');
-  const [docPath, setDocPath] = useState('');
 
   const fetchCustomers = async (search = '') => {
     setIsLoading(true);
@@ -163,8 +156,6 @@ export const CustomerManagement = () => {
       mandal: '',
       village: '',
       pincode: '',
-      aadhaarNumber: '',
-      gstNumber: '',
       planName: 'Standard',
       planExpiryDate: new Date(Date.now() + 365*24*60*60*1000).toISOString().split('T')[0],
       devicesAllowed: 5,
@@ -193,8 +184,6 @@ export const CustomerManagement = () => {
       mandal: loc.mandal || '',
       village: loc.village || '',
       pincode: loc.pincode || '',
-      aadhaarNumber: customer.aadhaarNumber || '',
-      gstNumber: customer.gstNumber || '',
       planName: customer.planName || 'Standard',
       planExpiryDate: customer.planExpiryDate ? new Date(customer.planExpiryDate).toISOString().split('T')[0] : '',
       devicesAllowed: customer.devicesAllowed || 5,
@@ -440,13 +429,7 @@ export const CustomerManagement = () => {
                             <FaPen className="text-gray-400" />
                             Edit Details
                           </button>
-                          <button
-                            onClick={() => handleOpenDocs(c)}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-[11px] font-semibold text-gray-700 dark:text-gray-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all text-left cursor-pointer"
-                          >
-                            <FaFileContract className="text-gray-400" />
-                            Document Hub
-                          </button>
+
                           <button
                             onClick={() => handleOpenDelete(c)}
                             className="w-full flex items-center gap-2 px-3 py-2 text-[11px] font-semibold text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all text-left border-t border-gray-100 dark:border-emerald-950/15 cursor-pointer"
@@ -527,26 +510,6 @@ export const CustomerManagement = () => {
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full p-2 bg-gray-50 dark:bg-[#121c17] border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Aadhaar Number</label>
-                      <input
-                        type="text"
-                        placeholder="12-digit Aadhaar"
-                        value={formData.aadhaarNumber}
-                        onChange={(e) => setFormData(prev => ({ ...prev, aadhaarNumber: e.target.value }))}
-                        className="w-full p-2 bg-gray-50 dark:bg-[#121c17] border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">GST Number</label>
-                      <input
-                        type="text"
-                        placeholder="GSTIN Code"
-                        value={formData.gstNumber}
-                        onChange={(e) => setFormData(prev => ({ ...prev, gstNumber: e.target.value }))}
                         className="w-full p-2 bg-gray-50 dark:bg-[#121c17] border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none"
                       />
                     </div>
@@ -705,89 +668,7 @@ export const CustomerManagement = () => {
                 </form>
               )}
 
-              {modalType === 'documents' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
-                    {/* Documents List */}
-                    <div className="space-y-2.5">
-                      <h4 className="font-extrabold text-gray-700 dark:text-gray-300">Existing Verification Documents</h4>
-                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                        {selectedCustomer?.documents && selectedCustomer.documents.length > 0 ? (
-                          selectedCustomer.documents.map((doc, idx) => (
-                            <div key={idx} className="p-2 border border-gray-150 dark:border-emerald-950/20 rounded-xl flex justify-between items-center bg-gray-50 dark:bg-[#121c17]">
-                              <div>
-                                <span className="font-bold block text-gray-800 dark:text-gray-200">{doc.fileName}</span>
-                                <span className="text-[10px] text-gray-400 uppercase font-semibold">{doc.documentType}</span>
-                              </div>
-                              <a
-                                href={doc.filePath}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="px-2.5 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30 rounded font-bold"
-                              >
-                                View File
-                              </a>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-gray-400 text-xs py-6 text-center">No documents uploaded yet.</p>
-                        )}
-                      </div>
-                    </div>
 
-                    {/* Upload Doc Form */}
-                    <form onSubmit={handleAddDocument} className="space-y-3 p-4 bg-gray-50 dark:bg-[#121c17] rounded-2xl border border-gray-200 dark:border-emerald-950/30">
-                      <h4 className="font-extrabold text-emerald-600">Register Verification Document</h4>
-                      <div>
-                        <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Document Category</label>
-                        <select
-                          value={docType}
-                          onChange={(e) => setDocType(e.target.value)}
-                          className="w-full p-2 bg-white dark:bg-[#0c120f] border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
-                        >
-                          <option value="Aadhaar">Aadhaar Card</option>
-                          <option value="PAN">PAN Card</option>
-                          <option value="GST">GST Registration</option>
-                          <option value="RC">Vehicle RC Copy</option>
-                          <option value="Insurance">Insurance Policy</option>
-                          <option value="Purchase Invoice">Purchase Invoice</option>
-                          <option value="Installation Photo">Installation Photo</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Document Title</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Aadhaar Rajesh Patel"
-                          value={docName}
-                          onChange={(e) => setDocName(e.target.value)}
-                          className="w-full p-2 bg-white dark:bg-[#0c120f] border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Attachment File URI</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. file:///C:/Users/Sai/Documents/aadhaar.pdf"
-                          value={docPath}
-                          onChange={(e) => setDocPath(e.target.value)}
-                          className="w-full p-2 bg-white dark:bg-[#0c120f] border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-mono"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold cursor-pointer transition-colors"
-                      >
-                        Verify & Upload Doc
-                      </button>
-                    </form>
-
-                  </div>
-                </div>
-              )}
 
               {modalType === 'delete' && (
                 <div className="space-y-4">

@@ -45,7 +45,8 @@ export const createMachine = async (req, res, next) => {
     const { 
       name, type, brand, model, registration, chassisNumber, 
       status, fuel, battery, assignedDriverId, location, 
-      nextService, currentAddress, photo, documents 
+      nextService, currentAddress, photo, documents,
+      firstServiceHours, regularServiceInterval, lastServiceHours, engineType, currentEngineHours
     } = req.body;
 
     const checkChassis = chassisNumber || registration;
@@ -54,7 +55,7 @@ export const createMachine = async (req, res, next) => {
       return next(new Error('Chassis number is required.'));
     }
 
-    const existingRegistration = await Machine.findOne({ registration });
+    const existingRegistration = registration ? await Machine.findOne({ registration }) : null;
     if (existingRegistration) {
       res.status(400);
       return next(new Error('Machine with this registration number already exists'));
@@ -85,7 +86,7 @@ export const createMachine = async (req, res, next) => {
       type,
       brand,
       model,
-      registration,
+      registration: registration || '',
       chassisNumber: checkChassis,
       farmId,
       owner,
@@ -98,6 +99,11 @@ export const createMachine = async (req, res, next) => {
       currentAddress,
       photo,
       documents,
+      firstServiceHours: firstServiceHours !== undefined ? Number(firstServiceHours) : 50,
+      regularServiceInterval: regularServiceInterval !== undefined ? Number(regularServiceInterval) : 250,
+      lastServiceHours: lastServiceHours !== undefined ? Number(lastServiceHours) : 0,
+      currentEngineHours: currentEngineHours !== undefined ? Number(currentEngineHours) : 0,
+      engineType: engineType || 'Factory Integrated Engine'
     });
 
     if (assignedDriverId) {
@@ -148,11 +154,18 @@ export const updateMachine = async (req, res, next) => {
     const oldDriverId = machine.assignedDriverId ? machine.assignedDriverId.toString() : null;
     const newDriverId = updateData.assignedDriverId || null;
 
-    const updatedMachine = await Machine.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const updatedMachine = await Machine.findById(req.params.id);
+    if (!updatedMachine) {
+      res.status(404);
+      return next(new Error('Machine not found'));
+    }
+
+    // Assign updated fields
+    Object.keys(updateData).forEach(key => {
+      updatedMachine[key] = updateData[key];
+    });
+
+    await updatedMachine.save();
 
     // Relational update: handle driver assignments
     if (oldDriverId !== newDriverId) {
@@ -269,6 +282,8 @@ export const getVehicleMetadata = async (req, res, next) => {
           _id: m._id,
           name: m.name,
           vehicleType: m.vehicleType,
+          engineConfig: m.engineConfig || 'None',
+          series: m.series || '',
           hpOptions: hps.map(h => h.hpValue)
         });
       }

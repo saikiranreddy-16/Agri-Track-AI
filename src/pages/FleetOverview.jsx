@@ -382,7 +382,7 @@ export const FleetOverview = () => {
                       <th className="py-2.5 font-bold">Client Name</th>
                       <th className="py-2.5 font-bold">Contact Info</th>
                       <th className="py-2.5 font-bold">Address Line</th>
-                      <th className="py-2.5 font-bold">Aadhaar / GST</th>
+                      <th className="py-2.5 font-bold">Subscription Plan</th>
                       <th className="py-2.5 font-bold">Status</th>
                       <th className="py-2.5 font-bold text-center">Actions</th>
                     </tr>
@@ -401,9 +401,8 @@ export const FleetOverview = () => {
                         <td className="py-3 pr-2 font-medium max-w-[150px] truncate" title={cust.addressLine}>
                           {cust.addressLine || 'N/A'}
                         </td>
-                        <td className="py-3 pr-2 font-mono text-[10px]">
-                          <div>AAD: {cust.aadhaarNumber || 'N/A'}</div>
-                          <div className="text-gray-400">GST: {cust.gstNumber || 'N/A'}</div>
+                        <td className="py-3 pr-2 font-bold text-[10px] text-emerald-600 dark:text-emerald-405">
+                          {cust.planName || cust.subscriptionPlan || 'Standard'}
                         </td>
                         <td className="py-3 pr-2">
                           <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${

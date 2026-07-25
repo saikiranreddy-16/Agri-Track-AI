@@ -31,6 +31,14 @@ const formatMachine = (m) => ({
   distanceTravelled: m.distanceTravelled || 0,
   currentAddress: m.currentAddress || '',
   photo: m.photo || 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
+  firstServiceHours: m.firstServiceHours || 50,
+  regularServiceInterval: m.regularServiceInterval || 250,
+  lastServiceHours: m.lastServiceHours || 0,
+  currentEngineHours: m.currentEngineHours || 0,
+  lastServiceDate: m.lastServiceDate,
+  nextServiceDate: m.nextServiceDate,
+  serviceStatus: m.serviceStatus || 'Good',
+  engineType: m.engineType || 'Factory Integrated Engine'
 });
 
 export const Machines = () => {
@@ -70,6 +78,12 @@ export const Machines = () => {
   const [formDriver, setFormDriver] = useState('');
   const [formFuel, setFormFuel] = useState(100);
   const [formStatus, setFormStatus] = useState('Idle');
+  
+  // Custom Service & Engine Configs
+  const [formEngineType, setFormEngineType] = useState('Factory Integrated Engine');
+  const [formFirstServiceHours, setFormFirstServiceHours] = useState(50);
+  const [formRegularServiceInterval, setFormRegularServiceInterval] = useState(250);
+  const [formLastServiceHours, setFormLastServiceHours] = useState(0);
 
   // Load initial database records
   useEffect(() => {
@@ -87,7 +101,7 @@ export const Machines = () => {
           setDriversList(drvRes.data.data);
         }
         if (metaRes.data && metaRes.data.success) {
-          setTypesMetadata(metaRes.data.data.types);
+          setTypesMetadata(['Tractor', 'Track Harvester', 'Combine Harvester']);
           setBrandsMetadata(metaRes.data.data.brands);
         }
       } catch (error) {
@@ -112,6 +126,16 @@ export const Machines = () => {
   }, []);
 
   // Handle cascaded vehicle metadata dropdown changes
+  const handleVehicleTypeChange = (typeVal) => {
+    setFormType(typeVal);
+    setFormBrandId('');
+    setFormModelId('');
+    setFormHp('');
+    setFormModels([]);
+    setFormHpOptions([]);
+    setFormEngineType('Factory Integrated Engine');
+  };
+
   const handleBrandChange = (brandId) => {
     setFormBrandId(brandId);
     setFormModelId('');
@@ -121,7 +145,7 @@ export const Machines = () => {
     if (!brandId) return;
     const foundBrand = brandsMetadata.find(b => b._id === brandId);
     if (foundBrand) {
-      setFormModels(foundBrand.models);
+      setFormModels(foundBrand.models.filter(m => m.vehicleType === formType));
     }
   };
 
@@ -132,9 +156,15 @@ export const Machines = () => {
     if (!modelId) return;
     const foundModel = formModels.find(m => m._id === modelId);
     if (foundModel) {
-      setFormHpOptions(foundModel.hpOptions);
-      if (foundModel.vehicleType) {
-        setFormType(foundModel.vehicleType);
+      setFormHpOptions(foundModel.hpOptions || []);
+      if (formType === 'Combine Harvester') {
+        if (foundModel.engineConfig === 'External') {
+          setFormEngineType('John Deere Engine');
+        } else {
+          setFormEngineType('Factory Integrated Engine');
+        }
+      } else {
+        setFormEngineType('Factory Integrated Engine');
       }
     }
   };
@@ -157,6 +187,10 @@ export const Machines = () => {
     setFormReg('');
     setFormDriver('');
     setFormFuel(100);
+    setFormEngineType('Factory Integrated Engine');
+    setFormFirstServiceHours(50);
+    setFormRegularServiceInterval(250);
+    setFormLastServiceHours(0);
     setIsAddOpen(true);
   };
 
@@ -181,7 +215,11 @@ export const Machines = () => {
         assignedDriverId: formDriver || null,
         fuel: parseInt(formFuel, 10),
         status: 'Idle',
-        location: { lat: 30.902, lng: 75.853 }
+        location: { lat: 30.902, lng: 75.853 },
+        firstServiceHours: Number(formFirstServiceHours),
+        regularServiceInterval: Number(formRegularServiceInterval),
+        lastServiceHours: Number(formLastServiceHours),
+        engineType: formEngineType
       });
       if (response.data && response.data.success) {
         setMachinesList(prev => [formatMachine(response.data.data), ...prev]);
@@ -203,11 +241,11 @@ export const Machines = () => {
     const matchedBrand = brandsMetadata.find(b => b.name === machine.brand);
     if (matchedBrand) {
       setFormBrandId(matchedBrand._id);
-      setFormModels(matchedBrand.models);
+      setFormModels(matchedBrand.models.filter(m => m.vehicleType === machine.type));
       const matchedModel = matchedBrand.models.find(m => m.name === machine.model);
       if (matchedModel) {
         setFormModelId(matchedModel._id);
-        setFormHpOptions(matchedModel.hpOptions);
+        setFormHpOptions(matchedModel.hpOptions || []);
       }
     } else {
       setFormBrandId('');
@@ -224,6 +262,13 @@ export const Machines = () => {
     );
     setFormFuel(machine.fuel);
     setFormStatus(machine.status);
+
+    // Custom Service & Engine Configs
+    setFormEngineType(machine.engineType || 'Factory Integrated Engine');
+    setFormFirstServiceHours(machine.firstServiceHours || 50);
+    setFormRegularServiceInterval(machine.regularServiceInterval || 250);
+    setFormLastServiceHours(machine.lastServiceHours || 0);
+
     setIsEditOpen(true);
   };
 
@@ -247,7 +292,11 @@ export const Machines = () => {
         registration: formReg,
         assignedDriverId: formDriver || null,
         fuel: parseInt(formFuel, 10),
-        status: formStatus
+        status: formStatus,
+        firstServiceHours: Number(formFirstServiceHours),
+        regularServiceInterval: Number(formRegularServiceInterval),
+        lastServiceHours: Number(formLastServiceHours),
+        engineType: formEngineType
       });
       if (response.data && response.data.success) {
         setMachinesList(prev => prev.map(m => m.id === activeMachine.id ? formatMachine(response.data.data) : m));
@@ -590,7 +639,7 @@ export const Machines = () => {
                     <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Vehicle Type</label>
                     <select
                       value={formType}
-                      onChange={(e) => setFormType(e.target.value)}
+                      onChange={(e) => handleVehicleTypeChange(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold"
                     >
                       {typesMetadata.map(t => <option key={t} value={t}>{t}</option>)}
@@ -605,7 +654,7 @@ export const Machines = () => {
                       className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold"
                     >
                       <option value="">Select Brand</option>
-                      {brandsMetadata.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+                      {brandsMetadata.filter(b => b.models.some(m => m.vehicleType === formType)).map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
                     </select>
                   </div>
                 </div>
@@ -639,15 +688,90 @@ export const Machines = () => {
                   </div>
                 </div>
 
+                {/* Dynamic Series & Engine Configuration */}
+                {(formType === 'Tractor' || formType === 'Combine Harvester') && formModelId && (
+                  <div className="grid grid-cols-1 gap-3 bg-gray-50/50 dark:bg-emerald-955/5 p-3 rounded-2xl border border-gray-150 dark:border-emerald-955/20 text-xs">
+                    {formType === 'Tractor' && (
+                      <div>
+                        <label className="block font-bold text-gray-450 uppercase tracking-wider mb-1.5 font-bold">Series</label>
+                        <input
+                          type="text"
+                          readOnly
+                          value={formModels.find(m => m._id === formModelId)?.series || 'Standard Series'}
+                          className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-100 dark:bg-[#121c17] dark:text-gray-300 font-bold focus:outline-none"
+                        />
+                      </div>
+                    )}
+                    {formType === 'Combine Harvester' && (
+                      <div>
+                        <label className="block font-bold text-gray-455 uppercase tracking-wider mb-1.5 font-bold">Engine Configuration / Type</label>
+                        {formModels.find(m => m._id === formModelId)?.engineConfig === 'External' ? (
+                          <select
+                            value={formEngineType}
+                            onChange={(e) => setFormEngineType(e.target.value)}
+                            className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold focus:outline-none"
+                          >
+                            <option value="John Deere Engine">John Deere Engine</option>
+                            <option value="Ashok Leyland Engine">Ashok Leyland Engine</option>
+                            <option value="Cummins Engine">Cummins Engine</option>
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            readOnly
+                            value="Factory Integrated Engine"
+                            className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-955/30 bg-gray-100 dark:bg-[#121c17] dark:text-gray-300 font-bold focus:outline-none"
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Service Reminder Configuration Thresholds */}
+                <div className="bg-gray-50/50 dark:bg-emerald-955/5 p-3 rounded-2xl border border-gray-150 dark:border-emerald-955/20 text-xs space-y-2">
+                  <h4 className="font-extrabold text-emerald-600">Service Reminders Thresholds (Hours)</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">First Service*</label>
+                      <input
+                        type="number"
+                        required
+                        value={formFirstServiceHours}
+                        onChange={(e) => setFormFirstServiceHours(Number(e.target.value))}
+                        className="w-full p-2 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Regular Int.*</label>
+                      <input
+                        type="number"
+                        required
+                        value={formRegularServiceInterval}
+                        onChange={(e) => setFormRegularServiceInterval(Number(e.target.value))}
+                        className="w-full p-2 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Last Hours</label>
+                      <input
+                        type="number"
+                        value={formLastServiceHours}
+                        onChange={(e) => setFormLastServiceHours(Number(e.target.value))}
+                        className="w-full p-2 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2">
-                    <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Registration Plate (State RTO ID)</label>
+                    <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Registration Plate (Optional)</label>
                     <input
                       type="text"
-                      required
                       value={formReg}
                       onChange={(e) => setFormReg(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white font-mono"
+                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white font-mono uppercase"
                       placeholder="e.g. PB-10-CD-2034"
                     />
                   </div>
@@ -658,7 +782,7 @@ export const Machines = () => {
                   <select
                     value={formDriver}
                     onChange={(e) => setFormDriver(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
+                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/20 dark:text-white focus:outline-none"
                   >
                     <option value="">Unassigned</option>
                     {driversList.map(d => (
@@ -716,8 +840,8 @@ export const Machines = () => {
                     <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Type</label>
                     <select
                       value={formType}
-                      onChange={(e) => setFormType(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold"
+                      onChange={(e) => handleVehicleTypeChange(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/5 focus:outline-none dark:text-white font-bold"
                     >
                       {typesMetadata.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -728,10 +852,10 @@ export const Machines = () => {
                       value={formBrandId}
                       required
                       onChange={(e) => handleBrandChange(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold"
+                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/5 focus:outline-none dark:text-white font-bold"
                     >
                       <option value="">Select Brand</option>
-                      {brandsMetadata.map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
+                      {brandsMetadata.filter(b => b.models.some(m => m.vehicleType === formType)).map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
                     </select>
                   </div>
                 </div>
@@ -744,7 +868,7 @@ export const Machines = () => {
                       required
                       disabled={!formBrandId}
                       onChange={(e) => handleModelChange(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold disabled:opacity-50"
+                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/5 focus:outline-none dark:text-white font-bold disabled:opacity-50"
                     >
                       <option value="">Select Model</option>
                       {formModels.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
@@ -757,11 +881,87 @@ export const Machines = () => {
                       required
                       disabled={!formModelId}
                       onChange={(e) => setFormHp(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold disabled:opacity-50"
+                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/5 focus:outline-none dark:text-white font-bold disabled:opacity-50"
                     >
                       <option value="">Select HP</option>
                       {formHpOptions.map(hp => <option key={hp} value={hp}>{hp}</option>)}
                     </select>
+                  </div>
+                </div>
+
+                {/* Dynamic Series & Engine Configuration */}
+                {(formType === 'Tractor' || formType === 'Combine Harvester') && formModelId && (
+                  <div className="grid grid-cols-1 gap-3 bg-gray-50/50 dark:bg-emerald-955/5 p-3 rounded-2xl border border-gray-150 dark:border-emerald-955/20 text-xs font-bold">
+                    {formType === 'Tractor' && (
+                      <div>
+                        <label className="block font-bold text-gray-450 uppercase tracking-wider mb-1.5 font-bold">Series</label>
+                        <input
+                          type="text"
+                          readOnly
+                          value={formModels.find(m => m._id === formModelId)?.series || 'Standard Series'}
+                          className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-100 dark:bg-[#121c17] dark:text-gray-300 font-bold focus:outline-none"
+                        />
+                      </div>
+                    )}
+                    {formType === 'Combine Harvester' && (
+                      <div>
+                        <label className="block font-bold text-gray-455 uppercase tracking-wider mb-1.5 font-bold">Engine Configuration / Type</label>
+                        {formModels.find(m => m._id === formModelId)?.engineConfig === 'External' ? (
+                          <select
+                            value={formEngineType}
+                            onChange={(e) => setFormEngineType(e.target.value)}
+                            className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold focus:outline-none"
+                          >
+                            <option value="John Deere Engine">John Deere Engine</option>
+                            <option value="Ashok Leyland Engine">Ashok Leyland Engine</option>
+                            <option value="Cummins Engine">Cummins Engine</option>
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            readOnly
+                            value="Factory Integrated Engine"
+                            className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-100 dark:bg-[#121c17] dark:text-gray-300 font-bold focus:outline-none"
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Service Reminder Configuration Thresholds */}
+                <div className="bg-gray-50/50 dark:bg-emerald-955/5 p-3 rounded-2xl border border-gray-150 dark:border-emerald-955/20 text-xs font-bold space-y-2">
+                  <h4 className="font-extrabold text-emerald-600">Service Reminders Thresholds (Hours)</h4>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">First Service*</label>
+                      <input
+                        type="number"
+                        required
+                        value={formFirstServiceHours}
+                        onChange={(e) => setFormFirstServiceHours(Number(e.target.value))}
+                        className="w-full p-2 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Regular Int.*</label>
+                      <input
+                        type="number"
+                        required
+                        value={formRegularServiceInterval}
+                        onChange={(e) => setFormRegularServiceInterval(Number(e.target.value))}
+                        className="w-full p-2 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Last Hours</label>
+                      <input
+                        type="number"
+                        value={formLastServiceHours}
+                        onChange={(e) => setFormLastServiceHours(Number(e.target.value))}
+                        className="w-full p-2 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -794,7 +994,7 @@ export const Machines = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2">
-                    <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Registration</label>
+                    <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1">Registration (Optional)</label>
                     <input
                       type="text"
                       required

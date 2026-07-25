@@ -121,7 +121,13 @@ export const activateDevice = async (req, res, next) => {
     mandal,
     village,
     pincode,
-    addressLine
+    addressLine,
+    
+    // Service Configuration & Engine Type
+    firstServiceHours,
+    regularServiceInterval,
+    lastServiceHours,
+    engineType
   } = req.body;
 
   try {
@@ -236,6 +242,10 @@ export const activateDevice = async (req, res, next) => {
       status: 'Offline',
       location: { lat: 30.902, lng: 75.853 },
       healthScore: 100,
+      firstServiceHours: firstServiceHours !== undefined ? Number(firstServiceHours) : 50,
+      regularServiceInterval: regularServiceInterval !== undefined ? Number(regularServiceInterval) : 250,
+      lastServiceHours: lastServiceHours !== undefined ? Number(lastServiceHours) : 0,
+      engineType: engineType || 'Factory Integrated Engine'
     });
 
     // 7. Link vehicleId back to GPS device

@@ -199,23 +199,120 @@ const seedDatabase = async () => {
 
     // 3. Seed Vehicle Predefined Metadata
     console.log('Seeding Vehicle predefined brands and models...');
-    const brandSwaraj = await VehicleBrand.create({ name: 'Swaraj' });
-    const brandJD = await VehicleBrand.create({ name: 'John Deere' });
-    const brandKubota = await VehicleBrand.create({ name: 'Kubota' });
-    const brandGAM = await VehicleBrand.create({ name: 'GAM' });
-    const brandLovol = await VehicleBrand.create({ name: 'Lovol' });
+    
+    // Tractor Brands (John Deere, Swaraj, Mahindra, Sonalika, Kubota, New Holland, Massey Ferguson, Farmtrac, Powertrac, Eicher, Indo Farm, ACE, Captain, Preet, Solis)
+    // Tractor Brands
+    const tractors = [
+      { brand: 'John Deere', models: [
+        { name: '5050D', series: '5D', hp: '50 HP' },
+        { name: '5310 GearPro', series: '5E', hp: '55 HP' }
+      ]},
+      { brand: 'Swaraj', models: [
+        { name: '744 XT', series: 'XT', hp: '48 HP' },
+        { name: '855 FE', series: 'FE', hp: '52 HP' },
+        { name: '963 FE', series: 'FE', hp: '60 HP' }
+      ]},
+      { brand: 'Massey Ferguson', models: [
+        { name: '241 DI', series: 'DI', hp: '42 HP' },
+        { name: '7250 PowerUp', series: 'PowerUp', hp: '50 HP' }
+      ]},
+      { brand: 'Sonalika', models: [
+        { name: 'Rx 50', series: 'Rx', hp: '52 HP' },
+        { name: 'Tiger DI 50', series: 'Tiger', hp: '52 HP' }
+      ]}
+    ];
 
-    const model735 = await VehicleModel.create({ name: '735 FE', brand: brandSwaraj._id, vehicleType: 'Tractor' });
-    const model5042 = await VehicleModel.create({ name: '5042D', brand: brandJD._id, vehicleType: 'Tractor' });
-    const modelMU4501 = await VehicleModel.create({ name: 'MU4501', brand: brandKubota._id, vehicleType: 'Tractor' });
-    const modelGAMHarv = await VehicleModel.create({ name: 'GAM Harvester', brand: brandGAM._id, vehicleType: 'Harvester' });
-    const modelLovolHarv = await VehicleModel.create({ name: 'Lovol Harvester', brand: brandLovol._id, vehicleType: 'Harvester' });
+    // Track Harvester Brands
+    const trackHarvesters = [
+      { brand: 'GAM', models: [{ name: 'GAM Track Harvester', hp: '110 HP' }] },
+      { brand: 'Lovol', models: [{ name: 'Lovol Track Harvester', hp: '120 HP' }] },
+      { brand: 'Kubota', models: [{ name: 'Kubota DC-68G', hp: '68 HP' }] },
+      { brand: 'Yanmar', models: [{ name: 'Yanmar YH850 Track', hp: '85 HP' }] },
+      { brand: 'CLAAS', models: [{ name: 'Crop Tiger 30 Track', hp: '60 HP' }] },
+      { brand: 'Fieldking', models: [{ name: 'Fieldking Track Harvester', hp: '115 HP' }] },
+      { brand: 'Delta', models: [{ name: 'Delta Track Harvester', hp: '110 HP' }] },
+      { brand: 'Oryza', models: [{ name: 'Oryza Track Harvester', hp: '120 HP' }] },
+      { brand: 'Vishal', models: [{ name: 'Vishal 495 Track', hp: '95 HP' }] },
+      { brand: 'Preet', models: [{ name: 'Preet 987 Track', hp: '110 HP' }] },
+      { brand: 'Kartar', models: [{ name: 'Kartar 4000 Track', hp: '110 HP' }] }
+    ];
 
-    await HPMaster.create({ hpValue: '40 HP', model: model735._id });
-    await HPMaster.create({ hpValue: '44 HP', model: model5042._id });
-    await HPMaster.create({ hpValue: '45 HP', model: modelMU4501._id });
-    await HPMaster.create({ hpValue: '110 HP', model: modelGAMHarv._id });
-    await HPMaster.create({ hpValue: '120 HP', model: modelLovolHarv._id });
+    // Combine Harvester Brands
+    const combineHarvesters = [
+      { brand: 'Lovol', models: [{ name: 'Lovol Harvester', hp: ['75 HP', '88 HP', '100 HP'], engineConfig: 'Integrated' }] },
+      { brand: 'Kubota', models: [{ name: 'Kubota Harvester', hp: ['70 HP', '85 HP', '95 HP'], engineConfig: 'Integrated' }] },
+      { brand: 'GAM', models: [{ name: 'GAM Harvester', hp: ['105 HP', '110 HP', '120 HP'], engineConfig: 'External' }] },
+      { brand: 'Preet', models: [{ name: 'Preet Harvester', hp: ['100 HP', '110 HP'], engineConfig: 'External' }] },
+      { brand: 'Kartar', models: [{ name: 'Kartar Harvester', hp: ['100 HP', '110 HP'], engineConfig: 'External' }] },
+      { brand: 'Standard', models: [{ name: 'Standard Harvester', hp: ['100 HP', '110 HP'], engineConfig: 'External' }] },
+      { brand: 'Vishal', models: [{ name: 'Vishal Harvester', hp: ['100 HP', '110 HP'], engineConfig: 'External' }] }
+    ];
+
+    const createdBrands = {};
+
+    const getOrCreateBrand = async (bName) => {
+      if (createdBrands[bName]) return createdBrands[bName];
+      let b = await VehicleBrand.findOne({ name: bName });
+      if (!b) {
+        b = await VehicleBrand.create({ name: bName });
+      }
+      createdBrands[bName] = b._id;
+      return b._id;
+    };
+
+    // Seed Tractors
+    for (const group of tractors) {
+      const brandId = await getOrCreateBrand(group.brand);
+      for (const m of group.models) {
+        const modelObj = await VehicleModel.create({
+          name: m.name,
+          brand: brandId,
+          vehicleType: 'Tractor',
+          engineConfig: 'None',
+          series: m.series || ''
+        });
+        const hpVals = Array.isArray(m.hp) ? m.hp : [m.hp];
+        for (const hpVal of hpVals) {
+          await HPMaster.create({ hpValue: hpVal, model: modelObj._id });
+        }
+      }
+    }
+
+    // Seed Track Harvesters
+    for (const group of trackHarvesters) {
+      const brandId = await getOrCreateBrand(group.brand);
+      for (const m of group.models) {
+        const modelObj = await VehicleModel.create({
+          name: m.name,
+          brand: brandId,
+          vehicleType: 'Track Harvester',
+          engineConfig: 'None',
+          series: ''
+        });
+        const hpVals = Array.isArray(m.hp) ? m.hp : [m.hp];
+        for (const hpVal of hpVals) {
+          await HPMaster.create({ hpValue: hpVal, model: modelObj._id });
+        }
+      }
+    }
+
+    // Seed Combine Harvesters
+    for (const group of combineHarvesters) {
+      const brandId = await getOrCreateBrand(group.brand);
+      for (const m of group.models) {
+        const modelObj = await VehicleModel.create({
+          name: m.name,
+          brand: brandId,
+          vehicleType: 'Combine Harvester',
+          engineConfig: m.engineConfig,
+          series: ''
+        });
+        const hpVals = Array.isArray(m.hp) ? m.hp : [m.hp];
+        for (const hpVal of hpVals) {
+          await HPMaster.create({ hpValue: hpVal, model: modelObj._id });
+        }
+      }
+    }
 
     // Seed Farms (one per customer)
     console.log('Seeding Farms...');
@@ -289,6 +386,10 @@ const seedDatabase = async () => {
         distanceTravelled: 1240.2,
         areaCovered: 345.2,
         idleTime: 12.4,
+        firstServiceHours: 50,
+        regularServiceInterval: 250,
+        lastServiceHours: 0,
+        engineType: 'Factory Integrated Engine',
         currentAddress: 'Cheruvupally Village Road, Madgulapally, Nalgonda, Telangana',
         photo: 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
         documents: ['Swaraj_735_Manual.pdf'],
@@ -322,6 +423,10 @@ const seedDatabase = async () => {
         distanceTravelled: 3210.8,
         areaCovered: 785.4,
         idleTime: 42.1,
+        firstServiceHours: 50,
+        regularServiceInterval: 250,
+        lastServiceHours: 0,
+        engineType: 'Factory Integrated Engine',
         currentAddress: 'NH-565 Highway, Madgulapally, Nalgonda, Telangana',
         photo: 'https://images.unsplash.com/photo-1594142426444-a4cd02470991?auto=format&fit=crop&w=800&q=80',
         documents: ['JD_5042D_OperatorGuide.pdf'],
@@ -355,6 +460,10 @@ const seedDatabase = async () => {
         distanceTravelled: 720.5,
         areaCovered: 180.2,
         idleTime: 9.8,
+        firstServiceHours: 50,
+        regularServiceInterval: 250,
+        lastServiceHours: 0,
+        engineType: 'Factory Integrated Engine',
         currentAddress: 'Cheruvupally Gram Panchayat Area, Nalgonda, Telangana',
         photo: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80',
         documents: ['Kubota_MU4501_Guide.pdf'],
@@ -373,7 +482,7 @@ const seedDatabase = async () => {
       },
       {
         name: 'GAM Harvester',
-        type: 'Harvester',
+        type: 'Track Harvester',
         brand: 'GAM',
         model: 'GAM Harvester',
         registration: 'TS-05-EA-1004',
@@ -388,6 +497,10 @@ const seedDatabase = async () => {
         distanceTravelled: 1890.3,
         areaCovered: 520.1,
         idleTime: 25.6,
+        firstServiceHours: 50,
+        regularServiceInterval: 250,
+        lastServiceHours: 0,
+        engineType: 'Factory Integrated Engine',
         currentAddress: 'West Paddy Farms, Cheruvupally, Nalgonda, Telangana',
         photo: 'https://images.unsplash.com/photo-1595246140625-5c3b545b0976?auto=format&fit=crop&w=800&q=80',
         documents: ['GAM_Harvesting_Systems.pdf'],
@@ -406,7 +519,7 @@ const seedDatabase = async () => {
       },
       {
         name: 'Lovol Harvester',
-        type: 'Harvester',
+        type: 'Track Harvester',
         brand: 'Lovol',
         model: 'Lovol Harvester',
         registration: 'TS-05-EA-1005',
@@ -421,6 +534,10 @@ const seedDatabase = async () => {
         distanceTravelled: 5410.2,
         areaCovered: 1250.8,
         idleTime: 92.4,
+        firstServiceHours: 50,
+        regularServiceInterval: 250,
+        lastServiceHours: 0,
+        engineType: 'Factory Integrated Engine',
         currentAddress: 'Cheruvupally Grain Warehouse, Nalgonda, Telangana',
         photo: 'https://images.unsplash.com/photo-1574375927938-d5a98e8edd86?auto=format&fit=crop&w=800&q=80',
         documents: ['Lovol_Harvester_Operator_Manual.pdf'],

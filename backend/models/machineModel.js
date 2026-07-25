@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { calculateServiceReminder } from '../services/serviceReminderService.js';
 
 const machineSchema = new mongoose.Schema(
   {
@@ -137,6 +138,39 @@ const machineSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    firstServiceHours: {
+      type: Number,
+      default: 50,
+    },
+    regularServiceInterval: {
+      type: Number,
+      default: 250,
+    },
+    lastServiceHours: {
+      type: Number,
+      default: 0,
+    },
+    currentEngineHours: {
+      type: Number,
+      default: 0,
+    },
+    engineType: {
+      type: String,
+      default: 'Factory Integrated Engine',
+    },
+    lastServiceDate: {
+      type: Date,
+      default: null,
+    },
+    nextServiceDate: {
+      type: Date,
+      default: null,
+    },
+    serviceStatus: {
+      type: String,
+      enum: ['Good', 'Due Soon', 'Due Today', 'Overdue', 'Service Completed'],
+      default: 'Good',
+    },
     nextService: {
       type: Date,
       default: null,
@@ -192,6 +226,22 @@ machineSchema.pre('find', excludeDeleted);
 machineSchema.pre('findOne', excludeDeleted);
 machineSchema.pre('findOneAndUpdate', excludeDeleted);
 machineSchema.pre('countDocuments', excludeDeleted);
+
+machineSchema.pre('save', function (next) {
+  // Recalculate service reminder metrics
+  const reminder = calculateServiceReminder(this);
+  this.currentEngineHours = reminder.currentEngineHours;
+  this.serviceStatus = reminder.serviceStatus;
+  
+  if (!this.lastServiceDate) {
+    this.lastServiceDate = new Date(reminder.lastServiceDate);
+  }
+  // Recalculate nextServiceDate if it's missing or if related fields changed
+  if (!this.nextServiceDate || this.isModified('lastServiceHours') || this.isModified('workingHours')) {
+    this.nextServiceDate = new Date(reminder.nextServiceDate);
+  }
+  next();
+});
 
 const Machine = mongoose.model('Machine', machineSchema);
 export default Machine;
