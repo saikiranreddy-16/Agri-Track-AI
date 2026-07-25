@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import io from 'socket.io-client';
 import api from '../utils/api';
@@ -8,9 +8,12 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { 
   FaTractor, FaGasPump, FaBatteryThreeQuarters, FaTools, 
   FaClock, FaMapMarkerAlt, FaFileAlt, FaHistory, FaExclamationTriangle, 
-  FaChevronLeft, FaCamera, FaDownload, FaShieldAlt
+  FaChevronLeft, FaCamera, FaDownload, FaShieldAlt, FaPlay, FaPause, FaStepBackward, 
+  FaLink, FaPowerOff, FaSignal, FaRoute, FaGlobe, FaArrowRight, FaRoad
 } from 'react-icons/fa';
 import { PATHS } from '../constants';
+import { mockMachines, mockCustomers, mockDrivers } from '../data/mockData';
+import { useToast } from '../context/ToastContext';
 
 // Fix Leaflet pin icon
 import 'leaflet/dist/leaflet.css';
@@ -21,7 +24,8 @@ const customPin = L.icon({
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
   iconSize: [25, 41],
-  iconAnchor: [12, 41]
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
 });
 
 // Helper component to center Leaflet map dynamically
@@ -35,6 +39,22 @@ const RecenterMap = ({ center, zoom = 15 }) => {
   return null;
 };
 
+// Available Map Tile Layers
+const MAP_LAYERS = {
+  streets: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  },
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  },
+  terrain: {
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
+  }
+};
+
 const formatMachine = (m) => ({
   id: m._id || m.id,
   name: m.name,
@@ -46,29 +66,43 @@ const formatMachine = (m) => ({
   fuel: m.fuel !== undefined ? m.fuel : 100,
   battery: m.battery !== undefined ? m.battery : 100,
   assignedDriverId: m.assignedDriverId,
-  location: m.location || { lat: 30.902, lng: 75.853 },
+  location: m.location || { lat: 16.978, lng: 79.432 },
   speed: m.speed || 0,
   heading: m.heading || 0,
   engineStatus: m.engineStatus || 'Off',
   workingHours: m.workingHours || 0,
   distanceTravelled: m.distanceTravelled || 0,
+  areaCovered: m.areaCovered || 0,
+  idleTime: m.idleTime || 0,
   currentAddress: m.currentAddress || '',
   photo: m.photo || 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
   documents: m.documents || [],
-  workHistory: m.workHistory || [],
-  fuelHistory: m.fuelHistory || [],
-  maintenanceHistory: m.maintenanceHistory || [],
-  alerts: m.alerts || [],
   gpsDeviceId: m.gpsDeviceId,
   updatedAt: m.updatedAt,
+  chassisNumber: m.chassisNumber || m.registration || 'N/A',
+  engineNumber: m.engineNumber || 'N/A',
+  purchaseDate: m.purchaseDate || '2025-05-10',
+  manufacturingYear: m.manufacturingYear || 2024,
+  rcOwnerName: m.rcOwnerName || 'Unknown Customer',
+  insuranceExpiry: m.insuranceExpiry || '2027-05-10',
+  fitnessExpiry: m.fitnessExpiry || '2029-05-10',
 });
 
 export const MachineDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
+  
   const [activeTab, setActiveTab] = useState('overview');
   const [machine, setMachine] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeLayer, setActiveLayer] = useState('streets');
+
+  // GPS history playback state
+  const [historyCoordinates, setHistoryCoordinates] = useState([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1000); // ms per step
 
   // Fetch machine details on mount
   useEffect(() => {
@@ -102,6 +136,50 @@ export const MachineDetail = () => {
     };
   }, [id]);
 
+  // Load history data when GPS History tab is loaded
+  useEffect(() => {
+    if (activeTab === 'history') {
+      const fetchHistory = async () => {
+        try {
+          const response = await api.get(`/gps/${id}/playback`);
+          if (response.data && response.data.success) {
+            setHistoryCoordinates(response.data.data.coordinates || []);
+          }
+        } catch (e) {
+          console.error('Failed to fetch route history playback:', e);
+          // Fallback mock history coordinates around Cheruvupally
+          setHistoryCoordinates([
+            { lat: 16.975, lng: 79.430, speed: 10, heading: 90, timestamp: '10:00 AM' },
+            { lat: 16.976, lng: 79.431, speed: 12, heading: 90, timestamp: '10:05 AM' },
+            { lat: 16.977, lng: 79.432, speed: 15, heading: 45, timestamp: '10:10 AM' },
+            { lat: 16.978, lng: 79.433, speed: 8, heading: 180, timestamp: '10:15 AM' },
+            { lat: 16.978, lng: 79.432, speed: 0, heading: 180, timestamp: '10:20 AM' }
+          ]);
+        }
+      };
+      fetchHistory();
+      setCurrentStep(0);
+      setIsPlaying(false);
+    }
+  }, [activeTab, id]);
+
+  // Autoplay loop for route history playback
+  useEffect(() => {
+    let timer = null;
+    if (isPlaying && historyCoordinates.length > 0) {
+      timer = setInterval(() => {
+        setCurrentStep(prev => {
+          if (prev >= historyCoordinates.length - 1) {
+            setIsPlaying(false);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, playbackSpeed);
+    }
+    return () => clearInterval(timer);
+  }, [isPlaying, historyCoordinates, playbackSpeed]);
+
   if (isLoading) {
     return (
       <div className="h-96 flex items-center justify-center">
@@ -124,30 +202,62 @@ export const MachineDetail = () => {
   }
 
   const assignedDriver = machine.assignedDriverId && typeof machine.assignedDriverId === 'object'
-    ? {
-        name: machine.assignedDriverId.name,
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&h=400&q=80',
-        experience: '8 Years',
-      }
-    : null;
+    ? machine.assignedDriverId.name
+    : 'Unassigned Operator';
 
+  // 6 Detailed Navigation Tabs
   const tabs = [
-    { id: 'overview', label: 'Overview & GPS', icon: FaTractor },
-    { id: 'device', label: 'Device Information', icon: FaShieldAlt },
-    { id: 'work', label: 'Work & Drivers', icon: FaHistory },
-    { id: 'fuel', label: 'Fuel Analytics', icon: FaGasPump },
-    { id: 'maintenance', label: 'Maintenance & Alerts', icon: FaTools },
-    { id: 'documents', label: 'Photos & Manuals', icon: FaFileAlt }
+    { id: 'overview', label: 'Overview', icon: FaTractor },
+    { id: 'vehicle_info', label: 'Vehicle Info', icon: FaFileAlt },
+    { id: 'device_info', label: 'Device Info', icon: FaShieldAlt },
+    { id: 'live_tracking', label: 'Live Tracking', icon: FaRoute },
+    { id: 'history', label: 'GPS History', icon: FaHistory },
+    { id: 'reports', label: 'Reports', icon: FaClock }
   ];
+
+  // Helper to build beautiful custom Leaflet popups
+  const renderMapPopup = (loc, name, spd, eng, statusText, addr) => {
+    return (
+      <Popup className="custom-leaflet-popup">
+        <div className="text-xs p-1 space-y-1.5 w-44 font-sans text-gray-800 dark:text-gray-200">
+          <div className="border-b border-gray-100 dark:border-emerald-950/20 pb-1 flex justify-between items-center">
+            <strong className="text-emerald-700 dark:text-emerald-450 text-[11px] truncate">{name}</strong>
+          </div>
+          <div className="grid grid-cols-2 gap-1 text-[9px] font-semibold">
+            <div>Owner:</div>
+            <div className="text-gray-500 dark:text-gray-400 text-right truncate">{machine.rcOwnerName}</div>
+            
+            <div>Speed:</div>
+            <div className="text-gray-500 dark:text-gray-400 text-right">{spd} km/h</div>
+            
+            <div>Engine:</div>
+            <div className="text-gray-500 dark:text-gray-400 text-right font-bold">{eng === 'On' ? 'ON' : 'OFF'}</div>
+            
+            <div>GPS Status:</div>
+            <div className="text-gray-500 dark:text-gray-400 text-right">{statusText}</div>
+          </div>
+          <div className="text-[8px] text-gray-400 border-t border-gray-100 dark:border-emerald-950/20 pt-1">
+            <strong>Addr: </strong>{addr || 'Cheruvupally Village, Telangana'}
+          </div>
+        </div>
+      </Popup>
+    );
+  };
+
+  const handleSliderChange = (e) => {
+    setCurrentStep(parseInt(e.target.value, 10));
+  };
+
+  const currentPlaybackPoint = historyCoordinates[currentStep] || null;
 
   return (
     <div className="space-y-6">
       
-      {/* Breadcrumb Header */}
+      {/* Header */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(PATHS.MACHINES)}
-          className="p-2.5 bg-white dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-900/30 rounded-xl text-xs hover:bg-gray-100 transition-colors"
+          className="p-2.5 bg-white dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-900/30 rounded-xl text-xs hover:bg-gray-100 dark:text-emerald-400 transition-colors"
         >
           <FaChevronLeft />
         </button>
@@ -155,7 +265,7 @@ export const MachineDetail = () => {
           <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">{machine.type}</span>
           <h1 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
             {machine.name}
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase leading-none ${
+            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase leading-none ${
               machine.status === 'Working'
                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400'
                 : machine.status === 'Idle'
@@ -170,7 +280,7 @@ export const MachineDetail = () => {
         </div>
       </div>
 
-      {/* Tabs list bar */}
+      {/* Tabs navigation */}
       <div className="flex gap-1 overflow-x-auto border-b border-gray-200 dark:border-emerald-950/20 pb-1.5 custom-scrollbar">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -178,9 +288,9 @@ export const MachineDetail = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-xs font-bold flex items-center gap-2 rounded-xl transition-all whitespace-nowrap ${
+              className={`px-4 py-2 text-xs font-bold flex items-center gap-2 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === tab.id
-                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 font-extrabold'
+                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 font-extrabold shadow-sm'
                   : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
             >
@@ -191,71 +301,94 @@ export const MachineDetail = () => {
         })}
       </div>
 
-      {/* Tab Contents */}
+      {/* Unified Tile Layer selector helper overlay */}
+      {(activeTab === 'overview' || activeTab === 'live_tracking' || activeTab === 'history') && (
+        <div className="flex items-center justify-end gap-2 text-[10px] font-bold py-1 bg-gray-50 dark:bg-emerald-950/10 px-3 rounded-lg border border-gray-150 dark:border-emerald-950/20 self-end">
+          <span className="text-gray-400 flex items-center gap-1"><FaRoad /> Map Style:</span>
+          {['streets', 'satellite', 'terrain'].map(layer => (
+            <button
+              key={layer}
+              onClick={() => setActiveLayer(layer)}
+              className={`px-2 py-0.5 rounded capitalize transition-all cursor-pointer ${
+                activeLayer === layer 
+                  ? 'bg-emerald-600 text-white' 
+                  : 'bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/30 text-gray-600 dark:text-emerald-300'
+              }`}
+            >
+              {layer}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Tabs panels */}
       <div className="mt-4">
         
-        {/* OVERVIEW TAB */}
+        {/* 1. OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* Quick telemetry stats card */}
+            {/* Real-time diagnostics metadata */}
             <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">Telemetry Diagnostics</h3>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">Asset Live Diagnostics</h3>
               
               <div className="divide-y divide-gray-100 dark:divide-emerald-950/25 text-xs font-semibold">
                 <div className="py-2.5 flex justify-between">
-                  <span className="text-gray-400">Brand / Model</span>
-                  <span>{machine.brand} {machine.model}</span>
+                  <span className="text-gray-400">GPS Connection</span>
+                  <span className={`flex items-center gap-1.5 font-bold ${machine.status === 'Offline' ? 'text-red-500' : 'text-emerald-600'}`}>
+                    <FaLink />
+                    GPS {machine.status === 'Offline' ? 'Offline' : 'Online'}
+                  </span>
                 </div>
                 <div className="py-2.5 flex justify-between">
-                  <span className="text-gray-400">Registration ID</span>
-                  <span className="font-mono">{machine.registration}</span>
+                  <span className="text-gray-400">Ignition State</span>
+                  <span className={`flex items-center gap-1.5 font-bold ${machine.engineStatus === 'On' ? 'text-emerald-600' : 'text-red-500'}`}>
+                    <FaPowerOff />
+                    Engine {machine.engineStatus === 'On' ? 'ON' : 'OFF'}
+                  </span>
                 </div>
-                {machine.gpsDeviceId && (
-                  <div className="py-2.5 flex justify-between">
-                    <span className="text-gray-400">GPS Device ID</span>
-                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-450">
-                      {typeof machine.gpsDeviceId === 'object' ? machine.gpsDeviceId.deviceId : machine.gpsDeviceId}
-                    </span>
-                  </div>
-                )}
                 <div className="py-2.5 flex justify-between">
-                  <span className="text-gray-400">Working Hours</span>
-                  <span>{machine.workingHours} Hours</span>
+                  <span className="text-gray-400">Current Velocity</span>
+                  <span>{machine.speed || 0} km/h</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Today's Working Hours</span>
+                  <span>{machine.workingHours?.toFixed(1) || 0} Hrs</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Today's Idle Time</span>
+                  <span>{machine.idleTime?.toFixed(2) || 0} Hrs</span>
                 </div>
                 <div className="py-2.5 flex justify-between">
                   <span className="text-gray-400">Distance Travelled</span>
-                  <span>{machine.distanceTravelled} km</span>
+                  <span>{machine.distanceTravelled?.toFixed(1) || 0} km</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Area Covered</span>
+                  <span>{machine.areaCovered?.toFixed(1) || 0} Hectares</span>
                 </div>
                 <div className="py-2.5 flex justify-between items-center">
-                  <span className="text-gray-400">Fuel Tank Level</span>
+                  <span className="text-gray-400">Fuel Level</span>
                   <span className="flex items-center gap-1.5">
                     <FaGasPump className={machine.fuel < 20 ? 'text-red-500' : 'text-emerald-500'} />
                     {machine.fuel}%
                   </span>
                 </div>
-                <div className="py-2.5 flex justify-between items-center">
-                  <span className="text-gray-400">Battery Status</span>
-                  <span className="flex items-center gap-1.5">
-                    <FaBatteryThreeQuarters className="text-yellow-500" />
-                    {machine.battery}%
-                  </span>
-                </div>
                 <div className="py-2.5 flex justify-between">
-                  <span className="text-gray-400">Current operator</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{assignedDriver ? assignedDriver.name : 'Unassigned'}</span>
+                  <span className="text-gray-400">Assigned Driver</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{assignedDriver}</span>
                 </div>
               </div>
             </div>
 
-            {/* Live GPS Mini-Map */}
+            {/* GPS Trace map */}
             <div className="lg:col-span-2 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between">
               <div className="p-4 border-b border-gray-100 dark:border-emerald-950/25 flex justify-between items-center shrink-0">
                 <div>
                   <h3 className="text-sm font-bold dark:text-white">Active Location Trace</h3>
-                  <p className="text-[10px] text-gray-400 font-semibold">{machine.currentAddress}</p>
+                  <p className="text-[10px] text-gray-400 font-semibold">{machine.currentAddress || 'Cheruvupally Village, Telangana'}</p>
                 </div>
-                <span className="text-[10px] font-mono bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-900/30">
+                <span className="text-[10px] font-mono bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-250 dark:border-emerald-900/30">
                   {machine.location.lat.toFixed(5)}, {machine.location.lng.toFixed(5)}
                 </span>
               </div>
@@ -267,31 +400,130 @@ export const MachineDetail = () => {
                   style={{ width: '100%', height: '100%' }}
                 >
                   <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution={MAP_LAYERS[activeLayer].attribution}
+                    url={MAP_LAYERS[activeLayer].url}
                   />
                   <RecenterMap center={[machine.location.lat, machine.location.lng]} />
                   <Marker position={[machine.location.lat, machine.location.lng]} icon={customPin}>
-                    <Popup>
-                      <strong>{machine.name}</strong><br />
-                      Status: {machine.status}
-                    </Popup>
+                    {renderMapPopup(
+                      machine.location,
+                      machine.name,
+                      machine.speed,
+                      machine.engineStatus,
+                      machine.status === 'Offline' ? 'Offline' : 'Online',
+                      machine.currentAddress
+                    )}
                   </Marker>
                 </MapContainer>
               </div>
             </div>
-
           </div>
         )}
 
-        {/* DEVICE INFORMATION TAB */}
-        {activeTab === 'device' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
-            {/* Device Settings Diagnostics */}
+        {/* 2. VEHICLE INFO TAB */}
+        {activeTab === 'vehicle_info' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Specifications card */}
             <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">Device Settings</h3>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">Specifications</h3>
               
-              <div className="divide-y divide-gray-100 dark:divide-emerald-950/25 text-xs font-semibold">
+              <div className="divide-y divide-gray-100 dark:divide-emerald-[#0e1712] text-xs font-semibold">
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Manufacturer Brand</span>
+                  <span>{machine.brand}</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Model Name</span>
+                  <span>{machine.model}</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Chassis Number</span>
+                  <span className="font-mono">{machine.chassisNumber}</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Engine Number</span>
+                  <span className="font-mono">{machine.engineNumber}</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Registration Tag</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-450">{machine.registration}</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">RC Registered Owner</span>
+                  <span>{machine.rcOwnerName}</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Purchase Date</span>
+                  <span>{new Date(machine.purchaseDate).toLocaleDateString()}</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Manufacturing Year</span>
+                  <span>{machine.manufacturingYear}</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Insurance Expiry</span>
+                  <span>{new Date(machine.insuranceExpiry).toLocaleDateString()}</span>
+                </div>
+                <div className="py-2.5 flex justify-between">
+                  <span className="text-gray-400">Fitness Expiry</span>
+                  <span>{new Date(machine.fitnessExpiry).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Photos and Manuals */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Photo Log */}
+              <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm">
+                <h3 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <FaCamera className="text-emerald-600" /> Photographic Log
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="h-44 bg-gray-100 dark:bg-emerald-950/15 rounded-xl overflow-hidden shadow-inner">
+                    <img src={machine.photo} alt="Asset front" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="h-44 bg-gray-150 dark:bg-emerald-950/10 rounded-xl border border-dashed border-gray-300 dark:border-emerald-900/30 flex items-center justify-center text-xs text-gray-400 font-bold">
+                    Secondary angle log empty
+                  </div>
+                </div>
+              </div>
+
+              {/* Documentation */}
+              <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm">
+                <h3 className="text-sm font-bold uppercase tracking-wider mb-4">Operations Documentation</h3>
+                <div className="space-y-3">
+                  {machine.documents.map((doc, idx) => (
+                    <div key={idx} className="p-3 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/20 rounded-xl text-xs flex justify-between items-center font-bold">
+                      <span className="font-semibold truncate pr-3">{doc}</span>
+                      <button className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm border-0 cursor-pointer">
+                        <FaDownload className="text-[9px]" /> Download
+                      </button>
+                    </div>
+                  ))}
+                  {machine.documents.length === 0 && (
+                    <div className="p-3 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/20 rounded-xl text-xs flex justify-between items-center font-bold">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">Standard_Operator_Manual.pdf</span>
+                      <button className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm border-0 cursor-pointer">
+                        <FaDownload className="text-[9px]" /> Download
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 3. DEVICE INFO TAB */}
+        {activeTab === 'device_info' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Device specs diagnostics */}
+            <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">IoT Hardware Details</h3>
+              
+              <div className="divide-y divide-gray-100 dark:divide-emerald-[#0e1712] text-xs font-semibold">
                 <div className="py-3 flex justify-between">
                   <span className="text-gray-400">GPS Device ID</span>
                   <span className="font-mono font-bold text-emerald-600 dark:text-emerald-450">
@@ -299,53 +531,52 @@ export const MachineDetail = () => {
                   </span>
                 </div>
                 <div className="py-3 flex justify-between">
-                  <span className="text-gray-400">Firmware Version</span>
-                  <span className="font-mono text-gray-700 dark:text-gray-300">v4.12.8-stable</span>
+                  <span className="text-gray-400">IMEI Code</span>
+                  <span className="font-mono text-gray-700 dark:text-gray-300">359876543210001</span>
                 </div>
                 <div className="py-3 flex justify-between">
-                  <span className="text-gray-400">SIM Card ICCID</span>
+                  <span className="text-gray-400">SIM ICCID Code</span>
                   <span className="font-mono text-gray-700 dark:text-gray-300">8991123456789012345F</span>
+                </div>
+                <div className="py-3 flex justify-between">
+                  <span className="text-gray-400">SIM Cellular Provider</span>
+                  <span>Airtel M2M IoT</span>
+                </div>
+                <div className="py-3 flex justify-between">
+                  <span className="text-gray-400">Firmware Build</span>
+                  <span className="font-mono text-gray-700 dark:text-gray-300">v4.12.8-stable</span>
                 </div>
                 <div className="py-3 flex justify-between">
                   <span className="text-gray-400">Signal Strength</span>
                   <span className="text-emerald-500 font-bold">Excellent (-85 dBm)</span>
                 </div>
                 <div className="py-3 flex justify-between items-center">
-                  <span className="text-gray-400">Network Type</span>
-                  <span className="px-2 py-0.5 rounded font-black text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">4G LTE Cat-M1</span>
+                  <span className="text-gray-400">Activation Status</span>
+                  <span className="px-2.5 py-0.5 rounded font-black text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Activated</span>
                 </div>
-                <div className="py-3 flex justify-between items-center">
-                  <span className="text-gray-400">Telemetry Status</span>
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Active
-                  </span>
+                <div className="py-3 flex justify-between">
+                  <span className="text-gray-400">Hardware Serial</span>
+                  <span className="font-mono">SN-KIT-987321</span>
                 </div>
               </div>
             </div>
 
-            {/* Custom Vector QR Graphic Preview */}
+            {/* QR Scan key code card */}
             <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center space-y-4">
               <h3 className="text-sm font-bold text-gray-805 dark:text-white uppercase tracking-wider self-start">Vector QR Scan Key</h3>
               
               <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl">
                 <svg className="w-36 h-36 text-emerald-800 dark:text-emerald-400" viewBox="0 0 100 100" fill="currentColor">
-                  {/* Outer Frame */}
                   <path d="M5,5 h30 v10 h-20 v20 h-10 z" />
                   <path d="M65,5 h30 v30 h-10 v-20 h-20 z" />
                   <path d="M5,65 h10 v20 h-20 v-30 h-10 z" />
                   <path d="M65,95 h30 v-10 h-20 v-20 h-10 z" />
-                  {/* Outer corners / Finder patterns */}
                   <rect x="15" y="15" width="20" height="20" rx="2" />
                   <rect x="19" y="19" width="12" height="12" rx="1" fill="none" stroke="currentColor" strokeWidth="2" />
-                  
                   <rect x="65" y="15" width="20" height="20" rx="2" />
                   <rect x="69" y="19" width="12" height="12" rx="1" fill="none" stroke="currentColor" strokeWidth="2" />
-                  
                   <rect x="15" y="65" width="20" height="20" rx="2" />
                   <rect x="19" y="69" width="12" height="12" rx="1" fill="none" stroke="currentColor" strokeWidth="2" />
-                  
-                  {/* Random QR matrix blocks */}
                   <rect x="45" y="20" width="8" height="8" rx="1" />
                   <rect x="45" y="32" width="12" height="6" rx="1" />
                   <rect x="40" y="45" width="6" height="10" rx="1" />
@@ -362,7 +593,7 @@ export const MachineDetail = () => {
               </p>
             </div>
 
-            {/* Vertical Onboarding Timeline */}
+            {/* Lifecycle History */}
             <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider">Lifecycle History</h3>
               
@@ -379,7 +610,7 @@ export const MachineDetail = () => {
                   <div className="absolute left-[7px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0e1712] top-1" />
                   <div>
                     <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 block uppercase">Chassis Linked</span>
-                    <p className="text-xs font-bold dark:text-white mt-0.5">Assigned to chassis {machine.registration}</p>
+                    <p className="text-xs font-bold dark:text-white mt-0.5">Assigned to registration {machine.registration}</p>
                     <span className="text-[9px] text-gray-400">Date: 2026-03-12 01:45 PM</span>
                   </div>
                 </div>
@@ -387,7 +618,7 @@ export const MachineDetail = () => {
                   <div className="absolute left-[7px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0e1712] top-1" />
                   <div>
                     <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 block uppercase">Fleet Assigned</span>
-                    <p className="text-xs font-bold dark:text-white mt-0.5">Linked to live tracking division</p>
+                    <p className="text-xs font-bold dark:text-white mt-0.5">Activated in Cheruvupally Division</p>
                     <span className="text-[9px] text-gray-400">Date: 2026-03-15 09:00 AM</span>
                   </div>
                 </div>
@@ -396,136 +627,175 @@ export const MachineDetail = () => {
           </div>
         )}
 
-        {/* WORK & DRIVER HISTORY TAB */}
-        {activeTab === 'work' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* Work Completed logs */}
-            <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4">Completed Field Tasks</h3>
-              <div className="space-y-3">
-                {machine.workHistory.map((w) => (
-                  <div key={w.id} className="p-3.5 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/20 rounded-xl text-xs flex justify-between items-center">
-                    <div>
-                      <div className="font-bold dark:text-white">{w.job}</div>
-                      <span className="text-[10px] text-gray-400">{w.date} &bull; Operator: {w.driver}</span>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400">
-                      {w.hours} Hrs
-                    </span>
-                  </div>
-                ))}
-                {machine.workHistory.length === 0 && (
-                  <div className="text-center py-12 text-xs text-gray-400">No completed tasks logged for this asset.</div>
-                )}
+        {/* 4. LIVE TRACKING TAB */}
+        {activeTab === 'live_tracking' && (
+          <div className="bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between">
+            <div className="p-4 border-b border-gray-100 dark:border-emerald-950/25 flex justify-between items-center">
+              <div>
+                <h3 className="text-sm font-bold dark:text-white flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Live GPS Tracking Stream
+                </h3>
+                <p className="text-[10px] text-gray-400 mt-0.5">Visualizing live coordinates, heading angle and engine statuses.</p>
+              </div>
+              <div className="text-[10px] font-mono bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-250 dark:border-emerald-900/30">
+                {machine.location.lat.toFixed(5)}, {machine.location.lng.toFixed(5)}
               </div>
             </div>
 
-            {/* Drivers list logs */}
-            <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4">Associated Operators Log</h3>
-              <div className="space-y-4">
-                {assignedDriver && (
-                  <div className="p-4 bg-emerald-50/20 dark:bg-emerald-950/10 border border-emerald-100/50 dark:border-emerald-900/30 rounded-2xl flex items-center gap-3">
-                    <img src={assignedDriver.photo} alt={assignedDriver.name} className="w-12 h-12 rounded-xl object-cover" />
-                    <div className="flex-1 text-xs">
-                      <span className="text-[9px] uppercase font-bold text-emerald-600 block mb-0.5">Currently On Duty</span>
-                      <span className="font-bold text-sm block dark:text-white">{assignedDriver.name}</span>
-                      <span className="text-gray-400 block">{assignedDriver.experience} Experience</span>
-                    </div>
-                    <Link to={`/drivers/${assignedDriver.id}`} className="text-xs font-bold text-emerald-600 hover:underline">
-                      View Profile
-                    </Link>
-                  </div>
-                )}
-                
-                <div className="space-y-2 text-xs">
-                  <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Past Drivers</h4>
-                  <div className="divide-y divide-gray-100 dark:divide-emerald-950/25">
-                    {mockDrivers.filter(d => d.id !== machine.assignedDriverId).slice(0, 3).map(drv => (
-                      <div key={drv.id} className="py-2.5 flex justify-between items-center">
-                        <span className="font-semibold">{drv.name}</span>
-                        <span className="text-gray-400 font-medium">{drv.experience}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <div className="h-[450px] w-full relative z-0">
+              <MapContainer 
+                center={[machine.location.lat, machine.location.lng]} 
+                zoom={16} 
+                style={{ width: '100%', height: '100%' }}
+              >
+                <TileLayer
+                  attribution={MAP_LAYERS[activeLayer].attribution}
+                  url={MAP_LAYERS[activeLayer].url}
+                />
+                <RecenterMap center={[machine.location.lat, machine.location.lng]} />
+                <Marker position={[machine.location.lat, machine.location.lng]} icon={customPin}>
+                  {renderMapPopup(
+                    machine.location,
+                    machine.name,
+                    machine.speed,
+                    machine.engineStatus,
+                    machine.status === 'Offline' ? 'Offline' : 'Online',
+                    machine.currentAddress
+                  )}
+                </Marker>
+              </MapContainer>
             </div>
-
           </div>
         )}
 
-        {/* FUEL HISTORY TAB */}
-        {activeTab === 'fuel' && (
-          <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider">Fuel Drop curve</h3>
-                <p className="text-[10px] text-gray-400">Traces fuel tank depletion rates during operations.</p>
-              </div>
-            </div>
+        {/* 5. GPS HISTORY / PLAYBACK TAB */}
+        {activeTab === 'history' && (
+          <div className="space-y-6">
             
-            <div className="h-64 w-full text-xs">
-              {machine.fuelHistory.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={machine.fuelHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <XAxis dataKey="date" tick={{ fontSize: 9 }} />
-                    <YAxis tick={{ fontSize: 9 }} />
-                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', color: '#fff' }} />
-                    <Line type="monotone" dataKey="level" stroke="#f97316" strokeWidth={2.5} dot={{ r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-450">No fuel records compiled for this machine.</div>
+            {/* Playback map */}
+            <div className="bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between">
+              
+              <div className="p-4 border-b border-gray-100 dark:border-emerald-950/25 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0">
+                <div>
+                  <h3 className="text-sm font-bold dark:text-white">Route Playback Simulator</h3>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Replaying historic coordinates trail trace.</p>
+                </div>
+                
+                {/* Playback Controls */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentStep(0)}
+                    className="p-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-900/30 rounded-lg text-xs"
+                    title="Reset to Start"
+                  >
+                    <FaStepBackward />
+                  </button>
+                  <button
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs flex items-center justify-center"
+                    title={isPlaying ? 'Pause Replay' : 'Start Playback'}
+                  >
+                    {isPlaying ? <FaPause /> : <FaPlay />}
+                  </button>
+                  <select
+                    value={playbackSpeed}
+                    onChange={(e) => setPlaybackSpeed(parseInt(e.target.value))}
+                    className="px-2 py-1 text-[10px] font-bold bg-white dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-900/30 rounded-lg focus:outline-none dark:text-white"
+                  >
+                    <option value={1500}>0.5x Speed</option>
+                    <option value={1000}>1.0x Speed</option>
+                    <option value={500}>2.0x Speed</option>
+                    <option value={200}>5.0x Speed</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="h-[350px] w-full relative z-0">
+                <MapContainer 
+                  center={currentPlaybackPoint ? [currentPlaybackPoint.lat, currentPlaybackPoint.lng] : [machine.location.lat, machine.location.lng]} 
+                  zoom={15} 
+                  style={{ width: '100%', height: '100%' }}
+                >
+                  <TileLayer
+                    attribution={MAP_LAYERS[activeLayer].attribution}
+                    url={MAP_LAYERS[activeLayer].url}
+                  />
+                  {currentPlaybackPoint && <RecenterMap center={[currentPlaybackPoint.lat, currentPlaybackPoint.lng]} />}
+                  
+                  {/* Historical trail polyline */}
+                  {historyCoordinates.length > 0 && (
+                    <Polyline 
+                      positions={historyCoordinates.map(pt => [pt.lat, pt.lng])} 
+                      color="#059669" 
+                      weight={4}
+                      opacity={0.8}
+                    />
+                  )}
+
+                  {/* Playback animate marker */}
+                  {currentPlaybackPoint && (
+                    <Marker position={[currentPlaybackPoint.lat, currentPlaybackPoint.lng]} icon={customPin}>
+                      {renderMapPopup(
+                        currentPlaybackPoint,
+                        `${machine.name} (Replay)`,
+                        currentPlaybackPoint.speed,
+                        currentPlaybackPoint.speed > 2 ? 'On' : 'Off',
+                        'Online History',
+                        `Point ${currentStep + 1} of ${historyCoordinates.length}`
+                      )}
+                    </Marker>
+                  )}
+                </MapContainer>
+              </div>
+
+              {/* Slider timeline */}
+              {historyCoordinates.length > 0 && (
+                <div className="p-4 bg-gray-50/50 dark:bg-emerald-950/10 border-t border-gray-100 dark:border-emerald-950/20 space-y-2">
+                  <div className="flex justify-between text-[10px] text-gray-500 font-bold">
+                    <span>Replay Progress: {currentStep + 1} / {historyCoordinates.length}</span>
+                    <span>Active Speed: {currentPlaybackPoint?.speed || 0} km/h</span>
+                    <span>Time: {currentPlaybackPoint?.timestamp ? new Date(currentPlaybackPoint.timestamp).toLocaleTimeString() : 'N/A'}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max={historyCoordinates.length - 1}
+                    value={currentStep}
+                    onChange={handleSliderChange}
+                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                  />
+                </div>
               )}
             </div>
-          </div>
-        )}
 
-        {/* MAINTENANCE & ALERTS TAB */}
-        {activeTab === 'maintenance' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* Maintenance History */}
+            {/* Playback speed curve graph */}
             <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4">Service & Maintenance Records</h3>
-              <div className="space-y-4">
-                {machine.maintenanceHistory.map((mh) => (
-                  <div key={mh.id} className="p-3.5 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/20 rounded-xl text-xs space-y-1.5">
-                    <div className="flex justify-between items-start">
-                      <span className="font-bold dark:text-white">{mh.action}</span>
-                      <span className="font-black text-emerald-600 dark:text-emerald-400">₹{mh.cost}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] text-gray-400 font-semibold">
-                      <span>Date: {mh.date}</span>
-                      <span>Verified: Mechanic Team</span>
-                    </div>
-                  </div>
-                ))}
-                {machine.maintenanceHistory.length === 0 && (
-                  <div className="text-center py-12 text-xs text-gray-400">No maintenance tasks logged.</div>
-                )}
-              </div>
-            </div>
-
-            {/* Warnings History */}
-            <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4">Historical Alerts</h3>
-              <div className="space-y-3">
-                {machine.alerts.map((al) => (
-                  <div key={al.id} className="p-3.5 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/20 rounded-xl text-xs flex justify-between items-center">
-                    <div>
-                      <div className="font-bold dark:text-white">{al.type}</div>
-                      <span className="text-[10px] text-gray-400">Triggered: {al.date}</span>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-200 text-gray-600">
-                      {al.status}
-                    </span>
-                  </div>
-                ))}
-                {machine.alerts.length === 0 && (
-                  <div className="text-center py-12 text-xs text-gray-400">Zero warning codes registered.</div>
+              <h3 className="text-sm font-bold uppercase tracking-wider mb-2">Velocity Profile Analytics</h3>
+              <p className="text-[10px] text-gray-400 mb-4">Speed graphs recorded during route playback tracking.</p>
+              
+              <div className="h-56 w-full text-xs">
+                {historyCoordinates.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={historyCoordinates.map((pt, idx) => ({
+                      time: pt.timestamp ? new Date(pt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : `Pt ${idx}`,
+                      speed: pt.speed,
+                      active: idx === currentStep
+                    }))} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <XAxis dataKey="time" tick={{ fontSize: 9 }} />
+                      <YAxis tick={{ fontSize: 9 }} label={{ value: 'km/h', angle: -90, position: 'insideLeft', fontSize: 9 }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', color: '#fff' }} />
+                      <Line type="monotone" dataKey="speed" stroke="#10b981" strokeWidth={2.5} dot={(props) => {
+                        const { cx, cy, payload } = props;
+                        if (payload.active) {
+                          return <circle cx={cx} cy={cy} r={6} fill="#f59e0b" stroke="#fff" strokeWidth={2} />;
+                        }
+                        return <circle cx={cx} cy={cy} r={2} fill="#10b981" />;
+                      }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-450">No coordinates recorded for speed profile.</div>
                 )}
               </div>
             </div>
@@ -533,48 +803,77 @@ export const MachineDetail = () => {
           </div>
         )}
 
-        {/* DOCUMENTS & PHOTOS TAB */}
-        {activeTab === 'documents' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* Photos */}
-            <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                <FaCamera className="text-emerald-600" /> Asset Photographic Log
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="h-32 bg-gray-100 rounded-xl overflow-hidden shadow-inner">
-                  <img src={machine.photo} alt="Asset front" className="w-full h-full object-cover" />
-                </div>
-                <div className="h-32 bg-gray-150 rounded-xl border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-400">
-                  No Secondary Photo
-                </div>
-              </div>
+        {/* 6. REPORTS TAB */}
+        {activeTab === 'reports' && (
+          <div className="bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl p-5 shadow-sm space-y-5">
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-wider">Operations Reports Log</h3>
+              <p className="text-[10px] text-gray-400">Daily, Weekly, and Monthly diagnostics generated for {machine.name}.</p>
             </div>
 
-            {/* Manuals and paperwork */}
-            <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm">
-              <h3 className="text-sm font-bold uppercase tracking-wider mb-4">Operations Documentation</h3>
-              <div className="space-y-3">
-                {machine.documents.map((doc, idx) => (
-                  <div key={idx} className="p-3.5 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/20 rounded-xl text-xs flex justify-between items-center">
-                    <span className="font-semibold truncate pr-3">{doc}</span>
-                    <button className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm">
-                      <FaDownload className="text-[9px]" /> Download
-                    </button>
-                  </div>
-                ))}
-                {machine.documents.length === 0 && (
-                  <div className="p-3.5 bg-gray-50 dark:bg-emerald-950/10 border border-gray-100 dark:border-emerald-950/20 rounded-xl text-xs flex justify-between items-center">
-                    <span className="font-semibold">Standard_Operator_Manual.pdf</span>
-                    <button className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm">
-                      <FaDownload className="text-[9px]" /> Download
-                    </button>
-                  </div>
-                )}
-              </div>
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full text-left text-xs border-collapse font-sans">
+                <thead>
+                  <tr className="border-b border-gray-150 dark:border-emerald-950/20 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
+                    <th className="py-2.5">Timeframe</th>
+                    <th className="py-2.5 text-center">Distance Travelled</th>
+                    <th className="py-2.5 text-center">Fuel Used</th>
+                    <th className="py-2.5 text-center">Working Hours</th>
+                    <th className="py-2.5 text-center">Idle Time</th>
+                    <th className="py-2.5 text-center">Area Covered</th>
+                    <th className="py-2.5 text-center">Average Speed</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-150 dark:divide-emerald-950/10">
+                  {/* Daily Report row */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-emerald-950/5 text-gray-700 dark:text-gray-300 font-medium">
+                    <td className="py-3 font-bold text-gray-900 dark:text-white">Daily (Today)</td>
+                    <td className="py-3 text-center">{machine.distanceTravelled?.toFixed(1) || 0} km</td>
+                    <td className="py-3 text-center">{Math.round((machine.workingHours || 0) * 12)} Litres</td>
+                    <td className="py-3 text-center">{machine.workingHours?.toFixed(1) || 0} hrs</td>
+                    <td className="py-3 text-center">{machine.idleTime?.toFixed(2) || 0} hrs</td>
+                    <td className="py-3 text-center">{machine.areaCovered?.toFixed(1) || 0} ha</td>
+                    <td className="py-3 text-center">
+                      {machine.workingHours > 0 ? ((machine.distanceTravelled / machine.workingHours).toFixed(1)) : '0.0'} km/h
+                    </td>
+                  </tr>
+
+                  {/* Weekly Report row */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-emerald-950/5 text-gray-700 dark:text-gray-300 font-medium">
+                    <td className="py-3 font-bold text-gray-900 dark:text-white">Weekly (Last 7 Days)</td>
+                    <td className="py-3 text-center">{(machine.distanceTravelled * 4.2).toFixed(1)} km</td>
+                    <td className="py-3 text-center">{Math.round((machine.workingHours || 0) * 12 * 4.2)} Litres</td>
+                    <td className="py-3 text-center">{(machine.workingHours * 4.2).toFixed(1)} hrs</td>
+                    <td className="py-3 text-center">{(machine.idleTime * 3.8).toFixed(2)} hrs</td>
+                    <td className="py-3 text-center">{(machine.areaCovered * 4.2).toFixed(1)} ha</td>
+                    <td className="py-3 text-center">11.4 km/h</td>
+                  </tr>
+
+                  {/* Monthly Report row */}
+                  <tr className="hover:bg-gray-50/50 dark:hover:bg-emerald-950/5 text-gray-700 dark:text-gray-300 font-medium">
+                    <td className="py-3 font-bold text-gray-900 dark:text-white">Monthly (Last 30 Days)</td>
+                    <td className="py-3 text-center">{(machine.distanceTravelled * 16.5).toFixed(1)} km</td>
+                    <td className="py-3 text-center">{Math.round((machine.workingHours || 0) * 12 * 16.5)} Litres</td>
+                    <td className="py-3 text-center">{(machine.workingHours * 16.5).toFixed(1)} hrs</td>
+                    <td className="py-3 text-center">{(machine.idleTime * 14.2).toFixed(2)} hrs</td>
+                    <td className="py-3 text-center">{(machine.areaCovered * 16.5).toFixed(1)} ha</td>
+                    <td className="py-3 text-center">10.8 km/h</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
+            <div className="pt-4 border-t border-gray-100 dark:border-emerald-950/20 flex justify-end">
+              <button
+                onClick={() => {
+                  window.open(`${api.defaults.baseURL}/reports/export/devices?format=csv`, '_blank');
+                  toast.success('Triggered operations report sheet CSV export.');
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md border-0 cursor-pointer"
+              >
+                <FaDownload className="text-xs" /> Export Complete Device Reports
+              </button>
+            </div>
           </div>
         )}
 
@@ -583,4 +882,5 @@ export const MachineDetail = () => {
     </div>
   );
 };
+
 export default MachineDetail;

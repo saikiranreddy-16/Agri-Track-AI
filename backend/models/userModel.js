@@ -30,6 +30,51 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    alternatePhone: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    addressLine: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    aadhaarNumber: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    gstNumber: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    planName: {
+      type: String,
+      default: 'Standard',
+    },
+    planStartDate: {
+      type: Date,
+      default: Date.now,
+    },
+    planExpiryDate: {
+      type: Date,
+      default: () => new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+    },
+    devicesAllowed: {
+      type: Number,
+      default: 5,
+    },
+    devicesUsed: {
+      type: Number,
+      default: 0,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['Paid', 'Unpaid', 'Pending'],
+      default: 'Paid',
+    },
     role: {
       type: String,
       enum: ['Company Admin', 'Farm Admin'],

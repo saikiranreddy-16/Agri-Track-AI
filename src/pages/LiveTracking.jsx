@@ -59,6 +59,21 @@ const createCustomPin = (status, type) => {
   });
 };
 
+const MAP_LAYERS = {
+  streets: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  },
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  },
+  terrain: {
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
+  }
+};
+
 const formatMachine = (m) => ({
   id: m._id || m.id,
   name: m.name,
@@ -70,7 +85,7 @@ const formatMachine = (m) => ({
   fuel: m.fuel,
   battery: m.battery,
   assignedDriverId: m.assignedDriverId,
-  location: m.location || { lat: 30.902, lng: 75.853 },
+  location: m.location || { lat: 16.978, lng: 79.432 },
   speed: m.speed || 0,
   heading: m.heading || 0,
   engineStatus: m.engineStatus || 'Off',
@@ -79,6 +94,7 @@ const formatMachine = (m) => ({
   currentAddress: m.currentAddress || '',
   photo: m.photo || 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
   updatedAt: m.updatedAt,
+  rcOwnerName: m.rcOwnerName || 'Unknown Customer'
 });
 
 export const LiveTracking = () => {
@@ -90,10 +106,11 @@ export const LiveTracking = () => {
   const [selectedMachine, setSelectedMachine] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
-  const [mapCenter, setMapCenter] = useState([30.902, 75.853]);
+  const [mapCenter, setMapCenter] = useState([16.978, 79.432]);
   const [mapZoom, setMapZoom] = useState(13);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeLayer, setActiveLayer] = useState('streets');
 
   // Keep a ref to selectedMachine for updating it inside the Socket listener
   const selectedMachineRef = useRef(null);
@@ -288,8 +305,8 @@ export const LiveTracking = () => {
           zoomControl={false}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution={MAP_LAYERS[activeLayer].attribution}
+            url={MAP_LAYERS[activeLayer].url}
           />
 
           <RecenterMap center={mapCenter} zoom={mapZoom} />
@@ -307,12 +324,31 @@ export const LiveTracking = () => {
                 }
               }}
             >
-              <Popup>
-                <div className="text-xs space-y-1">
-                  <div className="font-bold text-gray-900">{m.name}</div>
-                  <div>Status: <strong>{m.status}</strong></div>
-                  <div>Speed: {m.speed} km/h</div>
-                  <div>Fuel Level: {m.fuel}%</div>
+              <Popup className="custom-leaflet-popup">
+                <div className="text-xs p-1 space-y-1.5 w-44 font-sans text-gray-800 dark:text-gray-200">
+                  <div className="border-b border-gray-100 dark:border-emerald-950/20 pb-1 flex justify-between items-center">
+                    <strong className="text-emerald-700 dark:text-emerald-450 text-[11px] truncate">{m.name}</strong>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 text-[9px] font-semibold">
+                    <div>Owner:</div>
+                    <div className="text-gray-500 dark:text-gray-400 text-right truncate">{m.rcOwnerName || 'Customer'}</div>
+                    
+                    <div>Speed:</div>
+                    <div className="text-gray-500 dark:text-gray-400 text-right">{m.speed} km/h</div>
+                    
+                    <div>Engine:</div>
+                    <div className="text-gray-500 dark:text-gray-400 text-right font-bold">{m.engineStatus === 'On' ? 'ON' : 'OFF'}</div>
+                    
+                    <div>GPS Status:</div>
+                    <div className="text-gray-500 dark:text-gray-400 text-right">{m.status === 'Offline' ? 'Offline' : 'Online'}</div>
+                    
+                    <div>Updated:</div>
+                    <div className="text-gray-500 dark:text-gray-400 text-right">{m.status === 'Offline' ? '3 hrs ago' : 'Just Now'}</div>
+                  </div>
+                  <div className="text-[8px] text-gray-400 border-t border-gray-100 dark:border-emerald-950/20 pt-1">
+                    <strong>Coords: </strong>{m.location.lat.toFixed(5)}, {m.location.lng.toFixed(5)}<br />
+                    <strong>Addr: </strong>{m.currentAddress || 'Cheruvupally Village, Telangana'}
+                  </div>
                 </div>
               </Popup>
             </Marker>
@@ -320,10 +356,27 @@ export const LiveTracking = () => {
         </MapContainer>
 
         {/* Map Floating Controls overlay */}
-        <div className="absolute top-4 right-4 z-40 bg-white dark:bg-[#0e1712] p-2.5 rounded-xl shadow-lg border border-gray-100 dark:border-emerald-950/30 flex flex-col gap-2">
+        <div className="absolute top-4 right-4 z-40 bg-white dark:bg-[#0e1712] p-2.5 rounded-xl shadow-lg border border-gray-100 dark:border-emerald-950/30 flex items-center gap-2">
+          {/* Layer switcher */}
+          <div className="flex gap-1 border-r border-gray-250 dark:border-emerald-950/20 pr-2">
+            {['streets', 'satellite', 'terrain'].map(layer => (
+              <button
+                key={layer}
+                onClick={() => setActiveLayer(layer)}
+                className={`px-2 py-1 text-[9px] font-bold rounded capitalize cursor-pointer border-0 ${
+                  activeLayer === layer 
+                    ? 'bg-emerald-600 text-white' 
+                    : 'bg-gray-100 dark:bg-emerald-950/30 text-gray-600 dark:text-emerald-300 hover:bg-gray-200'
+                }`}
+              >
+                {layer}
+              </button>
+            ))}
+          </div>
+
           <button 
-            onClick={() => { setMapCenter([30.902, 75.853]); setMapZoom(13); }}
-            className="p-2 bg-gray-50 dark:bg-emerald-950/30 hover:bg-gray-100 rounded-lg text-xs font-bold text-gray-700 dark:text-emerald-300"
+            onClick={() => { setMapCenter([16.978, 79.432]); setMapZoom(13); }}
+            className="p-1.5 bg-gray-50 dark:bg-emerald-950/30 hover:bg-gray-100 rounded-lg text-xs font-bold text-gray-700 dark:text-emerald-300 cursor-pointer border-0"
             title="Reset Map Bounds"
           >
             <FaExpand />

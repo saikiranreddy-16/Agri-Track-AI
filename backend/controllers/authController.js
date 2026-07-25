@@ -396,3 +396,37 @@ export const getUserProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc    Get login histories for Company Admin
+ * @route   GET /api/v1/auth/login-history
+ * @access  Private (Company Admin only)
+ */
+export const getLoginHistory = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'Company Admin') {
+      res.status(403);
+      return next(new Error('Access denied. Only Company Admins can access login history logs.'));
+    }
+
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+
+    const count = await LoginHistory.countDocuments({});
+    const history = await LoginHistory.find({})
+      .populate('user', 'name role')
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ time: -1 })
+      .lean();
+
+    return successResponse(res, 200, 'Login history retrieved successfully', history, {
+      page,
+      limit,
+      totalPages: Math.ceil(count / limit),
+      totalResults: count,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

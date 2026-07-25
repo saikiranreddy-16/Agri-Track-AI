@@ -6,6 +6,7 @@ import {
   getUserProfile,
   changePIN,
   removeTrustedDevice,
+  getLoginHistory,
 } from '../controllers/authController.js';
 import {
   registerValidator,
@@ -21,6 +22,7 @@ router.post('/register', registerValidator, registerUser);
 router.post('/login', authRateLimiter({ max: 5 }), loginValidator, loginUser);
 router.post('/logout', protect, logoutUser);
 router.get('/me', protect, getUserProfile);
+router.get('/login-history', protect, getLoginHistory);
 router.put('/change-pin', protect, authRateLimiter({ max: 5 }), changePINValidator, changePIN);
 router.delete('/trusted-devices/:deviceId', protect, removeTrustedDevice);
 

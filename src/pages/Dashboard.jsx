@@ -75,6 +75,12 @@ export const Dashboard = () => {
   const { user } = useAuth();
   const isCompanyAdmin = user?.role === 'Company Admin';
 
+  React.useEffect(() => {
+    if (isCompanyAdmin) {
+      navigate('/fleet');
+    }
+  }, [isCompanyAdmin, navigate]);
+
   // Dynamic calculations based on mock data
   const totalMachines = mockMachines.length;
   const activeMachines = mockMachines.filter(m => m.status === 'Working' || m.status === 'Idle').length;
@@ -411,7 +417,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Dynamic Activity Overview Rows */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Recently Active Vehicles */}
         <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
           <h3 className="text-xs font-bold text-gray-405 uppercase tracking-wider">Recently Active Vehicles</h3>
@@ -423,25 +429,6 @@ export const Dashboard = () => {
                   <span className="text-[10px] text-gray-400">{m.registration}</span>
                 </div>
                 {renderStatusBadge(m.status)}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Logins */}
-        <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
-          <h3 className="text-xs font-bold text-gray-405 uppercase tracking-wider">Recent Access Logins</h3>
-          <div className="space-y-3">
-            {recentLogins.map((l, idx) => (
-              <div key={idx} className="text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold dark:text-white">{l.name}</span>
-                  <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">{l.role}</span>
-                </div>
-                <div className="flex justify-between items-center text-[10px] text-gray-400 mt-1">
-                  <span>{l.device}</span>
-                  <span className="font-medium text-gray-400">{l.time}</span>
-                </div>
               </div>
             ))}
           </div>

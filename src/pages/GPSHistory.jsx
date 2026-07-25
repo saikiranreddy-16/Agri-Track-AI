@@ -22,6 +22,21 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
+const MAP_LAYERS = {
+  streets: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  },
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  },
+  terrain: {
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
+  }
+};
+
 // Helper component to center Leaflet map dynamically
 const RecenterMap = ({ center, zoom = 14 }) => {
   const map = useMap();
@@ -58,6 +73,7 @@ export const GPSHistory = () => {
   const [pathCoordinates, setPathCoordinates] = useState([]);
   const [stopMarkers, setStopMarkers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeLayer, setActiveLayer] = useState('streets');
 
   // Fetch machines list on mount
   useEffect(() => {
@@ -287,13 +303,28 @@ export const GPSHistory = () => {
                 style={{ width: '100%', height: '100%' }}
               >
                 <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution={MAP_LAYERS[activeLayer].attribution}
+                  url={MAP_LAYERS[activeLayer].url}
                 />
 
                 {activePoint && <RecenterMap center={[activePoint.lat, activePoint.lng]} />}
 
-                {/* Path line */}
+                {/* Layer selection overlay */}
+            <div className="absolute top-4 right-4 z-40 bg-white dark:bg-[#0e1712] p-2 rounded-xl shadow-lg border border-gray-100 dark:border-emerald-950/30 flex items-center gap-1.5">
+              {['streets', 'satellite', 'terrain'].map(layer => (
+                <button
+                  key={layer}
+                  onClick={() => setActiveLayer(layer)}
+                  className={`px-2 py-0.5 text-[9px] font-bold rounded capitalize cursor-pointer border-0 ${
+                    activeLayer === layer 
+                      ? 'bg-emerald-600 text-white' 
+                      : 'bg-gray-100 dark:bg-emerald-950/30 text-gray-600 dark:text-emerald-300 hover:bg-gray-200'
+                  }`}
+                >
+                  {layer}
+                </button>
+              ))}
+            </div>
                 <Polyline positions={polylinePositions} color="#10b981" weight={4} dashArray="5, 10" />
 
                 {/* Moving GPS Marker */}
@@ -302,11 +333,31 @@ export const GPSHistory = () => {
                     position={[activePoint.lat, activePoint.lng]} 
                     icon={createPinIcon('#10b981', '▶')}
                   >
-                    <Popup>
-                      <div className="text-xs">
-                        <strong>Current Telemetry</strong><br />
-                        Speed: {activePoint.speed} km/h<br />
-                        Fuel: {activePoint.fuel}%
+                    <Popup className="custom-leaflet-popup">
+                      <div className="text-xs p-1 space-y-1.5 w-44 font-sans text-gray-800 dark:text-gray-200">
+                        <div className="border-b border-gray-100 dark:border-emerald-950/20 pb-1 flex justify-between items-center">
+                          <strong className="text-emerald-700 dark:text-emerald-450 text-[11px] truncate">{activeMachine?.name || 'Vehicle'}</strong>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1 text-[9px] font-semibold">
+                          <div>Owner:</div>
+                          <div className="text-gray-500 dark:text-gray-400 text-right truncate">{activeMachine?.rcOwnerName || 'Customer'}</div>
+                          
+                          <div>Speed:</div>
+                          <div className="text-gray-500 dark:text-gray-400 text-right">{activePoint.speed} km/h</div>
+                          
+                          <div>Engine:</div>
+                          <div className="text-gray-500 dark:text-gray-400 text-right font-bold">{activePoint.speed > 2 ? 'ON' : 'OFF'}</div>
+                          
+                          <div>GPS Status:</div>
+                          <div className="text-gray-500 dark:text-gray-400 text-right">Online Playback</div>
+                          
+                          <div>Time:</div>
+                          <div className="text-gray-500 dark:text-gray-400 text-right">{activePoint.timestamp ? new Date(activePoint.timestamp).toLocaleTimeString() : 'N/A'}</div>
+                        </div>
+                        <div className="text-[8px] text-gray-400 border-t border-gray-100 dark:border-emerald-950/20 pt-1">
+                          <strong>Coords: </strong>{activePoint.lat.toFixed(5)}, {activePoint.lng.toFixed(5)}<br />
+                          <strong>Addr: </strong>{activeMachine?.currentAddress || 'Cheruvupally Village, Nalgonda, Telangana'}
+                        </div>
                       </div>
                     </Popup>
                   </Marker>

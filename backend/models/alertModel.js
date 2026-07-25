@@ -34,14 +34,38 @@ const alertSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['Fuel', 'GPS', 'Maintenance', 'System'],
+      enum: ['Fuel', 'GPS', 'Maintenance', 'System', 'Engine', 'Power', 'Battery', 'Speed', 'Geofence', 'Security'],
       default: 'System',
+    },
+    deviceId: {
+      type: String,
+      default: '',
+    },
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    stateId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'State',
+      default: null,
+    },
+    districtId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'District',
+      default: null,
+    },
+    exactLocation: {
+      lat: { type: Number, default: 0 },
+      lng: { type: Number, default: 0 },
+      address: { type: String, default: '' },
     },
     status: {
       type: String,
       enum: ['Active', 'Resolved'],
       default: 'Active',
-      index: true, // Indexed for performance
+      index: true,
     },
   },
   {

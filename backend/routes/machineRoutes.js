@@ -6,6 +6,7 @@ import {
   updateMachine,
   deleteMachine,
   getMachineLiveStatus,
+  getVehicleMetadata,
 } from '../controllers/machineController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -15,6 +16,7 @@ const router = express.Router();
 router.use(protect);
 
 router.get('/live-status', getMachineLiveStatus);
+router.get('/vehicle-metadata', getVehicleMetadata);
 
 router
   .route('/')

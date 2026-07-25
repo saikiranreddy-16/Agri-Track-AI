@@ -3,6 +3,10 @@ import Farm from '../models/farmModel.js';
 import Machine from '../models/machineModel.js';
 import GPSDevice from '../models/gpsDeviceModel.js';
 import DeviceReplacementHistory from '../models/deviceReplacementHistoryModel.js';
+import { State, District } from '../models/indiaLocationModel.js';
+import CustomerLocationMapping from '../models/customerLocationMappingModel.js';
+import DeviceStatusHistory from '../models/deviceStatusHistoryModel.js';
+import DeviceAlert from '../models/deviceAlertModel.js';
 import { successResponse } from '../utils/responseHandler.js';
 import { logActivity } from '../utils/activityLogger.js';
 
@@ -71,9 +75,6 @@ export const getDeviceById = async (req, res, next) => {
   }
 };
 
-// @desc    Activate a new GPS Device
-// @route   POST /api/v1/devices/activate
-// @access  Private (Company Admin only)
 export const activateDevice = async (req, res, next) => {
   const {
     customerName,
@@ -91,6 +92,36 @@ export const activateDevice = async (req, res, next) => {
     hardwareVersion,
     manufacturingDate,
     warrantyExpiry,
+    
+    // Predefined vehicle master
+    brand,
+    model,
+    
+    // Installation info
+    installerName,
+    installationDate,
+    installationLocation,
+    vehicleOdometer,
+    deviceWarranty,
+    deviceSerialNumber,
+    simIccid,
+    simProvider,
+    
+    // Vehicle specifics
+    engineNumber,
+    purchaseDate,
+    manufacturingYear,
+    rcOwnerName,
+    insuranceExpiry,
+    fitnessExpiry,
+    
+    // Geographic address
+    state,
+    district,
+    mandal,
+    village,
+    pincode,
+    addressLine
   } = req.body;
 
   try {
@@ -124,6 +155,7 @@ export const activateDevice = async (req, res, next) => {
         role: 'Farm Admin',
         subscriptionStatus: subscriptionStatus || 'Active',
         isFirstLogin: true,
+        devicesUsed: 1,
       });
 
       await logActivity(
@@ -133,18 +165,31 @@ export const activateDevice = async (req, res, next) => {
         `Registered customer ${customerName} (Phone: ${mobileNumber})`,
         req
       );
+    } else {
+      user.devicesUsed = (user.devicesUsed || 0) + 1;
+      await user.save();
     }
 
-    // 3. Find or Create Farm
-    let farm = await Farm.findOne({ name: farmName, owner: user._id });
+    // 3. Find or Create Location Mapping
+    if (state && district && mandal && village) {
+      await CustomerLocationMapping.findOneAndUpdate(
+        { customer: user._id },
+        { state, district, mandal, village, pincode, addressLine: addressLine || '' },
+        { upsert: true, new: true }
+      );
+    }
+
+    // 4. Find or Create Farm (Machines need a farm reference)
+    const fName = farmName || `${user.name}'s Farm`;
+    let farm = await Farm.findOne({ owner: user._id });
     if (!farm) {
       farm = await Farm.create({
-        name: farmName,
+        name: fName,
         owner: user._id,
       });
     }
 
-    // 4. Create independent GPS Device
+    // 5. Create independent GPS Device
     const gpsDevice = await GPSDevice.create({
       deviceId,
       imei: imei || `imei-${deviceId}`,
@@ -153,21 +198,38 @@ export const activateDevice = async (req, res, next) => {
       firmwareVersion: firmwareVersion || '1.0.0',
       hardwareVersion: hardwareVersion || '1.0.0',
       manufacturingDate: manufacturingDate || new Date(),
-      installationDate: new Date(),
+      installationDate: installationDate || new Date(),
       warrantyExpiry: warrantyExpiry || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      installerName: installerName || '',
+      installationLocation: installationLocation || '',
+      vehicleOdometer: Number(vehicleOdometer) || 0,
+      deviceWarranty: deviceWarranty || null,
+      deviceSerialNumber: deviceSerialNumber || '',
+      simIccid: simIccid || '',
+      simProvider: simProvider || '',
+      detailedLiveStatus: 'Engine OFF',
       activationStatus: 'Activated',
       currentStatus: 'Offline',
+      connectionStatus: 'Offline',
       deviceHealth: 'Good',
       owner: user._id,
       status: 'Active',
     });
 
-    // 5. Create Vehicle (Machine)
+    // 6. Create Vehicle (Machine)
     const machine = await Machine.create({
       name: displayName,
       type: vehicleType,
-      registration: chassisNumber,
+      registration: chassisNumber, // registration matches chassis for compat
       chassisNumber,
+      brand: brand || '',
+      model: model || '',
+      engineNumber: engineNumber || '',
+      purchaseDate: purchaseDate || null,
+      manufacturingYear: Number(manufacturingYear) || null,
+      rcOwnerName: rcOwnerName || '',
+      insuranceExpiry: insuranceExpiry || null,
+      fitnessExpiry: fitnessExpiry || null,
       gpsDeviceId: gpsDevice._id,
       farmId: farm._id,
       owner: user._id,
@@ -176,10 +238,17 @@ export const activateDevice = async (req, res, next) => {
       healthScore: 100,
     });
 
-    // 6. Link vehicleId back to GPS device
+    // 7. Link vehicleId back to GPS device
     gpsDevice.currentVehicle = machine._id;
     gpsDevice.vehicleId = machine._id;
     await gpsDevice.save();
+
+    // Log first history status log
+    await DeviceStatusHistory.create({
+      deviceId: gpsDevice.deviceId,
+      status: 'Engine OFF',
+      details: 'Device onboarded and activated on vehicle'
+    });
 
     await logActivity(
       req.user._id,
@@ -371,6 +440,151 @@ export const getReplacementHistory = async (req, res, next) => {
       totalPages: Math.ceil(count / limit),
       totalResults: count
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get complete fleet statistics for Company Admin
+// @route   GET /api/v1/devices/fleet-stats
+// @access  Private (Company Admin only)
+export const getFleetStats = async (req, res, next) => {
+  try {
+    const totalCustomers = await User.countDocuments({ role: 'Farm Admin' });
+    const totalRegisteredDevices = await GPSDevice.countDocuments({});
+    const totalRegisteredVehicles = await Machine.countDocuments({});
+    
+    const onlineDevices = await GPSDevice.countDocuments({ connectionStatus: 'Online' });
+    const offlineDevices = await GPSDevice.countDocuments({ connectionStatus: 'Offline' });
+    
+    const gpsConnected = await GPSDevice.countDocuments({ currentVehicle: { $ne: null } });
+    const gpsDisconnected = await GPSDevice.countDocuments({ currentVehicle: null });
+
+    const enginesRunning = await Machine.countDocuments({ engineStatus: 'On' });
+    const enginesStopped = await Machine.countDocuments({ engineStatus: 'Off' });
+
+    // Events today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const engineOnToday = await DeviceStatusHistory.countDocuments({
+      status: 'Engine Started',
+      timestamp: { $gte: today }
+    });
+    const engineOffToday = await DeviceStatusHistory.countDocuments({
+      status: 'Engine Stopped',
+      timestamp: { $gte: today }
+    });
+    const gpsDisconnectToday = await DeviceStatusHistory.countDocuments({
+      status: 'GPS Lost',
+      timestamp: { $gte: today }
+    });
+    const gpsReconnectToday = await DeviceStatusHistory.countDocuments({
+      status: 'GPS Restored',
+      timestamp: { $gte: today }
+    });
+
+    const activeAlerts = await DeviceAlert.countDocuments({ status: 'Active' });
+    
+    // Communication Failure (not seen in 24 hours)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const commFailure = await GPSDevice.countDocuments({
+      $or: [
+        { lastCommunicationTime: { $lt: oneDayAgo } },
+        { lastCommunicationTime: null }
+      ],
+      activationStatus: 'Activated'
+    });
+
+    // Devices without GPS Fix (gsmSignalStrength < -95)
+    const noGpsFix = await GPSDevice.countDocuments({
+      gsmSignalStrength: { $lt: -95 },
+      activationStatus: 'Activated'
+    });
+
+    // State-wise Device Count
+    const mappings = await CustomerLocationMapping.find({})
+      .populate('customer', 'devicesUsed')
+      .populate('state', 'name')
+      .lean();
+    
+    const stateCountMap = {};
+    mappings.forEach(m => {
+      if (m.state && m.state.name && m.customer) {
+        const stateName = m.state.name;
+        const devices = m.customer.devicesUsed || 0;
+        stateCountMap[stateName] = (stateCountMap[stateName] || 0) + devices;
+      }
+    });
+
+    const stateWiseCount = Object.entries(stateCountMap).map(([state, count]) => ({
+      state,
+      count
+    })).sort((a, b) => b.count - a.count);
+
+    // Top active clients
+    const topClients = await User.find({ role: 'Farm Admin' })
+      .sort({ devicesUsed: -1 })
+      .limit(5)
+      .select('name company phone devicesUsed')
+      .lean();
+
+    // Devices installed today
+    const devicesInstalledToday = await GPSDevice.countDocuments({
+      installationDate: { $gte: today }
+    });
+
+    // Alerts today
+    const alertsToday = await DeviceAlert.countDocuments({
+      timestamp: { $gte: today }
+    });
+
+    return successResponse(res, 200, 'Fleet stats retrieved successfully', {
+      totalCustomers,
+      totalRegisteredDevices,
+      totalRegisteredVehicles,
+      onlineDevices,
+      offlineDevices,
+      gpsConnected,
+      gpsDisconnected,
+      enginesRunning,
+      enginesStopped,
+      todayEvents: {
+        engineOn: engineOnToday,
+        engineOff: engineOffToday,
+        gpsDisconnect: gpsDisconnectToday,
+        gpsReconnect: gpsReconnectToday
+      },
+      activeAlerts,
+      commFailure,
+      noGpsFix,
+      stateWiseCount,
+      topClients,
+      devicesInstalledToday,
+      alertsToday
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get device event timeline
+// @route   GET /api/v1/devices/:id/timeline
+// @access  Private (Company Admin only)
+export const getDeviceTimeline = async (req, res, next) => {
+  try {
+    const device = await GPSDevice.findById(req.params.id);
+    if (!device) {
+      res.status(404);
+      return next(new Error('GPS Device not found'));
+    }
+
+    const timeline = await DeviceStatusHistory.find({ deviceId: device.deviceId })
+      .sort({ timestamp: -1 })
+      .limit(50)
+      .lean();
+
+    return successResponse(res, 200, 'Device event timeline retrieved successfully', timeline);
   } catch (error) {
     next(error);
   }

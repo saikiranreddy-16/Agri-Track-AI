@@ -1,42 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaExclamationTriangle, FaFilter, FaCheckCircle, 
-  FaSearch, FaGasPump, FaCompass, FaTools, FaMapMarkerAlt 
+  FaSearch, FaGasPump, FaCompass, FaTools, FaMapMarkerAlt, FaTimes 
 } from 'react-icons/fa';
-import { useUIState } from '../context/UIStateContext';
-import { mockMachines } from '../data/mockData';
-import { useAuth } from '../context/AuthContext';
+import api from '../utils/api';
+import { useToast } from '../context/ToastContext';
 
 export const Alerts = () => {
-  const { user } = useAuth();
-  const { alerts, resolveAlert, dismissAlert } = useUIState();
+  const toast = useToast();
 
+  const [alerts, setAlerts] = useState([]);
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterPriority, setFilterPriority] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const getMachineName = (id) => mockMachines.find(m => m.id === id)?.name || 'Unknown Asset';
-
-  const handleResolve = (id) => {
-    resolveAlert(id);
+  const fetchAlerts = async () => {
+    try {
+      const response = await api.get('/alerts');
+      if (response.data && response.data.success) {
+        setAlerts(response.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to retrieve alerts:', error);
+      toast.error('Failed to load active system alerts.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (id) => {
-    dismissAlert(id);
+  useEffect(() => {
+    fetchAlerts();
+  }, []);
+
+  const handleResolve = async (id) => {
+    try {
+      const res = await api.put(`/alerts/${id}/resolve`);
+      if (res.data && res.data.success) {
+        toast.success('Alert resolved successfully.');
+        fetchAlerts();
+      }
+    } catch (err) {
+      toast.error('Failed to resolve alert.');
+    }
   };
 
-  // Filter alerts
+  // Filter alerts locally based on select filters & search queries
   const filteredAlerts = alerts.filter(a => {
-    const matchesSearch = a.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          a.type.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = 
+      (a.message?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (a.type?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (a.deviceId?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (a.customerId?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+      
     const matchesCategory = filterCategory === 'All' || a.category === filterCategory;
     const matchesPriority = filterPriority === 'All' || a.priority === filterPriority;
     
     return matchesSearch && matchesCategory && matchesPriority;
   });
 
-  const categories = ['All', 'Fuel', 'GPS', 'Maintenance', 'System'];
+  const categories = [
+    'All', 'Engine', 'GPS', 'Power', 'Battery', 
+    'Speed', 'Geofence', 'Maintenance', 'Security', 'Fuel', 'System'
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -101,8 +136,8 @@ export const Alerts = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search alert triggers, asset names..."
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/30 border border-gray-200 dark:border-emerald-950/40 focus:outline-none focus:border-emerald-500 focus:bg-white dark:text-white"
+              placeholder="Search by device ID, client account, messages..."
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/30 border border-gray-200 dark:border-emerald-950/40 focus:outline-none focus:border-emerald-500 focus:bg-white dark:text-white font-semibold"
             />
           </div>
 
@@ -113,7 +148,7 @@ export const Alerts = () => {
             className="px-3 py-2 text-xs font-bold bg-gray-50 dark:bg-emerald-950/30 border border-gray-200 dark:border-emerald-950/40 rounded-xl focus:outline-none dark:text-white"
           >
             {categories.map(cat => (
-              <option key={cat} value={cat}>{cat === 'All' ? 'All Categories' : `${cat} Faults`}</option>
+              <option key={cat} value={cat}>{cat === 'All' ? 'All Categories' : `${cat} Warnings`}</option>
             ))}
           </select>
 
@@ -145,12 +180,12 @@ export const Alerts = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                key={alert.id}
+                key={alert._id}
                 className={`p-5 bg-white dark:bg-[#0e1712] border rounded-2xl shadow-sm flex flex-col justify-between transition-all ${
                   isResolved 
                     ? 'border-emerald-100 dark:border-emerald-950/20 opacity-70' 
                     : isCritical
-                    ? 'border-red-200 dark:border-red-950/30 hover:border-red-300'
+                    ? 'border-red-200 dark:border-red-950/30 hover:border-red-300 shadow-red-500/5 shadow-sm'
                     : 'border-orange-100 dark:border-orange-950/20 hover:border-orange-200'
                 }`}
               >
@@ -164,7 +199,7 @@ export const Alerts = () => {
                           ? 'bg-red-500 animate-pulse' 
                           : 'bg-orange-500'
                       }`} />
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{alert.category} Warning</span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{alert.category} Alert</span>
                     </div>
 
                     <div className="flex gap-1.5 text-[9px] font-bold leading-none uppercase">
@@ -175,7 +210,7 @@ export const Alerts = () => {
                       }`}>
                         {alert.priority}
                       </span>
-                      <span className="text-gray-400 font-semibold">{alert.time}</span>
+                      <span className="text-gray-400 font-semibold">{new Date(alert.createdAt || alert.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </div>
 
@@ -186,33 +221,34 @@ export const Alerts = () => {
                     {alert.message}
                   </p>
                   
-                  <div className="mt-4 pt-3.5 border-t border-gray-150 dark:border-emerald-950/10 text-xs font-semibold text-gray-400">
-                    <span>Machine: </span>
-                    <strong className="text-gray-700 dark:text-gray-200 mr-4">{getMachineName(alert.machineId)}</strong>
-                    <span>Operator: </span>
-                    <strong className="text-gray-750 dark:text-gray-200">{alert.driverName}</strong>
+                  {/* Expanded Admin alert parameters */}
+                  <div className="mt-4 pt-3.5 border-t border-gray-150 dark:border-emerald-950/10 text-[11px] font-semibold text-gray-450 space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <span>Device ID: <strong className="text-gray-700 dark:text-gray-200">{alert.deviceId}</strong></span>
+                      <span>Vehicle: <strong className="text-gray-700 dark:text-gray-200">{alert.machineId?.name || 'Unassigned'}</strong></span>
+                      <span>Customer: <strong className="text-gray-700 dark:text-gray-200">{alert.customerId?.name || 'Unknown'}</strong></span>
+                      <span>Location: <strong className="text-gray-700 dark:text-gray-200">{alert.districtId?.name || 'N/A'}, {alert.stateId?.name || 'N/A'}</strong></span>
+                    </div>
+                    {alert.exactLocation && (
+                      <div className="flex items-start gap-1 text-[10px] text-gray-400 border-t border-gray-100 dark:border-emerald-950/10 pt-2">
+                        <FaMapMarkerAlt className="text-red-400 mt-0.5 shrink-0" />
+                        <span>Coordinates: {alert.exactLocation.lat.toFixed(5)}, {alert.exactLocation.lng.toFixed(5)} &bull; {alert.exactLocation.address}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="mt-6 pt-3.5 border-t border-gray-100 dark:border-emerald-950/10 flex gap-2 justify-end">
                   {!isResolved ? (
-                    <>
-                      <button
-                        onClick={() => handleResolve(alert.id)}
-                        className="flex items-center gap-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer"
-                      >
-                        <FaCheckCircle className="text-[10px]" /> Resolve Code
-                      </button>
-                      <button
-                        onClick={() => handleDelete(alert.id)}
-                        className="px-4 py-2 border border-gray-200 dark:border-emerald-905/30 rounded-xl font-bold text-xs text-gray-500 hover:bg-gray-50"
-                      >
-                        Mute
-                      </button>
-                    </>
+                    <button
+                      onClick={() => handleResolve(alert._id)}
+                      className="flex items-center gap-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer transition-colors"
+                    >
+                      <FaCheckCircle className="text-[10px]" /> Resolve Alert
+                    </button>
                   ) : (
                     <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                      <FaCheckCircle /> Handled & Logged
+                      <FaCheckCircle /> Resolved & Logged
                     </span>
                   )}
                 </div>

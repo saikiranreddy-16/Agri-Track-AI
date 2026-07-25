@@ -14,7 +14,13 @@ export const getAlerts = async (req, res, next) => {
       const myMachineIds = myMachines.map(m => m._id);
       query = { machineId: { $in: myMachineIds } };
     }
-    const alerts = await Alert.find(query).populate('machineId', 'name registration type');
+    const alerts = await Alert.find(query)
+      .populate('machineId', 'name registration type')
+      .populate('customerId', 'name phone company')
+      .populate('stateId', 'name')
+      .populate('districtId', 'name')
+      .sort({ createdAt: -1 });
+
     return successResponse(res, 200, 'Alerts retrieved successfully', alerts);
   } catch (error) {
     next(error);

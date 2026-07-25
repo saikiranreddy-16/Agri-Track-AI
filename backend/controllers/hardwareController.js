@@ -1,6 +1,7 @@
 import GPSDevice from '../models/gpsDeviceModel.js';
 import Machine from '../models/machineModel.js';
 import GPSHistory from '../models/gpsHistoryModel.js';
+import DeviceStatusHistory from '../models/deviceStatusHistoryModel.js';
 import { calculateAndUpdateVehicleHealth } from '../services/vehicleHealthService.js';
 import { emitMachineUpdate } from '../services/socketService.js';
 import { successResponse } from '../utils/responseHandler.js';
@@ -53,6 +54,31 @@ export const hardwareGPSUpload = async (req, res, next) => {
       gpsDevice.gsmSignalStrength = signalStrength;
     }
     if (network) gpsDevice.network = network;
+
+    // Determine and record live status transition
+    let computedStatus = 'Stopped';
+    if (signalStrength !== undefined && signalStrength < -95) {
+      computedStatus = 'GPS Lost';
+    } else if (battery !== undefined && battery < 20) {
+      computedStatus = 'Low Voltage';
+    } else if (engineStatus === 'On') {
+      computedStatus = (speed !== undefined && speed > 2) ? 'Moving' : 'Idle';
+    } else if (engineStatus === 'Off') {
+      computedStatus = 'Stopped';
+    } else {
+      computedStatus = gpsDevice.detailedLiveStatus || 'Stopped';
+    }
+
+    if (computedStatus !== gpsDevice.detailedLiveStatus) {
+      const prevStatus = gpsDevice.detailedLiveStatus || 'Unknown';
+      gpsDevice.detailedLiveStatus = computedStatus;
+      await DeviceStatusHistory.create({
+        deviceId: gpsDevice.deviceId,
+        status: computedStatus === 'Stopped' ? 'Engine Stopped' : (computedStatus === 'Moving' ? 'Vehicle Moving' : (computedStatus === 'Idle' ? 'Vehicle Idle' : computedStatus)),
+        details: `Telemetry update: status changed from ${prevStatus} to ${computedStatus}`
+      });
+    }
+
     await gpsDevice.save();
 
     let machine = null;

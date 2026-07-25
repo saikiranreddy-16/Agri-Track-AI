@@ -35,6 +35,32 @@ const machineSchema = new mongoose.Schema(
       trim: true,
       immutable: true, // Enforcement of Vehicle Chassis Immutability
     },
+    engineNumber: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    purchaseDate: {
+      type: Date,
+      default: null,
+    },
+    manufacturingYear: {
+      type: Number,
+      default: null,
+    },
+    rcOwnerName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    insuranceExpiry: {
+      type: Date,
+      default: null,
+    },
+    fitnessExpiry: {
+      type: Date,
+      default: null,
+    },
     gpsDeviceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'GPSDevice',
@@ -100,6 +126,14 @@ const machineSchema = new mongoose.Schema(
       default: 0,
     },
     distanceTravelled: {
+      type: Number,
+      default: 0,
+    },
+    areaCovered: {
+      type: Number,
+      default: 0,
+    },
+    idleTime: {
       type: Number,
       default: 0,
     },

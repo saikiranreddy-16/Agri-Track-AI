@@ -11,6 +11,13 @@ import {
   getCustomerDetails,
   getCustomerVehicles,
   getCustomerFarms,
+  createCustomer,
+  updateCustomer,
+  uploadCustomerDocument,
+  getStates,
+  getDistricts,
+  getMandals,
+  getVillages,
 } from '../controllers/customerController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -21,8 +28,17 @@ router.use(protect);
 // Farm Admin only endpoints
 router.post('/mobile-change-request', requestMobileChange);
 
+// Locations hierarchical endpoints (accessible to authenticated users)
+router.get('/locations/states', getStates);
+router.get('/locations/districts', getDistricts);
+router.get('/locations/mandals', getMandals);
+router.get('/locations/villages', getVillages);
+
 // Company Admin only endpoints
 router.get('/', authorize('Company Admin'), getCustomers);
+router.post('/', authorize('Company Admin'), createCustomer);
+router.put('/:id', authorize('Company Admin'), updateCustomer);
+router.post('/:id/documents', authorize('Company Admin'), uploadCustomerDocument);
 router.get('/:id', authorize('Company Admin'), getCustomerDetails);
 router.get('/:id/vehicles', authorize('Company Admin'), getCustomerVehicles);
 router.get('/:id/farms', authorize('Company Admin'), getCustomerFarms);

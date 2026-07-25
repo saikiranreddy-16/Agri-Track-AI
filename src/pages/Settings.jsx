@@ -14,7 +14,7 @@ import { mockMachines } from '../data/mockData';
 
 export const Settings = () => {
   const { user, changePIN } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -40,29 +40,13 @@ export const Settings = () => {
 
   // Preferences forms
   const [units, setUnits] = useState('Metric');
-  const [themePref, setThemePref] = useState(localStorage.getItem('theme_preference') || 'system');
+  const themePref = theme;
 
   const isCompanyAdmin = user?.role === ROLES.COMPANY_ADMIN;
 
   // Apply theme preference helper
   const applyThemePreference = (pref) => {
-    setThemePref(pref);
-    localStorage.setItem('theme_preference', pref);
-    
-    const root = window.document.documentElement;
-    if (pref === 'dark') {
-      root.classList.add('dark');
-    } else if (pref === 'light') {
-      root.classList.remove('dark');
-    } else {
-      // System
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (systemDark) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
-    }
+    setTheme(pref);
     toast.success(`Theme preference set to ${pref === 'system' ? 'System Theme' : pref === 'dark' ? 'Dark Mode' : 'Light Mode'}.`);
   };
 

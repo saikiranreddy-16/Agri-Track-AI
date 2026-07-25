@@ -41,6 +41,39 @@ const gpsDeviceSchema = new mongoose.Schema(
       enum: ['Online', 'Offline', 'Active', 'Inactive'],
       default: 'Offline',
     },
+    installerName: {
+      type: String,
+      default: '',
+    },
+    installationLocation: {
+      type: String,
+      default: '',
+    },
+    vehicleOdometer: {
+      type: Number,
+      default: 0,
+    },
+    deviceWarranty: {
+      type: Date,
+      default: null,
+    },
+    deviceSerialNumber: {
+      type: String,
+      default: '',
+    },
+    simIccid: {
+      type: String,
+      default: '',
+    },
+    simProvider: {
+      type: String,
+      default: '',
+    },
+    detailedLiveStatus: {
+      type: String,
+      enum: ['Engine ON', 'Engine OFF', 'Moving', 'Idle', 'Stopped', 'GPS Lost', 'No Network', 'Low Voltage'],
+      default: 'Engine OFF',
+    },
     manufacturingDate: {
       type: Date,
       default: null,

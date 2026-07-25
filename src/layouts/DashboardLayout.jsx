@@ -9,7 +9,7 @@ import {
   FaBars, FaChevronLeft, FaSun, FaMoon, FaGlobe, FaBell, FaRobot, FaSearch, 
   FaSignOutAlt, FaTractor, FaUserTie, FaMap, FaTasks, FaFileContract, 
   FaExclamationTriangle, FaTools, FaCog, FaQuestionCircle, FaUser, 
-  FaArrowRight, FaRoute, FaEnvelope, FaThLarge, FaShieldAlt, FaFilter
+  FaArrowRight, FaRoute, FaEnvelope, FaThLarge, FaShieldAlt, FaFilter, FaDesktop
 } from 'react-icons/fa';
 import { mockMachines, mockCustomers } from '../data/mockData';
 import { useToast } from '../context/ToastContext';
@@ -83,13 +83,12 @@ export const DashboardLayout = () => {
 
   const menuItems = isCompanyAdmin
     ? [
-        { name: 'Dashboard', path: PATHS.DASHBOARD, icon: FaThLarge },
+        { name: 'Fleet Overview', path: PATHS.FLEET_OVERVIEW, icon: FaThLarge },
         { name: 'Customer Management', path: PATHS.CUSTOMER_MANAGEMENT, icon: FaUserTie },
         { name: 'Device Activation', path: PATHS.DEVICE_ACTIVATION, icon: FaTractor },
         { name: 'Device Replacement', path: PATHS.DEVICE_REPLACEMENT, icon: FaTools },
-        { name: 'Fleet Overview (Read Only)', path: PATHS.FLEET_OVERVIEW, icon: FaTractor },
         { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute },
-        { name: 'Reports', path: PATHS.REPORTS, icon: FaFileContract },
+        { name: 'Alerts Inbox', path: PATHS.ALERTS, icon: FaExclamationTriangle, badge: 'Active' },
         { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, highlight: true },
         { name: 'AI Administration', path: PATHS.AI_ADMINISTRATION, icon: FaShieldAlt, highlight: true },
         { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
@@ -98,8 +97,6 @@ export const DashboardLayout = () => {
     : [
         { name: 'Dashboard', path: PATHS.DASHBOARD, icon: FaThLarge },
         { name: 'My Vehicles', path: PATHS.MACHINES, icon: FaTractor },
-        { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute },
-        { name: 'GPS History', path: PATHS.GPS_HISTORY, icon: FaRoute },
         { name: 'Reports', path: PATHS.REPORTS, icon: FaFileContract },
         { name: 'Alerts', path: PATHS.ALERTS, icon: FaExclamationTriangle, badge: 'Active' },
         { name: 'Maintenance', path: PATHS.MAINTENANCE, icon: FaTools },
@@ -535,10 +532,16 @@ export const DashboardLayout = () => {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-emerald-950/40 rounded-xl transition-all"
-              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-emerald-950/40 rounded-xl transition-all flex items-center justify-center cursor-pointer"
+              title={`Active theme: ${theme}. Click to cycle Light/Dark/System.`}
             >
-              {theme === 'light' ? <FaMoon className="text-lg" /> : <FaSun className="text-lg" />}
+              {theme === 'light' ? (
+                <FaMoon className="text-lg" />
+              ) : theme === 'dark' ? (
+                <FaSun className="text-lg" />
+              ) : (
+                <FaDesktop className="text-lg text-emerald-500 animate-pulse" />
+              )}
             </button>
 
             {/* Divider */}

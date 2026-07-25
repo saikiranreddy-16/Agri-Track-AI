@@ -1,5 +1,6 @@
 import Machine from '../models/machineModel.js';
 import Driver from '../models/driverModel.js';
+import { VehicleBrand, VehicleModel, HPMaster } from '../models/vehicleMasterModel.js';
 import { successResponse, errorResponse } from '../utils/responseHandler.js';
 import { logActivity } from '../utils/activityLogger.js';
 
@@ -225,6 +226,63 @@ export const getMachineLiveStatus = async (req, res, next) => {
     const machines = await Machine.find(query, 'name type status location speed heading engineStatus fuel workingHours distanceTravelled updatedAt')
       .populate('assignedDriverId', 'name phone');
     return successResponse(res, 200, 'Live status of all machines retrieved successfully', machines);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get vehicle metadata (types, brands, models, and HP options)
+// @route   GET /api/v1/machines/vehicle-metadata
+// @access  Private (Authenticated)
+export const getVehicleMetadata = async (req, res, next) => {
+  try {
+    const types = [
+      'Tractor',
+      'Harvester',
+      'Mini Tractor',
+      'Power Tiller',
+      'Rotavator',
+      'Combine Harvester',
+      'Rice Transplanter',
+      'Sugarcane Harvester',
+      'Sprayer Vehicle',
+      'Loader',
+      'Excavator',
+      'Car',
+      'Truck',
+      'JCB',
+      'Bike',
+      'Generator',
+      'Water Pump',
+      'Other Agricultural Equipment'
+    ];
+
+    const brands = await VehicleBrand.find({}).sort({ name: 1 }).lean();
+    const formattedBrands = [];
+
+    for (const brand of brands) {
+      const models = await VehicleModel.find({ brand: brand._id }).sort({ name: 1 }).lean();
+      const formattedModels = [];
+      for (const m of models) {
+        const hps = await HPMaster.find({ model: m._id }).sort({ hpValue: 1 }).lean();
+        formattedModels.push({
+          _id: m._id,
+          name: m.name,
+          vehicleType: m.vehicleType,
+          hpOptions: hps.map(h => h.hpValue)
+        });
+      }
+      formattedBrands.push({
+        _id: brand._id,
+        name: brand.name,
+        models: formattedModels
+      });
+    }
+
+    return successResponse(res, 200, 'Vehicle master metadata retrieved successfully', {
+      types,
+      brands: formattedBrands
+    });
   } catch (error) {
     next(error);
   }
