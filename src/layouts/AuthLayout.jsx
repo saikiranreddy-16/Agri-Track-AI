@@ -1,78 +1,275 @@
-import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { FaCompass } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaMapMarkerAlt, FaRobot, FaTractor, FaBell, FaTools, FaGlobe, FaChevronDown, FaUsers, FaSatellite, FaBolt } from 'react-icons/fa';
+import loginBg from '../assets/login_bg.png';
+
+// Custom SVG Logo: Leaf shape with GPS Pin & Gear inside
+const LogoIcon = () => (
+  <svg viewBox="0 0 100 100" className="w-10 h-10 shrink-0" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path 
+      d="M50 15C65 30 85 45 85 65C85 80 72 90 50 90C28 90 15 80 15 65C15 45 35 30 50 15Z" 
+      fill="url(#leafGradient)" 
+      className="drop-shadow-[0_4px_8px_rgba(16,185,129,0.35)]"
+    />
+    <circle cx="50" cy="58" r="16" stroke="#ffffff" strokeWidth="2.5" strokeDasharray="6 3" strokeLinecap="round" opacity="0.85" />
+    <circle cx="50" cy="58" r="10" stroke="#ffffff" strokeWidth="2" opacity="0.6" />
+    <path 
+      d="M50 38C44 38 39 43 39 49C39 57 50 67 50 67C50 67 61 57 61 49C61 43 56 38 50 38ZM50 52C47.8 52 46 50.2 46 48C46 45.8 47.8 44 50 44C52.2 44 54 45.8 54 48C54 50.2 52.2 52 50 52Z" 
+      fill="#F59E0B" 
+      className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+    />
+    <defs>
+      <linearGradient id="leafGradient" x1="15" y1="15" x2="85" y2="90" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#10B981" />
+        <stop offset="1" stopColor="#047857" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+const quotes = [
+  "Technology that keeps your machines working while you focus on farming.",
+  "Track every machine. Protect every investment.",
+  "Smarter farming begins with smarter fleet management."
+];
 
 export const AuthLayout = () => {
+  const [langOpen, setLangOpen] = useState(false);
+  const [selectedLang, setSelectedLang] = useState('English');
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  // Quote rotation interval (15 seconds)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % quotes.length);
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-[#080d0a] text-gray-900 dark:text-gray-100 transition-colors duration-200">
-      {/* Left panel: Auth Forms */}
-      <div className="flex flex-col justify-between flex-1 px-6 py-12 md:px-12 lg:flex-initial lg:w-[480px] xl:w-[540px] bg-white dark:bg-[#0e1712] shadow-2xl z-10">
-        <div className="flex items-center gap-2 mb-8">
-          <FaCompass className="text-3xl text-emerald-600 dark:text-emerald-400" />
-          <span className="text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-300">
-            AgriTrack <span className="text-orange-500">AI</span>
-          </span>
+    <div className="relative min-h-screen w-full flex flex-col justify-between overflow-hidden bg-emerald-950 font-sans text-white">
+      {/* Background Image Container with Ken Burns zoom effect */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <img 
+          src={loginBg} 
+          alt="Smart Agriculture" 
+          className="w-full h-full object-cover origin-center scale-100 animate-kenburns"
+        />
+        {/* Dark translucent nature overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/85 via-black/80 to-[#030a06]/95 z-10" />
+      </div>
+
+      {/* Header Container */}
+      <header className="relative z-20 flex justify-between items-center px-6 py-4 max-w-7xl mx-auto w-full select-none">
+        {/* Logo and Brand */}
+        <div className="flex items-center gap-3">
+          <LogoIcon />
+          <div className="flex flex-col">
+            <span className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-1.5">
+              AgriTrack <span className="text-amber-500 font-extrabold">AI</span>
+            </span>
+            <span className="text-[9px] uppercase tracking-widest text-emerald-450 font-bold opacity-80">
+              Smart Fleet Operations
+            </span>
+          </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full"
-        >
+        {/* Custom Language Dropdown Selector */}
+        <div className="relative">
+          <button
+            onClick={() => setLangOpen(!langOpen)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-sm"
+          >
+            <FaGlobe className="text-emerald-400" />
+            <span>{selectedLang}</span>
+            <FaChevronDown className={`text-[10px] transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {langOpen && (
+            <>
+              {/* Overlay transparent click-away handler */}
+              <div className="fixed inset-0 z-30" onClick={() => setLangOpen(false)} />
+              
+              <div className="absolute right-0 mt-2 w-48 bg-emerald-955/95 backdrop-blur-md border border-emerald-900/50 rounded-2xl shadow-xl py-2 z-40 animate-slide-up text-left">
+                <button
+                  onClick={() => {
+                    setSelectedLang('English');
+                    setLangOpen(false);
+                  }}
+                  className="w-full px-4 py-2 text-xs font-semibold hover:bg-emerald-800/40 text-emerald-105 flex items-center justify-between cursor-pointer"
+                >
+                  <span>English</span>
+                  <span className="text-[10px] text-emerald-400">● Active</span>
+                </button>
+                
+                <div className="h-px bg-emerald-900/40 my-1 mx-2" />
+                
+                <button
+                  disabled
+                  className="w-full px-4 py-2 text-xs font-semibold text-emerald-450/40 flex items-center justify-between cursor-not-allowed select-none"
+                >
+                  <span>తెలుగు</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-bold uppercase tracking-wider scale-90">Soon</span>
+                </button>
+                
+                <button
+                  disabled
+                  className="w-full px-4 py-2 text-xs font-semibold text-emerald-450/40 flex items-center justify-between cursor-not-allowed select-none"
+                >
+                  <span>हिन्दी</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-bold uppercase tracking-wider scale-90">Soon</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </header>
+
+      {/* Main Grid Content Column Wrapper */}
+      <main className="relative z-20 flex-1 grid grid-cols-1 lg:grid-cols-12 max-w-7xl mx-auto w-full px-6 sm:px-8 py-4 items-center gap-12">
+        
+        {/* Left Information Panel */}
+        <section className="hidden lg:flex flex-col col-span-7 space-y-8 pr-4">
+          
+          {/* Header Description */}
+          <div className="space-y-4">
+            <h1 className="text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              Smart Agricultural <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">
+                Fleet Management System
+              </span>
+            </h1>
+            <p className="text-sm xl:text-base text-emerald-100/85 max-w-xl leading-relaxed">
+              Orchestrate farm-wide operations with precision autonomy. Real-time vehicle telemetry, live tracking, driver performance metrics, and advanced AI diagnostics built for modern agriculture.
+            </p>
+          </div>
+
+          {/* Quick Statistics Overview Grid */}
+          <div className="grid grid-cols-2 gap-4 max-w-lg">
+            <div className="flex items-center gap-3 p-3.5 bg-white/5 border border-white/10 rounded-2xl">
+              <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400">
+                <FaUsers className="text-lg" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-xs text-emerald-200">Across India</span>
+                <span className="text-sm font-bold text-white">Farmer-Trusted</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3.5 bg-white/5 border border-white/10 rounded-2xl">
+              <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400">
+                <FaTractor className="text-lg" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-xs text-emerald-200">GPS Fleet Enabled</span>
+                <span className="text-sm font-bold text-white">Tractors & Harvesters</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-3.5 bg-white/5 border border-white/10 rounded-2xl">
+              <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400">
+                <FaSatellite className="text-lg" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-xs text-emerald-200">Active IoT Trackers</span>
+                <span className="text-sm font-bold text-white">Live Telemetry</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-3.5 bg-white/5 border border-white/10 rounded-2xl">
+              <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-400">
+                <FaBolt className="text-lg" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-xs text-emerald-200">AI Powered Platform</span>
+                <span className="text-sm font-bold text-white">Real-Time Diagnostics</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bulleted Core Features Details */}
+          <div className="space-y-4 max-w-xl text-left">
+            <div className="flex gap-3">
+              <FaMapMarkerAlt className="text-amber-500 text-lg shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-white">Live GPS Tracking</h4>
+                <p className="text-xs text-emerald-100/75 mt-0.5">Real-time coordinates updates, heading tracking, and interactive trail playback.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <FaRobot className="text-amber-500 text-lg shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-white">AI Farming Assistant</h4>
+                <p className="text-xs text-emerald-100/75 mt-0.5">Instant anomalies detection, fuel drainage warnings, geofencing, and automated reports.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <FaTractor className="text-amber-500 text-lg shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-white">Smart Fleet Monitoring</h4>
+                <p className="text-xs text-emerald-100/75 mt-0.5">Comprehensive oversight dashboards for tractors, combine harvesters, and assigned operators.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <FaBell className="text-amber-500 text-lg shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-white">Smart Alerts & Geofencing</h4>
+                <p className="text-xs text-emerald-100/75 mt-0.5">Automated visual alerts on critical parameters, geo-limit crossings, and machine parameters.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <FaTools className="text-amber-500 text-lg shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-white">Operational Service Reminders</h4>
+                <p className="text-xs text-emerald-100/75 mt-0.5">Preventative maintenance metrics alerts based on actual logged machine operational engine hours.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Farmer Friendly Rotational Quote Widget */}
+          <div className="border-l-2 border-amber-500 pl-4 py-1.5 max-w-md h-12 flex items-center text-left">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={quoteIndex}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+                className="text-xs xl:text-sm font-semibold italic text-emerald-100"
+              >
+                "{quotes[quoteIndex]}"
+              </motion.p>
+            </AnimatePresence>
+          </div>
+        </section>
+
+        {/* Right Form Card Panel (Outlet container) */}
+        <section className="col-span-12 lg:col-span-5 flex justify-center lg:justify-end">
           <Outlet />
-        </motion.div>
+        </section>
 
-        <div className="mt-8 text-center text-xs text-gray-500 dark:text-gray-400">
-          &copy; {new Date().getFullYear()} AgriTrack AI Fleet Systems. All rights reserved.
-        </div>
-      </div>
+      </main>
 
-      {/* Right panel: Scenic Agricultural Illustration */}
-      <div className="relative flex-1 hidden lg:flex items-center justify-center bg-gradient-to-tr from-emerald-950 via-emerald-800 to-green-600 overflow-hidden">
-        {/* Decorative Grid Lines */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f3d24_1px,transparent_1px),linear-gradient(to_bottom,#0f3d24_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-30" />
-        
-        {/* Glassmorphic floating card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="relative max-w-lg p-10 m-8 bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl text-white"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 rounded-full border border-emerald-500/30 text-xs font-semibold tracking-wider uppercase text-emerald-300 mb-6">
-            Farm Operations Platform
-          </div>
-          <h2 className="text-4xl font-extrabold tracking-tight mb-4 leading-tight">
-            Precision Autonomy in the Field.
-          </h2>
-          <p className="text-lg text-emerald-100/90 leading-relaxed mb-6">
-            Monitor real-time telemetry, trace historical paths, manage operators, and orchestrate farm-wide operations with surgical precision.
-          </p>
-          <div className="flex gap-4">
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-orange-400">99.9%</span>
-              <span className="text-xs text-emerald-200">GPS Uptime</span>
-            </div>
-            <div className="w-px h-10 bg-white/20" />
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-orange-400">12,400+</span>
-              <span className="text-xs text-emerald-200">Acres Tracked</span>
-            </div>
-            <div className="w-px h-10 bg-white/20" />
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-orange-400">0.05s</span>
-              <span className="text-xs text-emerald-200">Telemetry Delay</span>
-            </div>
-          </div>
-        </motion.div>
-        
-        {/* Ambient light blobs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl" />
-      </div>
+      {/* Footer Container */}
+      <footer className="relative z-20 w-full text-center py-6 px-4 border-t border-white/5 select-none bg-black/10">
+        <p className="text-[11px] font-semibold text-emerald-200/60 tracking-wider flex justify-center items-center gap-2 flex-wrap">
+          <span>AgriTrack AI</span>
+          <span className="opacity-40">|</span>
+          <span>Version 1.1</span>
+          <span className="opacity-40">|</span>
+          <span className="text-emerald-100/70">Designed for Indian Agriculture</span>
+          <span className="opacity-40">|</span>
+          <span>&copy; {new Date().getFullYear()} AgriTrack AI. All rights reserved.</span>
+        </p>
+      </footer>
     </div>
   );
 };
+
 export default AuthLayout;
+

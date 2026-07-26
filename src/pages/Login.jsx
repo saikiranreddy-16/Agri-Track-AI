@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { PATHS } from '../constants';
 import { FaPhone, FaLock, FaEnvelope, FaExclamationTriangle, FaShieldAlt } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 export const Login = () => {
   const { login } = useAuth();
@@ -10,16 +11,25 @@ export const Login = () => {
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [gpsDeviceId, setGpsDeviceId] = useState('');
-  const [isTrusted, setIsTrusted] = useState(() => {
-    return localStorage.getItem('device_is_trusted') === 'true';
+  const [rememberMe, setRememberMe] = useState(() => {
+    return localStorage.getItem('login_remember_me') === 'true';
   });
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState('');
 
-  // Auto-detect login mode
+  // Prefill identifier if Remember Me was checked previously
+  useEffect(() => {
+    if (rememberMe) {
+      const savedIdentifier = localStorage.getItem('login_saved_identifier');
+      if (savedIdentifier) {
+        setIdentifier(savedIdentifier);
+      }
+    }
+  }, []);
+
+  // Auto-detect login mode dynamically
   const isEmail = identifier.includes('@');
   const isPhone = identifier.trim().length > 0 && !isEmail;
 
@@ -34,14 +44,9 @@ export const Login = () => {
     }
 
     if (!password) {
-      tempErrors.password = 'Password/PIN is required.';
+      tempErrors.password = 'Password or security PIN is required.';
     } else if (password.length < 4) {
       tempErrors.password = 'Must be at least 4 characters.';
-    }
-
-    // Require Device ID on untrusted device for Farm Admin
-    if (isPhone && !isTrusted && !gpsDeviceId.trim()) {
-      tempErrors.gpsDeviceId = 'Device ID is required for first-time verification.';
     }
 
     setErrors(tempErrors);
@@ -56,13 +61,17 @@ export const Login = () => {
     setGeneralError('');
 
     try {
-      const res = await login(identifier, password, isEmail, gpsDeviceId);
+      // Login uses single form submission, backend auto-resolves the user role
+      const res = await login(identifier, password, isEmail, '');
       setIsLoading(false);
 
       if (res.success) {
-        if (isPhone) {
-          localStorage.setItem('device_is_trusted', 'true');
-          setIsTrusted(true);
+        if (rememberMe) {
+          localStorage.setItem('login_remember_me', 'true');
+          localStorage.setItem('login_saved_identifier', identifier);
+        } else {
+          localStorage.removeItem('login_remember_me');
+          localStorage.removeItem('login_saved_identifier');
         }
         navigate(PATHS.DASHBOARD);
       } else {
@@ -74,32 +83,67 @@ export const Login = () => {
     }
   };
 
-  return (
-    <div className="w-full">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">
-          AgriTrack AI Sign In
-        </h1>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Access your fleet tracking systems and farm telemetry dashboard.
-        </p>
-      </div>
+  // Framer Motion staggered entrance variants
+  const containerVariants = {
+    hidden: { opacity: 0, x: 30 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: 'easeOut',
+        when: 'beforeChildren',
+        staggerChildren: 0.1,
+      },
+    },
+  };
 
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: 'easeOut' },
+    },
+  };
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="w-full max-w-md backdrop-blur-md bg-emerald-950/30 dark:bg-black/35 border border-white/10 dark:border-emerald-950/20 rounded-3xl p-8 shadow-2xl text-white select-none animate-float"
+    >
+      {/* Title Header */}
+      <motion.div variants={itemVariants} className="mb-6 text-center lg:text-left">
+        <h1 className="text-3xl font-black tracking-tight text-white">
+          Welcome Back
+        </h1>
+        <p className="text-xs text-emerald-200/80 mt-1.5 font-medium">
+          Sign in to access AgriTrack AI systems
+        </p>
+      </motion.div>
+
+      {/* Error Alert Display */}
       {generalError && (
-        <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/20 border border-red-250 dark:border-red-900/30 rounded-xl text-[11px] text-red-800 dark:text-red-400 flex items-start gap-2 animate-fade-in">
-          <FaExclamationTriangle className="mt-0.5 shrink-0" />
+        <motion.div
+          variants={itemVariants}
+          className="mb-4 p-3 bg-red-950/30 border border-red-500/20 rounded-xl text-[11px] text-red-300 flex items-start gap-2 animate-fade-in"
+        >
+          <FaExclamationTriangle className="mt-0.5 shrink-0 text-red-400" />
           <div>{generalError}</div>
-        </div>
+        </motion.div>
       )}
 
+      {/* Form Submission */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Identifier Field */}
-        <div>
-          <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-750 dark:text-gray-300 mb-1.5">
+        {/* Identifier Field (Email / Phone) */}
+        <motion.div variants={itemVariants}>
+          <label className="block text-[10px] font-bold uppercase tracking-wider text-emerald-250 mb-1.5">
             Email or Mobile Number
           </label>
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-emerald-300 pointer-events-none">
               {isEmail ? <FaEnvelope /> : <FaPhone />}
             </span>
             <input
@@ -109,26 +153,26 @@ export const Login = () => {
                 setIdentifier(e.target.value);
                 setErrors(prev => ({ ...prev, identifier: '' }));
               }}
-              className={`w-full pl-9 pr-3 py-2.5 text-sm bg-gray-50 dark:bg-[#121c17] border rounded-xl focus:outline-none focus:bg-white dark:text-white transition-all ${
+              className={`w-full pl-9 pr-3 py-2.5 text-sm bg-emerald-950/20 dark:bg-[#070e0a]/40 border rounded-xl focus:outline-none dark:text-white transition-all ${
                 errors.identifier
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-gray-200 dark:border-emerald-950/40 focus:border-emerald-500'
+                  ? 'border-red-500/50 focus:border-red-500'
+                  : 'border-white/10 dark:border-emerald-950/35 focus:border-emerald-500'
               }`}
-              placeholder="e.g. admin@agritrack.in or +919876543210"
+              placeholder="admin@agritrack.in or +919876543210"
             />
           </div>
           {errors.identifier && (
-            <p className="text-[10px] text-red-500 mt-1 font-semibold">{errors.identifier}</p>
+            <p className="text-[10px] text-red-400 mt-1 font-semibold">{errors.identifier}</p>
           )}
-        </div>
+        </motion.div>
 
-        {/* Password / PIN Field */}
-        <div>
-          <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-755 dark:text-gray-300 mb-1.5">
+        {/* Password / Security PIN Field */}
+        <motion.div variants={itemVariants}>
+          <label className="block text-[10px] font-bold uppercase tracking-wider text-emerald-250 mb-1.5">
             {isEmail ? 'Password' : isPhone ? 'Security PIN' : 'Password or PIN'}
           </label>
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-emerald-300 pointer-events-none">
               <FaLock />
             </span>
             <input
@@ -138,76 +182,79 @@ export const Login = () => {
                 setPassword(e.target.value);
                 setErrors(prev => ({ ...prev, password: '' }));
               }}
-              className={`w-full pl-9 pr-3 py-2.5 text-sm bg-gray-50 dark:bg-[#121c17] border rounded-xl focus:outline-none focus:bg-white dark:text-white transition-all ${
+              className={`w-full pl-9 pr-3 py-2.5 text-sm bg-emerald-950/20 dark:bg-[#070e0a]/40 border rounded-xl focus:outline-none dark:text-white transition-all ${
                 errors.password
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-gray-200 dark:border-emerald-950/40 focus:border-emerald-500'
+                  ? 'border-red-500/50 focus:border-red-500'
+                  : 'border-white/10 dark:border-emerald-950/35 focus:border-emerald-500'
               }`}
               placeholder="••••••••"
             />
           </div>
           {errors.password && (
-            <p className="text-[10px] text-red-500 mt-1 font-semibold">{errors.password}</p>
+            <p className="text-[10px] text-red-400 mt-1 font-semibold">{errors.password}</p>
           )}
-        </div>
+        </motion.div>
 
-        {/* Device ID Verification Field (Conditional) */}
-        {isPhone && !isTrusted && (
-          <div className="p-4 bg-emerald-50/50 dark:bg-emerald-955/5 border border-emerald-100 dark:border-emerald-900/35 rounded-xl space-y-2 animate-slide-up">
-            <div className="flex items-center gap-1.5">
-              <FaShieldAlt className="text-emerald-600 dark:text-emerald-400 text-xs shrink-0" />
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">
-                Verify GPS Device ID
-              </label>
-            </div>
-            
+        {/* Options Row (Remember Me & Forgot Password) */}
+        <motion.div variants={itemVariants} className="flex justify-between items-center text-xs py-1">
+          <label className="flex items-center gap-1.5 cursor-pointer text-emerald-100 font-medium">
             <input
-              type="text"
-              value={gpsDeviceId}
-              onChange={(e) => {
-                setGpsDeviceId(e.target.value);
-                setErrors(prev => ({ ...prev, gpsDeviceId: '' }));
-              }}
-              className={`w-full px-3 py-2 text-sm bg-white dark:bg-[#121c17] border rounded-xl focus:outline-none dark:text-white transition-all ${
-                errors.gpsDeviceId
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-emerald-300 dark:border-emerald-900/40 focus:border-emerald-600'
-              }`}
-              placeholder="e.g. dev-mach-1"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-3.5 h-3.5 rounded border-white/20 bg-emerald-950/20 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-emerald-950 accent-emerald-500"
             />
-            {errors.gpsDeviceId && (
-              <p className="text-[10px] text-red-500 mt-1 font-semibold">{errors.gpsDeviceId}</p>
-            )}
-            <p className="text-[10px] text-emerald-700 dark:text-emerald-400 italic">
-              First login on a new device requires your Device ID.
-            </p>
-          </div>
-        )}
+            <span>Remember Me</span>
+          </label>
 
-        {/* Login Button */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full flex justify-center items-center py-2.5 px-4 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
-        >
-          {isLoading ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            'Verify & Sign In'
-          )}
-        </button>
+          <Link
+            to={PATHS.FORGOT_PASSWORD}
+            className="font-bold text-emerald-400 hover:text-emerald-350 hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </motion.div>
+
+        {/* Unified Sign In Action Button */}
+        <motion.div variants={itemVariants}>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full flex justify-center items-center py-2.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-600 hover:to-emerald-400 focus:outline-none transition-all shadow-md hover:shadow-lg disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+          >
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              'Verify & Sign In'
+            )}
+          </button>
+        </motion.div>
       </form>
 
-      <div className="mt-6 text-center text-xs">
-        <Link
-          to={PATHS.FORGOT_PASSWORD}
-          className="font-bold text-emerald-650 dark:text-emerald-400 hover:underline"
-        >
-          Forgot password?
-        </Link>
-      </div>
-    </div>
+      {/* Decorative Divider */}
+      <motion.div variants={itemVariants} className="my-6 flex items-center justify-between text-xs text-white/20">
+        <span className="w-full h-px bg-white/10" />
+        <span className="px-3 shrink-0 uppercase tracking-widest text-[9px] font-bold text-emerald-200/50">
+          Security Checked
+        </span>
+        <span className="w-full h-px bg-white/10" />
+      </motion.div>
+
+      {/* App Version & Metadata */}
+      <motion.div variants={itemVariants} className="text-center space-y-1">
+        <p className="text-[10px] font-bold text-emerald-300 tracking-wider">
+          VERSION 1.1.0
+        </p>
+        <p className="text-[9px] font-semibold text-emerald-250/70 tracking-wide">
+          Smart Agricultural Fleet Management
+        </p>
+        <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest flex justify-center items-center gap-1 mt-1">
+          Made in India 🇮🇳
+        </p>
+      </motion.div>
+    </motion.div>
   );
 };
 
 export default Login;
+

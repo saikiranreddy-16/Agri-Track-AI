@@ -133,57 +133,47 @@ export const loginUser = async (req, res, next) => {
       const isDeviceTrusted = trustedDevice && trustedDevice.trustedStatus === 'Trusted';
 
       if (!isDeviceTrusted) {
-        // Device is untrusted, we require a GPS Device ID to authenticate and authorize this device
-        if (!gpsDeviceId) {
-          await LoginHistory.create({
-            user: user._id,
-            userPhone: phone,
-            time: new Date(),
-            device: deviceDisplayName,
-            browser,
-            ip,
-            success: false,
-          });
-          res.status(202); // 202 Accepted, but requires verification parameters (untrusted device)
-          return res.json({
-            success: false,
-            code: 'untrusted_device',
-            message: 'This device is not trusted. GPS hardware verification is required.',
-            data: null,
-            pagination: null,
-            timestamp: new Date().toISOString(),
-          });
+        // Verify GPS Device ID belongs to one of the customer's vehicles, if provided
+        if (gpsDeviceId) {
+          const activeDevice = await GPSDevice.findOne({ deviceId: gpsDeviceId, status: 'Active', owner: user._id });
+          if (!activeDevice) {
+            await LoginHistory.create({
+              user: user._id,
+              userPhone: phone,
+              time: new Date(),
+              device: deviceDisplayName,
+              browser,
+              ip,
+              success: false,
+            });
+            res.status(401);
+            return next(new Error('GPS Device verification failed. Device ID does not match any vehicle in your account.'));
+          }
         }
 
-        // Verify GPS Device ID belongs to one of the customer's vehicles
-        const activeDevice = await GPSDevice.findOne({ deviceId: gpsDeviceId, status: 'Active', owner: user._id });
-        if (!activeDevice) {
-          await LoginHistory.create({
-            user: user._id,
-            userPhone: phone,
-            time: new Date(),
-            device: deviceDisplayName,
-            browser,
-            ip,
-            success: false,
-          });
-          res.status(401);
-          return next(new Error('GPS Device verification failed. Device ID does not match any vehicle in your account.'));
-        }
-
-        // Automatically prune oldest trusted device if limit exceeded (Max 3 active Trusted ones)
+        // Enforce max 3 trusted devices limit
         const activeTrustedCount = user.trustedDevices.filter(d => d.trustedStatus === 'Trusted').length;
         const isCurrentlyTrusted = user.trustedDevices.some(d => d.deviceId === clientDeviceId && d.trustedStatus === 'Trusted');
         
         if (!isCurrentlyTrusted && activeTrustedCount >= 3) {
-          const activeTrustedDevices = user.trustedDevices
-            .filter(d => d.trustedStatus === 'Trusted')
-            .sort((a, b) => new Date(a.loginTime) - new Date(b.loginTime));
-          
-          if (activeTrustedDevices.length > 0) {
-            const oldestDevice = activeTrustedDevices[0];
-            user.trustedDevices = user.trustedDevices.filter(d => d.deviceId !== oldestDevice.deviceId);
-          }
+          await LoginHistory.create({
+            user: user._id,
+            userPhone: phone,
+            time: new Date(),
+            device: deviceDisplayName,
+            browser,
+            ip,
+            success: false,
+          });
+          res.status(400);
+          return res.json({
+            success: false,
+            code: 'max_trusted_devices',
+            message: 'Maximum trusted devices limit reached (3). Please contact support to reset.',
+            data: null,
+            pagination: null,
+            timestamp: new Date().toISOString(),
+          });
         }
 
         // Register or re-activate trusted device

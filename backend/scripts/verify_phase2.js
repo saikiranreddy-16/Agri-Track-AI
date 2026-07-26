@@ -20,7 +20,7 @@ const runVerification = async () => {
     console.log('Connected.');
 
     // 1. GPS DEVICE MASTER TABLE
-    const dev = await GPSDevice.findOne({ deviceId: 'dev-mach-1' });
+    const dev = await GPSDevice.findOne({ deviceId: 'dev-swaraj735' });
     logTest(
       'GPS Device Master Table structure',
       dev && dev.imei && dev.firmwareVersion === '1.0.0' && dev.activationStatus === 'Activated',
@@ -28,7 +28,7 @@ const runVerification = async () => {
     );
 
     // 2. VEHICLE CHASSIS IMMUTABILITY
-    const mach = await Machine.findOne({ registration: 'PB-10-AB-1234' });
+    const mach = await Machine.findOne({ registration: 'TS-05-EA-1001' });
     if (mach) {
       const oldChassis = mach.chassisNumber;
       try {
@@ -83,7 +83,7 @@ const runVerification = async () => {
           phone: '+919876543210',
           password: 'password123',
           clientDeviceId: 'test-chrome-fingerprint',
-          gpsDeviceId: 'dev-mach-1', // active device in his account
+          gpsDeviceId: 'dev-swaraj735', // active device in his account
         }),
       });
       const rajeshData = await rajeshLoginRes.json();
@@ -141,7 +141,7 @@ const runVerification = async () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          deviceId: 'dev-mach-1',
+          deviceId: 'dev-swaraj735',
           latitude: 31.100,
           longitude: 75.900,
           speed: 18,
@@ -193,7 +193,7 @@ const runVerification = async () => {
             phone: '+919999988888', // Rajesh's new number
             password: 'password123',
             clientDeviceId: deviceId,
-            gpsDeviceId: 'dev-mach-1',
+            gpsDeviceId: 'dev-swaraj735',
           }),
         });
       };
