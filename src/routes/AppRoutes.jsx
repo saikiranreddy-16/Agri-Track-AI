@@ -80,34 +80,34 @@ export const AppRoutes = () => {
         <Route path={PATHS.TRIP_REPLAY} element={<TripReplay />} />
         <Route path={PATHS.MACHINE_DASHBOARD} element={<MachineDashboard />} />
 
-        {/* Company Admin Only */}
+        {/* Admin Hierarchy Routes */}
         <Route path={PATHS.AI_ADMINISTRATION} element={
-          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+          <RoleProtectedRoute allowedRoles={['Grand Master Admin', 'Master Admin', 'Company Admin']}>
             <AIAdministration />
           </RoleProtectedRoute>
         } />
         <Route path={PATHS.FLEET_OVERVIEW} element={
-          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+          <RoleProtectedRoute allowedRoles={['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin']}>
             <FleetOverview />
           </RoleProtectedRoute>
         } />
         <Route path={PATHS.CUSTOMER_MANAGEMENT} element={
-          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+          <RoleProtectedRoute allowedRoles={['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin']}>
             <CustomerManagement />
           </RoleProtectedRoute>
         } />
         <Route path={PATHS.CUSTOMER_PROFILE} element={
-          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+          <RoleProtectedRoute allowedRoles={['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin']}>
             <CustomerProfile />
           </RoleProtectedRoute>
         } />
         <Route path={PATHS.DEVICE_ACTIVATION} element={
-          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+          <RoleProtectedRoute allowedRoles={['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin']}>
             <DeviceActivation />
           </RoleProtectedRoute>
         } />
         <Route path={PATHS.DEVICE_REPLACEMENT} element={
-          <RoleProtectedRoute allowedRoles={['Company Admin']}>
+          <RoleProtectedRoute allowedRoles={['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin']}>
             <DeviceReplacement />
           </RoleProtectedRoute>
         } />

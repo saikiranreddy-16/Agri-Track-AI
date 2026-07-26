@@ -80,7 +80,8 @@ export const DashboardLayout = () => {
     setIsMobileOpen(false);
   }, [location.pathname]);
 
-  const isCompanyAdmin = user?.role === ROLES.COMPANY_ADMIN;
+  const isCompanyAdmin = ['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin', ROLES.COMPANY_ADMIN].includes(user?.role);
+  const canAccessAIAdmin = ['Grand Master Admin', 'Master Admin', 'Company Admin', ROLES.COMPANY_ADMIN].includes(user?.role);
 
   const menuItems = isCompanyAdmin
     ? [
@@ -91,7 +92,7 @@ export const DashboardLayout = () => {
         { name: 'Live Tracking', path: PATHS.TRACKING, icon: FaRoute },
         { name: 'Alerts Inbox', path: PATHS.ALERTS, icon: FaExclamationTriangle, badge: 'Active' },
         { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, highlight: true },
-        { name: 'AI Administration', path: PATHS.AI_ADMINISTRATION, icon: FaShieldAlt, highlight: true },
+        ...(canAccessAIAdmin ? [{ name: 'AI Administration', path: PATHS.AI_ADMINISTRATION, icon: FaShieldAlt, highlight: true }] : []),
         { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
         { name: 'Help', path: PATHS.HELP, icon: FaQuestionCircle }
       ]

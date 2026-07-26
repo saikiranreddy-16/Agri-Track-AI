@@ -13,6 +13,13 @@ export const getCustomers = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
     let filter = { role: 'Farm Admin' };
+
+    // RBAC Scope Enforcement
+    if (req.user && req.user.role === 'State Admin' && req.user.assignedState) {
+      filter.state = req.user.assignedState;
+    } else if (req.user && req.user.role === 'Master Admin' && req.user.assignedStates && req.user.assignedStates.length > 0) {
+      filter.state = { $in: req.user.assignedStates };
+    }
     
     if (search) {
       const matchOwnerIds = new Set();

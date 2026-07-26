@@ -77,9 +77,99 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['Company Admin', 'Farm Admin'],
+      enum: ['Company Admin', 'Grand Master Admin', 'Master Admin', 'State Admin', 'Farm Admin'],
       default: 'Farm Admin',
     },
+    employeeId: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    designation: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    office: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    department: {
+      type: String,
+      trim: true,
+      default: 'Operations',
+    },
+    officialMobile: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    emergencyContact: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    assignedStates: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    assignedState: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    permissions: {
+      fleet: { type: Boolean, default: true },
+      customers: { type: Boolean, default: true },
+      devices: { type: Boolean, default: true },
+      reports: { type: Boolean, default: true },
+      analytics: { type: Boolean, default: true },
+      aiAdmin: { type: Boolean, default: false },
+      userManagement: { type: Boolean, default: false },
+      settings: { type: Boolean, default: false },
+    },
+    accountStatus: {
+      type: String,
+      enum: ['Active', 'Inactive', 'Suspended', 'On Leave', 'Locked'],
+      default: 'Active',
+    },
+    currentSessionStatus: {
+      type: String,
+      enum: ['Online', 'Offline'],
+      default: 'Offline',
+    },
+    joiningDate: {
+      type: Date,
+      default: null,
+    },
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
+    lastLogout: {
+      type: Date,
+      default: null,
+    },
+    lastPasswordChanged: {
+      type: Date,
+      default: null,
+    },
+    isTemporaryPassword: {
+      type: Boolean,
+      default: false,
+    },
+    mustChangePasswordOnFirstLogin: {
+      type: Boolean,
+      default: false,
+    },
+    zone: { type: String, default: '' },
+    region: { type: String, default: '' },
+    officeCode: { type: String, default: '' },
+    employeeCode: { type: String, default: '' },
+    designationLevel: { type: String, default: '' },
     subscriptionStatus: {
       type: String,
       enum: ['Active', 'Inactive', 'Suspended'],

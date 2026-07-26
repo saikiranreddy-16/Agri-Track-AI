@@ -138,90 +138,54 @@ export const mockDrivers = [
 export const mockMachines = [
   {
     id: 'mach-1',
-    name: 'Mahindra Novo 755 DI',
+    name: 'John Deere 5042D',
     type: 'Tractor',
-    brand: 'Mahindra',
-    model: 'Novo 755 DI',
-    registration: 'PB-10-CD-4512',
+    brand: 'John Deere',
+    model: '5042D',
+    hp: '42 HP',
+    chassisNumber: 'JD-5042D-2026-000001',
+    registration: '', // Not Registered Yet
     status: 'Working',
     fuel: 82,
     battery: 96,
-    assignedDriverId: 'drv-1',
-    location: { lat: 30.902, lng: 75.853 },
-    speed: 12,
+    healthScore: 96,
+    gpsDeviceId: 'AGRTG00001',
+    location: { lat: 16.892, lng: 79.482 },
+    speed: 14,
     engineStatus: 'On',
     workingHours: 245.5,
     distanceTravelled: 1240.2,
     nextService: '2026-08-15',
-    currentAddress: 'Sector 4, Central Wheat Block, Ludhiana, Punjab',
-    photo: 'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
-    documents: ['Novo_755_Operator_Manual.pdf', 'Service_Warranty_Mahindra.pdf'],
-    workHistory: [
-      { id: 'wh-1', job: 'Soil Tilling', date: '2026-07-06', hours: 6.8, driver: 'Gurpreet Singh' },
-      { id: 'wh-2', job: 'Fertilizing', date: '2026-07-04', hours: 5.2, driver: 'Gurpreet Singh' }
-    ],
-    fuelHistory: [
-      { date: 'Jul 01', level: 95 },
-      { date: 'Jul 02', level: 80 },
-      { date: 'Jul 03', level: 62 },
-      { date: 'Jul 04', level: 90 },
-      { date: 'Jul 05', level: 75 },
-      { date: 'Jul 06', level: 82 }
-    ],
-    maintenanceHistory: [
-      { id: 'mh-1', action: 'Engine Oil & Filter Change', date: '2026-06-12', cost: 4500 },
-      { id: 'mh-2', action: 'Tire Pressure Alignment', date: '2026-05-01', cost: 1200 }
-    ],
-    alerts: [
-      { id: 'a-m1-1', type: 'Low Fuel Warning', date: '2026-06-28', status: 'Resolved' }
-    ]
+    currentAddress: 'Cheruvupally Village, Madgulapally Mandal, Nalgonda District, Telangana - 508374',
+    photo: '/assets/vehicles/jd-5042d.png',
+    rcOwnerName: 'Ch. Sai Reddy'
   },
   {
     id: 'mach-2',
-    name: 'Swaraj 963 FE',
+    name: 'Kubota MU5502 4WD',
     type: 'Tractor',
-    brand: 'Swaraj',
-    model: '963 FE',
-    registration: 'PB-10-EF-8976',
+    brand: 'Kubota',
+    model: 'MU5502 4WD',
+    hp: '55 HP',
+    chassisNumber: 'KB-MU5502-2025-000002',
+    registration: '', // Not Registered Yet
     status: 'Working',
-    fuel: 45,
-    battery: 92,
-    assignedDriverId: 'drv-2',
-    location: { lat: 30.898, lng: 75.862 },
-    speed: 8,
+    fuel: 68,
+    battery: 94,
+    healthScore: 94,
+    gpsDeviceId: 'AGRTG00002',
+    location: { lat: 18.520, lng: 79.880 },
+    speed: 18,
     engineStatus: 'On',
-    workingHours: 512.2,
-    distanceTravelled: 3210.8,
-    nextService: '2026-07-28',
-    currentAddress: 'Sector 12, South Corn Basin, Ludhiana, Punjab',
-    photo: 'https://images.unsplash.com/photo-1595246140625-5c3b545b0976?auto=format&fit=crop&w=800&q=80',
-    documents: ['Swaraj_963FE_Harvest_Guide.pdf'],
-    workHistory: [
-      { id: 'wh-3', job: 'Corn Harvesting', date: '2026-07-06', hours: 5.2, driver: 'Ramesh Kumar' }
-    ],
-    fuelHistory: [
-      { date: 'Jul 01', level: 85 },
-      { date: 'Jul 02', level: 65 },
-      { date: 'Jul 03', level: 45 }
-    ],
-    maintenanceHistory: [
-      { id: 'mh-3', action: 'Blade Sharpening', date: '2026-06-20', cost: 6800 }
-    ],
-    alerts: []
+    workingHours: 312.0,
+    distanceTravelled: 1850.5,
+    nextService: '2026-08-20',
+    currentAddress: 'Azamnagar Village, Kataram Mandal, Jayashankar Bhupalpally District, Telangana - 506169',
+    photo: '/assets/vehicles/kubota-mu5502.png',
+    rcOwnerName: 'M. Srinivas Reddy'
   },
   {
     id: 'mach-3',
-    name: 'Sonalika Tiger DI 75',
-    type: 'Tractor',
-    brand: 'Sonalika',
-    model: 'Tiger DI 75',
-    registration: 'HR-26-AB-9912',
-    status: 'Offline',
-    fuel: 12,
-    battery: 85,
-    assignedDriverId: null,
-    location: { lat: 30.891, lng: 75.845 },
-    speed: 0,
     engineStatus: 'Off',
     workingHours: 189.0,
     distanceTravelled: 980.5,
@@ -633,112 +597,106 @@ export const mockCustomers = [
     email: 'contact@singhagrotech.in',
     company: 'Singh Farms Ltd',
     lastLogin: '2026-07-13T10:14:00Z',
-    trustedDevices: [
-      { phoneName: 'OnePlus 11 5G', platform: 'Android 13', addedAt: '2026-04-12T08:30:00Z', browser: 'Chrome Mobile', lastLogin: 'Today, 10:14 AM', status: 'Active' },
-      { phoneName: 'Safari (MacBook Pro)', platform: 'macOS Sonoma', addedAt: '2026-05-01T14:20:00Z', browser: 'Safari 17', lastLogin: 'Yesterday, 04:30 PM', status: 'Active' }
-    ],
-    farms: [
-      { name: 'Central Ludhiana Wheat Belt', size: '120 Hectares', crop: 'Wheat', region: 'Punjab' },
-      { name: 'Jalandhar Potato Block', size: '45 Hectares', crop: 'Potatoes', region: 'Punjab' }
-    ],
-    vehicles: [
-      { id: 'mach-1', name: 'Mahindra Novo 755 DI', type: 'Tractor', active: true, status: 'Working' },
-      { id: 'mach-2', name: 'Swaraj 963 FE', type: 'Tractor', active: true, status: 'Working' },
-      { id: 'mach-3', name: 'Sonalika Tiger DI 75', type: 'Tractor', active: false, status: 'Offline' }
-    ],
-    devices: [
-      { id: 'dev-mach-1', name: 'AgriTrack GPS Pro v4', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-03-12' },
-      { id: 'dev-mach-2', name: 'AgriTrack GPS Pro v4', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-03-12' },
-      { id: 'dev-mach-3', name: 'AgriTrack GPS Lite v2', status: 'Offline', firmware: 'v2.8.1', activationDate: '2026-05-15' }
-    ],
-    recentActivities: [
-      { action: 'Driver assigned to Mahindra Novo', time: '10 mins ago', user: 'Gurpreet Singh' },
-      { action: 'GPS Signal Offline warning generated', time: '32 mins ago', user: 'System Alert' },
-      { action: 'Refueled Swaraj 963 FE', time: '2 hours ago', user: 'Ramesh Kumar' }
-    ]
-  },
-  {
-    id: 'cust-2',
-    name: 'Patel Horticulture Group',
-    phone: '+91 99456 78901',
-    farmsCount: 2,
-    vehiclesCount: 2,
-    activeDevicesCount: 2,
-    status: 'Active',
-    subscriptionPlan: 'Basic Fleet',
-    subscriptionStatus: 'Active',
-    email: 'patelfarms@gmail.com',
-    company: 'Patel Farms & Orchards',
-    lastLogin: '2026-07-12T09:22:00Z',
-    trustedDevices: [
-      { phoneName: 'Samsung S23 Ultra', platform: 'Android 14', addedAt: '2026-06-01T10:11:00Z', browser: 'Chrome Mobile', lastLogin: 'Jul 12, 09:22 AM', status: 'Active' }
-    ],
-    farms: [
-      { name: 'Anand Citrus Gardens', size: '30 Hectares', crop: 'Citrus / Orange', region: 'Gujarat' }
-    ],
-    vehicles: [
-      { id: 'mach-5', name: 'TAFE 30 DI Orchard', type: 'Tractor', active: true, status: 'Idle' }
-    ],
-    devices: [
-      { id: 'dev-mach-5', name: 'AgriTrack GPS Lite v2', status: 'Active', firmware: 'v2.8.1', activationDate: '2026-06-01' }
-    ],
-    recentActivities: [
-      { action: 'Citrus harvesting completed Block C', time: 'Yesterday', user: 'Harpreet Kaur' }
-    ]
-  },
-  {
-    id: 'cust-3',
-    name: 'Singh Family Estates',
-    phone: '+91 98123 45678',
-    farmsCount: 1,
-    vehiclesCount: 2,
-    activeDevicesCount: 1,
-    status: 'Active',
-    subscriptionPlan: 'Basic Fleet',
-    subscriptionStatus: 'Active',
-    email: 'ramesh.k@singhfamily.in',
-    company: 'Singh Family Partnership',
-    lastLogin: '2026-07-13T08:12:00Z',
-    trustedDevices: [],
-    farms: [
-      { name: 'Moga Paddy Sector', size: '55 Hectares', crop: 'Rice', region: 'Punjab' }
-    ],
-    vehicles: [
-      { id: 'mach-2', name: 'Swaraj 963 FE', type: 'Tractor', active: true, status: 'Working' }
-    ],
-    devices: [
-      { id: 'dev-mach-2', name: 'AgriTrack GPS Pro v4', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-03-12' }
-    ],
-    recentActivities: [
-      { action: 'Tractor working in paddy field', time: '1 hour ago', user: 'System GPS' }
-    ]
-  },
-  {
-    id: 'cust-4',
-    name: 'Sharma Farming Trust',
-    phone: '+91 97890 12345',
     farmsCount: 1,
     vehiclesCount: 1,
     activeDevicesCount: 1,
-    status: 'Suspended',
-    subscriptionPlan: 'Basic Fleet',
-    subscriptionStatus: 'Suspended',
-    email: 'sharmatrust@yahoo.com',
-    company: 'Sharma Trust Group',
-    lastLogin: '2026-07-01T11:45:00Z',
-    trustedDevices: [],
-    farms: [
-      { name: 'Karnal Cotton Fields', size: '45 Hectares', crop: 'Cotton', region: 'Haryana' }
-    ],
-    vehicles: [
-      { id: 'mach-4', name: 'John Deere 5310 GearPro', type: 'Tractor', active: false, status: 'Offline' }
-    ],
-    devices: [
-      { id: 'dev-mach-4', name: 'AgriTrack GPS Lite v2', status: 'Suspended', firmware: 'v2.8.1', activationDate: '2026-02-14' }
-    ],
-    recentActivities: [
-      { action: 'Subscription suspended due to non-payment', time: 'Jul 01', user: 'System Billing' }
-    ]
+    status: 'Active',
+    subscriptionPlan: 'Pro Fleet',
+    subscriptionStatus: 'Active',
+    email: 'saireddy@agritrack.ai',
+    company: 'Sai Reddy Farms',
+    state: 'Telangana',
+    district: 'Nalgonda',
+    mandal: 'Madgulapally',
+    village: 'Cheruvupally',
+    pincode: '508374',
+    lastLogin: '2026-07-26T10:15:00Z',
+    vehicles: [{ id: 'mach-1', name: 'John Deere 5042D', type: 'Tractor', active: true, status: 'Working' }],
+    devices: [{ id: 'AGRTG00001', name: 'AgriTrack GPS Pro', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-01-10' }]
+  },
+  {
+    id: 'cust-2',
+    name: 'M. Srinivas Reddy',
+    phone: '+91 91234 56784',
+    farmsCount: 1,
+    vehiclesCount: 1,
+    activeDevicesCount: 1,
+    status: 'Active',
+    subscriptionPlan: 'Pro Fleet',
+    subscriptionStatus: 'Active',
+    email: 'srinivasreddy@agritrack.ai',
+    company: 'Srinivas Agrotech',
+    state: 'Telangana',
+    district: 'Jayashankar Bhupalpally',
+    mandal: 'Kataram',
+    village: 'Azamnagar',
+    pincode: '506169',
+    lastLogin: '2026-07-26T09:30:00Z',
+    vehicles: [{ id: 'mach-2', name: 'Kubota MU5502 4WD', type: 'Tractor', active: true, status: 'Working' }],
+    devices: [{ id: 'AGRTG00002', name: 'AgriTrack GPS Pro', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-02-15' }]
+  },
+  {
+    id: 'cust-3',
+    name: 'K. Ramesh',
+    phone: '+91 93456 78123',
+    farmsCount: 1,
+    vehiclesCount: 1,
+    activeDevicesCount: 1,
+    status: 'Active',
+    subscriptionPlan: 'Pro Fleet',
+    subscriptionStatus: 'Active',
+    email: 'kramesh@agritrack.ai',
+    company: 'Ramesh Harvester Services',
+    state: 'Telangana',
+    district: 'Khammam',
+    mandal: 'Sujathanagar',
+    village: 'Sarvaram',
+    pincode: '507120',
+    lastLogin: '2026-07-26T11:00:00Z',
+    vehicles: [{ id: 'mach-3', name: 'LOVOL RG108 Plus CR', type: 'Track Harvester', active: true, status: 'Working' }],
+    devices: [{ id: 'AGRTG00003', name: 'AgriTrack GPS Pro', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-03-01' }]
+  },
+  {
+    id: 'cust-4',
+    name: 'G. Venkateswarlu',
+    phone: '+91 90123 45678',
+    farmsCount: 1,
+    vehiclesCount: 1,
+    activeDevicesCount: 1,
+    status: 'Active',
+    subscriptionPlan: 'Pro Fleet',
+    subscriptionStatus: 'Active',
+    email: 'venkateswarlu@agritrack.ai',
+    company: 'Venkateswarlu Farms',
+    state: 'Andhra Pradesh',
+    district: 'Palnadu',
+    mandal: 'Gurazala',
+    village: 'Madugula',
+    pincode: '522415',
+    lastLogin: '2026-07-26T08:45:00Z',
+    vehicles: [{ id: 'mach-4', name: 'Mahindra Yuvo Tech Plus 575', type: 'Tractor', active: true, status: 'Working' }],
+    devices: [{ id: 'AGRAP00004', name: 'AgriTrack GPS Pro', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-04-12' }]
+  },
+  {
+    id: 'cust-5',
+    name: 'P. Narasimha Rao',
+    phone: '+91 95678 91234',
+    farmsCount: 1,
+    vehiclesCount: 1,
+    activeDevicesCount: 1,
+    status: 'Active',
+    subscriptionPlan: 'Pro Fleet',
+    subscriptionStatus: 'Active',
+    email: 'narasimharao@agritrack.ai',
+    company: 'Narasimha Combine Services',
+    state: 'Andhra Pradesh',
+    district: 'West Godavari',
+    mandal: 'Tanuku',
+    village: 'Taderu',
+    pincode: '534202',
+    lastLogin: '2026-07-26T07:15:00Z',
+    vehicles: [{ id: 'mach-5', name: 'Preet 987 Combine Harvester', type: 'Combine Harvester', active: true, status: 'Working' }],
+    devices: [{ id: 'AGRAP00005', name: 'AgriTrack GPS Pro', status: 'Active', firmware: 'v4.12.8', activationDate: '2026-05-01' }]
   }
 ];
 

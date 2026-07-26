@@ -25,21 +25,55 @@ const machineSchema = new mongoose.Schema(
     },
     registration: {
       type: String,
-      required: [true, 'Registration/License number is required'],
-      unique: true,
       trim: true,
+      default: '',
     },
     chassisNumber: {
       type: String,
       required: [true, 'Chassis number is required'],
       unique: true,
       trim: true,
-      immutable: true, // Enforcement of Vehicle Chassis Immutability
+      immutable: true, // Auto-generated brand chassis code e.g. JD-5042D-2026-000001
     },
-    engineNumber: {
+    driveType: {
       type: String,
-      trim: true,
-      default: '',
+      default: '2WD',
+    },
+    fuelTankCapacity: {
+      type: Number,
+      default: 60,
+    },
+    batterySpec: {
+      type: String,
+      default: '12V 88Ah Heavy Duty',
+    },
+    hydraulicCapacity: {
+      type: Number,
+      default: 35,
+    },
+    engineOilCapacity: {
+      type: Number,
+      default: 8.5,
+    },
+    coolantCapacity: {
+      type: Number,
+      default: 9.5,
+    },
+    tyreSize: {
+      type: String,
+      default: '13.6-28 / 6.00-16',
+    },
+    avgFuelConsumption: {
+      type: Number,
+      default: 5.2, // L/hr
+    },
+    serviceIntervalHours: {
+      type: Number,
+      default: 250,
+    },
+    attachmentConfig: {
+      type: String,
+      default: 'None',
     },
     purchaseDate: {
       type: Date,
