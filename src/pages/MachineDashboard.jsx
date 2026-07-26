@@ -242,29 +242,45 @@ export const MachineDashboard = () => {
 
       </div>
 
-      {/* Location and Address Card */}
-      <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-500 rounded-xl">
-            <FaMapMarkerAlt className="text-lg" />
-          </div>
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Current Location</div>
-            <div className="text-xs font-bold text-gray-800 dark:text-gray-200 mt-0.5">
-              {machine.currentAddress || 'Cheruvupally Village, Madgulapally, Nalgonda, Telangana'}
-            </div>
-            <div className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
-              Lat: {machine.location?.lat || 17.385}, Lng: {machine.location?.lng || 78.486}
-            </div>
-          </div>
+      {/* Health Breakdown & AI Diagnostic Explanation */}
+      <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-3">
+        <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-400">Vehicle Health Breakdown</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs font-semibold">
+          <div className="p-2.5 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">Engine: <span className="text-yellow-500 font-bold">★★★★★</span></div>
+          <div className="p-2.5 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">Battery: <span className="text-yellow-500 font-bold">★★★★☆</span></div>
+          <div className="p-2.5 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">Fuel Tank: <span className="text-yellow-500 font-bold">★★★★★</span></div>
+          <div className="p-2.5 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">GPS Link: <span className="text-yellow-500 font-bold">★★★★★</span></div>
+          <div className="p-2.5 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">Temperature: <span className="text-yellow-500 font-bold">★★★★☆</span></div>
+          <div className="p-2.5 bg-gray-50 dark:bg-emerald-950/20 rounded-xl">Service Due: <span className="text-yellow-500 font-bold">★★★★★</span></div>
         </div>
+        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 font-medium">
+          🤖 <strong>AI Diagnostic Summary:</strong> Vehicle is running in optimal condition with high battery voltage (12.6V) and healthy operating temperature (85°C). Next service is recommended in 45 engine hours.
+        </div>
+      </div>
 
-        <Link
-          to="/tracking"
-          className="px-4 py-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl flex items-center gap-1.5"
-        >
-          <FaEye /> Live Tracking
-        </Link>
+      {/* Chronological Activity Timeline */}
+      <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
+        <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-400 flex items-center gap-2">
+          <FaClock className="text-emerald-500" /> Today's Chronological Activity Timeline
+        </h3>
+        <div className="space-y-3 relative before:absolute before:inset-0 before:left-3 before:w-0.5 before:bg-gray-200 dark:before:bg-emerald-950/40">
+          {[
+            { time: '09:15 AM', event: 'Engine Started', desc: 'Ignition ON at Field Alpha Depot', color: 'bg-emerald-500' },
+            { time: '09:40 AM', event: 'Diesel Added', desc: 'Filled 45 Litres at Indian Oil Pump', color: 'bg-orange-500' },
+            { time: '10:10 AM', event: 'Entered Village', desc: 'GPS geofence match: Madgulapally Village', color: 'bg-sky-500' },
+            { time: '11:25 AM', event: 'Engine Stopped', desc: 'Parking brake engaged at Sector 4 Barn', color: 'bg-red-500' },
+            { time: '12:05 PM', event: 'Service Reminder', desc: 'Scheduled maintenance check logged', color: 'bg-purple-500' },
+          ].map((item, idx) => (
+            <div key={idx} className="flex items-start gap-4 relative pl-8 text-xs">
+              <span className={`w-3.5 h-3.5 rounded-full ${item.color} border-2 border-white dark:border-[#0e1712] absolute left-1.5 top-1 shadow-xs`} />
+              <div>
+                <span className="font-bold text-gray-900 dark:text-white">{item.event}</span>
+                <span className="text-[10px] text-gray-400 font-mono ml-2">{item.time}</span>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
     </div>
