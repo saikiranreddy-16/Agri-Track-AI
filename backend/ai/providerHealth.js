@@ -4,6 +4,7 @@ const startTimestamp = Date.now();
 
 // In-memory status store for healthchecks
 const healthStats = {
+  openrouter: { totalRequests: 0, successfulRequests: 0, failedRequests: 0, totalResponseTime: 0, lastResponseTime: 0 },
   mock: { totalRequests: 0, successfulRequests: 0, failedRequests: 0, totalResponseTime: 0, lastResponseTime: 0 },
   gemini: { totalRequests: 0, successfulRequests: 0, failedRequests: 0, totalResponseTime: 0, lastResponseTime: 0 },
   openai: { totalRequests: 0, successfulRequests: 0, failedRequests: 0, totalResponseTime: 0, lastResponseTime: 0 },

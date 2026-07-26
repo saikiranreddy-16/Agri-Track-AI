@@ -29,6 +29,10 @@ import aiAdminRoutes from './routes/aiAdminRoutes.js';
 import hardwareRoutes from './routes/hardwareRoutes.js';
 import farmRoutes from './routes/farmRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
+import expenseRoutes from './routes/expenseRoutes.js';
+import incomeRoutes from './routes/incomeRoutes.js';
+import tripReplayRoutes from './routes/tripReplayRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import { getLiveness, getReadiness, getVersion, getMetrics, logFrontendCrash } from './controllers/healthController.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
@@ -141,6 +145,10 @@ app.use('/api/v1/ai-admin', aiAdminRoutes);
 app.use('/api/v1/hardware', hardwareRoutes);
 app.use('/api/v1/farms', farmRoutes);
 app.use('/api/v1/health', healthRoutes);
+app.use('/api/v1/expenses', expenseRoutes);
+app.use('/api/v1/income', incomeRoutes);
+app.use('/api/v1/trip-replay', tripReplayRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 // Root level infrastructure status routes
 app.get('/health', getLiveness);

@@ -24,7 +24,12 @@ export const PATHS = {
   CUSTOMER_PROFILE: '/customers/:id',
   DEVICE_ACTIVATION: '/activate',
   DEVICE_REPLACEMENT: '/replace',
-  NOTIFICATIONS: '/notifications'
+  NOTIFICATIONS: '/notifications',
+  MACHINE_DASHBOARD: '/machines/:id/dashboard',
+  DIESEL_EXPENSES: '/expenses/diesel',
+  SERVICE_EXPENSES: '/expenses/service',
+  FINANCIALS: '/financials',
+  TRIP_REPLAY: '/trip-replay'
 };
 
 export const ROLES = {

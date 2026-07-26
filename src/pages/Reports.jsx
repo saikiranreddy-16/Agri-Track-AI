@@ -120,20 +120,37 @@ export const Reports = () => {
       </div>
 
       {/* Timeframe selector header tabs */}
-      <div className="flex gap-2 border-b border-gray-200 dark:border-emerald-950/20 pb-1">
-        {['Today', 'Yesterday', 'Weekly', 'Monthly'].map((t) => (
-          <button
-            key={t}
-            onClick={() => setTimeframe(t)}
-            className={`px-4 py-2 text-xs font-bold transition-all relative ${
-              timeframe === t 
-                ? 'text-emerald-600 dark:text-emerald-400' 
-                : 'text-gray-500 hover:text-gray-800 dark:text-gray-400'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-[#0e1712] p-4 rounded-2xl border border-gray-100 dark:border-emerald-950/30">
+        <div className="flex gap-2 border-b sm:border-b-0 border-gray-200 dark:border-emerald-950/20 pb-1 sm:pb-0">
+          {['Today', 'Yesterday', 'Weekly', 'Monthly', 'Custom'].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTimeframe(t)}
+              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                timeframe === t 
+                  ? 'bg-emerald-600 text-white shadow-sm' 
+                  : 'text-gray-500 hover:text-gray-800 dark:text-gray-400'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {timeframe === 'Custom' && (
+          <div className="flex gap-2 text-xs font-bold">
+            <input type="date" className="p-2 border rounded-xl bg-gray-50 dark:bg-emerald-950/30 dark:text-white" />
+            <span className="self-center">to</span>
+            <input type="date" className="p-2 border rounded-xl bg-gray-50 dark:bg-emerald-950/30 dark:text-white" />
+          </div>
+        )}
+
+        <button
+          onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('AgriTrack Operations Report Summary: Total Fuel ' + totalFuel + 'L, Distance ' + totalDistance + 'km, Area ' + totalArea + ' acres.')}`)}
+          className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm cursor-pointer"
+        >
+          Share on WhatsApp
+        </button>
       </div>
 
       {/* Aggregate metrics cards */}

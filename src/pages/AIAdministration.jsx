@@ -235,71 +235,101 @@ export const AIAdministration = () => {
                 <label className="text-[10px] font-bold text-gray-400 uppercase">AI Provider</label>
                 <select
                   value={formProvider}
-                  onChange={(e) => setFormProvider(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-950/45 focus:outline-none focus:border-emerald-500 dark:text-white"
+                  onChange={(e) => {
+                    const p = e.target.value;
+                    setFormProvider(p);
+                    if (p === 'openrouter') setFormModel('openrouter/free');
+                    else if (p === 'gemini') setFormModel('gemini-2.5-flash');
+                    else setFormModel('default');
+                  }}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-955/20 border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-bold"
                 >
-                  <option value="mock">Mock Provider (Active)</option>
+                  <option value="openrouter">OpenRouter Provider (Active - Free Models)</option>
                   <option value="gemini">Gemini Provider (Active)</option>
-                  <option value="openai" disabled>OpenAI Provider (Disabled)</option>
-                  <option value="ollama" disabled>Ollama Provider (Disabled)</option>
-                  <option value="huggingface" disabled>HuggingFace Provider (Disabled)</option>
+                  <option value="mock">Mock Provider (Active)</option>
                 </select>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Model Key</label>
-                <input
-                  type="text"
-                  value={formModel}
-                  onChange={(e) => setFormModel(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-950/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Temperature (0.0 - 1.0)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="1"
-                  value={formTemp}
-                  onChange={(e) => setFormTemp(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-950/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Max Output Tokens</label>
-                <input
-                  type="number"
-                  value={formMaxTokens}
-                  onChange={(e) => setFormMaxTokens(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-950/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Timeout (ms)</label>
-                <input
-                  type="number"
-                  value={formTimeout}
-                  onChange={(e) => setFormTimeout(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-950/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Cache Duration (Minutes)</label>
-                <input
-                  type="number"
-                  value={formCacheMin}
-                  onChange={(e) => setFormCacheMin(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-950/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
-                />
-              </div>
+              {formProvider === 'openrouter' ? (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Free AI Model (v1.0 - ₹0 Cost)</label>
+                  <select
+                    value={formModel}
+                    onChange={(e) => setFormModel(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-955/20 border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                  >
+                    <option value="openrouter/free">Auto Free (Recommended)</option>
+                    <option value="google/gemma-3-27b-it:free">Google Gemma 3 27B (Free)</option>
+                    <option value="google/gemma-3-12b-it:free">Google Gemma 3 12B (Free)</option>
+                    <option value="meta-llama/llama-3.3-70b-instruct:free">Meta Llama 3.3 70B (Free)</option>
+                    <option value="deepseek/deepseek-r1:free">DeepSeek R1 (Free)</option>
+                  </select>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Model Key</label>
+                  <input
+                    type="text"
+                    value={formModel}
+                    onChange={(e) => setFormModel(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-955/20 border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                  />
+                </div>
+              )}
 
             </div>
+
+            {/* Collapsible Advanced Generation Parameters */}
+            <details className="p-3 bg-gray-50/50 dark:bg-emerald-955/10 border border-gray-150/10 rounded-xl space-y-3">
+              <summary className="text-xs font-bold text-gray-600 dark:text-emerald-300 cursor-pointer select-none">
+                Advanced Generation Settings (Temperature, Top P, Max Tokens)
+              </summary>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Temperature (0.0 - 1.0)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="1"
+                    value={formTemp}
+                    onChange={(e) => setFormTemp(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Max Output Tokens</label>
+                  <input
+                    type="number"
+                    value={formMaxTokens}
+                    onChange={(e) => setFormMaxTokens(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Timeout (ms)</label>
+                  <input
+                    type="number"
+                    value={formTimeout}
+                    onChange={(e) => setFormTimeout(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                  />
+                </div>
+
+                <div className="space-y-1 md:col-span-3">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Cache Duration (Minutes)</label>
+                  <input
+                    type="number"
+                    value={formCacheMin}
+                    onChange={(e) => setFormCacheMin(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                  />
+                </div>
+              </div>
+            </details>
 
             <div className="flex gap-3 justify-end pt-2">
               <button

@@ -90,12 +90,16 @@ export const Settings = () => {
     toast.success('Trusted device login key revoked.');
   };
 
+  const [language, setLanguage] = useState('English');
+  const [areaUnit, setAreaUnit] = useState('Acres');
+
   const tabs = [
-    { id: 'profile', label: 'Profile Information', icon: FaUser },
+    { id: 'profile', label: 'Farmer Profile', icon: FaUser },
+    { id: 'language', label: 'Language / భాష / भाषा', icon: FaGlobe },
+    { id: 'areaUnit', label: 'Area Measurement Unit', icon: FaSlidersH },
+    { id: 'vehicles', label: 'My Vehicles', icon: FaTractor },
     { id: 'security', label: 'Security & PIN', icon: FaLock },
-    ...(!isCompanyAdmin ? [{ id: 'vehicles', label: 'Vehicle Information', icon: FaTractor }] : []),
-    { id: 'preferences', label: 'Preferences & Units', icon: FaSlidersH },
-    { id: 'about', label: 'About System', icon: FaInfoCircle }
+    { id: 'about', label: 'About AgriTrack', icon: FaInfoCircle }
   ];
 
   return (

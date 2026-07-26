@@ -13,10 +13,12 @@ class ProviderManager {
   getProvider(providerOverride) {
     const config = getAIConfig();
     let providerKey = (providerOverride || config.provider).toLowerCase();
-    
-    // Verify Gemini configuration, falling back to mock provider if key is unconfigured
-    if (providerKey === 'gemini' && !config.geminiApiKey) {
-      console.warn('Gemini API key is not configured. Automatically falling back to Mock provider.');
+
+    if (providerKey === 'openrouter' && !config.openrouterApiKey) {
+      console.warn('OpenRouter API key is missing. Cascading to fallback provider...');
+      providerKey = config.geminiApiKey ? 'gemini' : 'mock';
+    } else if (providerKey === 'gemini' && !config.geminiApiKey) {
+      console.warn('Gemini API key is missing. Cascading to Mock provider...');
       providerKey = 'mock';
     }
 
@@ -31,39 +33,65 @@ class ProviderManager {
   }
 
   /**
-   * Generates response. Falls back to mock provider if live request triggers errors.
+   * Generates AI response using 3-tier failover sequence:
+   * OpenRouter -> Gemini -> Mock Provider.
    */
   async generateResponse(prompt, context, history) {
-    const provider = this.getProvider();
-    try {
-      const response = await provider.generateResponse(prompt, context, history);
-      return {
-        ...response,
-        providerUsed: provider.constructor.name.replace('Provider', '').toLowerCase()
-      };
-    } catch (err) {
-      console.error(`AI Provider generation failed: ${err.message}. Triggering Mock fallback...`);
-      const mockProvider = this.getProvider('mock');
-      const mockResponse = await mockProvider.generateResponse(prompt, context, history);
-      return {
-        ...mockResponse,
-        providerUsed: 'mock',
-        fallbackTriggered: true,
-        fallbackReason: err.message
-      };
+    const config = getAIConfig();
+    const primaryKey = (config.provider || 'openrouter').toLowerCase();
+
+    // 3-Tier failover candidate sequence
+    const sequence = [];
+    if (primaryKey === 'openrouter') {
+      if (config.openrouterApiKey) sequence.push('openrouter');
+      if (config.geminiApiKey) sequence.push('gemini');
+      sequence.push('mock');
+    } else if (primaryKey === 'gemini') {
+      if (config.geminiApiKey) sequence.push('gemini');
+      sequence.push('mock');
+    } else {
+      sequence.push(primaryKey);
+      if (primaryKey !== 'mock') sequence.push('mock');
     }
+
+    let lastError = null;
+
+    for (const key of sequence) {
+      try {
+        const provider = this.getProvider(key);
+        const response = await provider.generateResponse(prompt, context, history);
+        return {
+          ...response,
+          providerUsed: key,
+          fallbackTriggered: key !== primaryKey,
+          fallbackReason: key !== primaryKey && lastError ? lastError.message : undefined
+        };
+      } catch (err) {
+        lastError = err;
+        console.warn(`AI Provider [${key}] execution failed: ${err.message}. Cascading to next candidate...`);
+      }
+    }
+
+    // Fallback guarantee to Mock Provider
+    const mockProvider = this.getProvider('mock');
+    const mockResponse = await mockProvider.generateResponse(prompt, context, history);
+    return {
+      ...mockResponse,
+      providerUsed: 'mock',
+      fallbackTriggered: true,
+      fallbackReason: lastError ? lastError.message : 'Primary providers failed'
+    };
   }
 
   /**
-   * Triggers healthcheck diagnostic connections on target provider.
+   * Triggers healthcheck diagnostic connection on target provider.
    */
   async checkHealth(providerName) {
     const config = getAIConfig();
-    const providerKey = providerName ? providerName.toLowerCase() : config.provider.toLowerCase();
-    
-    if (providerKey === 'gemini' && !config.geminiApiKey) {
-      return false;
-    }
+    const providerKey = providerName ? providerName.toLowerCase() : (config.provider || 'openrouter').toLowerCase();
+
+    if (providerKey === 'openrouter' && !config.openrouterApiKey) return false;
+    if (providerKey === 'gemini' && !config.geminiApiKey) return false;
 
     const ProviderClass = providerRegistry[providerKey] || providerRegistry.mock;
     const providerInstance = new ProviderClass(config);
@@ -77,3 +105,4 @@ class ProviderManager {
 
 const providerManager = new ProviderManager();
 export default providerManager;
+

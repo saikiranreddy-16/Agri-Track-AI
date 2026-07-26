@@ -485,6 +485,9 @@ export const Machines = () => {
                       <h3 className="text-base font-bold dark:text-white mt-0.5">{machine.name}</h3>
                       <p className="text-[10px] text-gray-400 font-mono font-bold mt-0.5">{machine.registration}</p>
                     </div>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400">
+                      Health: {machine.healthScore || 95}%
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 mt-4 text-[11px] text-gray-500 dark:text-gray-400 border-b border-gray-150 dark:border-emerald-950/20 pb-3.5">
@@ -517,10 +520,10 @@ export const Machines = () => {
 
                 <div className="mt-6 pt-3.5 border-t border-gray-100 dark:border-emerald-950/20 flex gap-2">
                   <Link
-                    to={`/machines/${machine.id}`}
-                    className="flex-1 flex justify-center items-center gap-1 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-xl hover:bg-emerald-100/50 transition-all"
+                    to={`/machines/${machine.id}/dashboard`}
+                    className="flex-1 flex justify-center items-center gap-1 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-sm"
                   >
-                    <FaEye /> View
+                    <FaEye /> View Dashboard
                   </Link>
 
                   <button

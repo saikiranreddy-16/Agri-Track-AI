@@ -1,5 +1,6 @@
 import { MockProvider } from './providers/mockProvider.js';
 import { GeminiProvider } from './providers/geminiProvider.js';
+import { OpenRouterProvider } from './providers/openRouterProvider.js';
 import { OllamaProvider } from './providers/ollamaProvider.js';
 import { HuggingFaceProvider } from './providers/huggingfaceProvider.js';
 import { OpenAIProvider } from './providers/openaiProvider.js';
@@ -12,6 +13,8 @@ import { OpenAIProvider } from './providers/openaiProvider.js';
  */
 export const getProvider = (providerName, config) => {
   switch (providerName?.toLowerCase()) {
+    case 'openrouter':
+      return new OpenRouterProvider(config);
     case 'gemini':
       return new GeminiProvider(config);
     case 'ollama':
@@ -25,3 +28,4 @@ export const getProvider = (providerName, config) => {
       return new MockProvider(config);
   }
 };
+

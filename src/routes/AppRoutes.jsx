@@ -28,6 +28,12 @@ import { ServerError } from '../pages/ServerError';
 import { PATHS } from '../constants';
 import { useAuth } from '../context/AuthContext';
 
+import { MachineDashboard } from '../pages/MachineDashboard';
+import { DieselExpense } from '../pages/DieselExpense';
+import { ServiceExpense } from '../pages/ServiceExpense';
+import { FinancialModule } from '../pages/FinancialModule';
+import { TripReplay } from '../pages/TripReplay';
+
 // Protected route wrapper component
 const RoleProtectedRoute = ({ allowedRoles, children }) => {
   const { user, isAuthenticated } = useAuth();
@@ -68,6 +74,11 @@ export const AppRoutes = () => {
         <Route path={PATHS.NOTIFICATIONS} element={<Notifications />} />
         <Route path={PATHS.ALERTS} element={<Alerts />} />
         <Route path={PATHS.MAINTENANCE} element={<Maintenance />} />
+        <Route path={PATHS.DIESEL_EXPENSES} element={<DieselExpense />} />
+        <Route path={PATHS.SERVICE_EXPENSES} element={<ServiceExpense />} />
+        <Route path={PATHS.FINANCIALS} element={<FinancialModule />} />
+        <Route path={PATHS.TRIP_REPLAY} element={<TripReplay />} />
+        <Route path={PATHS.MACHINE_DASHBOARD} element={<MachineDashboard />} />
 
         {/* Company Admin Only */}
         <Route path={PATHS.AI_ADMINISTRATION} element={

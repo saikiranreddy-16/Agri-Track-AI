@@ -9,7 +9,8 @@ import {
   FaBars, FaChevronLeft, FaSun, FaMoon, FaGlobe, FaBell, FaRobot, FaSearch, 
   FaSignOutAlt, FaTractor, FaUserTie, FaMap, FaTasks, FaFileContract, 
   FaExclamationTriangle, FaTools, FaCog, FaQuestionCircle, FaUser, 
-  FaArrowRight, FaRoute, FaEnvelope, FaThLarge, FaShieldAlt, FaFilter, FaDesktop
+  FaArrowRight, FaRoute, FaEnvelope, FaThLarge, FaShieldAlt, FaFilter, FaDesktop,
+  FaCoins, FaGasPump
 } from 'react-icons/fa';
 import { mockMachines, mockCustomers } from '../data/mockData';
 import { useToast } from '../context/ToastContext';
@@ -97,9 +98,12 @@ export const DashboardLayout = () => {
     : [
         { name: 'Dashboard', path: PATHS.DASHBOARD, icon: FaThLarge },
         { name: 'My Vehicles', path: PATHS.MACHINES, icon: FaTractor },
+        { name: 'Trip Replay', path: PATHS.TRIP_REPLAY, icon: FaRoute },
+        { name: 'Diesel Expenses', path: PATHS.DIESEL_EXPENSES, icon: FaGasPump },
+        { name: 'Service Expenses', path: PATHS.SERVICE_EXPENSES, icon: FaTools },
+        { name: 'Financials & P&L', path: PATHS.FINANCIALS, icon: FaCoins },
         { name: 'Reports', path: PATHS.REPORTS, icon: FaFileContract },
         { name: 'Alerts', path: PATHS.ALERTS, icon: FaExclamationTriangle, badge: 'Active' },
-        { name: 'Maintenance', path: PATHS.MAINTENANCE, icon: FaTools },
         { name: 'AI Assistant', path: PATHS.AI_ASSISTANT, icon: FaRobot, highlight: true },
         { name: 'Settings', path: PATHS.SETTINGS, icon: FaCog },
         { name: 'Help', path: PATHS.HELP, icon: FaQuestionCircle }

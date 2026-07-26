@@ -96,9 +96,29 @@ const machineSchema = new mongoose.Schema(
     },
     healthScore: {
       type: Number,
-      default: 100, // calculated overall health score
+      default: 95, // calculated overall health score
       min: 0,
       max: 100,
+    },
+    batteryVoltage: {
+      type: Number,
+      default: 12.6, // Volts
+    },
+    signalStrength: {
+      type: Number,
+      default: 92, // Percentage
+    },
+    remainingDieselLitres: {
+      type: Number,
+      default: 45, // Litres
+    },
+    engineTemp: {
+      type: Number,
+      default: 85, // Celsius
+    },
+    brandLogo: {
+      type: String,
+      default: '',
     },
     assignedDriverId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -240,6 +260,25 @@ machineSchema.pre('save', function (next) {
   if (!this.nextServiceDate || this.isModified('lastServiceHours') || this.isModified('workingHours')) {
     this.nextServiceDate = new Date(reminder.nextServiceDate);
   }
+
+  // Calculate dynamic Health Score (0-100)
+  let score = 100;
+  if (this.serviceStatus === 'Overdue') score -= 30;
+  else if (this.serviceStatus === 'Due Today') score -= 20;
+  else if (this.serviceStatus === 'Due Soon') score -= 10;
+
+  if (this.battery < 20) score -= 15;
+  else if (this.battery < 50) score -= 8;
+
+  if (this.engineTemp > 100) score -= 20;
+  else if (this.engineTemp > 90) score -= 10;
+
+  if (this.fuel < 10) score -= 10;
+
+  if (this.status === 'Offline') score -= 5;
+
+  this.healthScore = Math.max(10, Math.min(100, score));
+
   next();
 });
 
