@@ -1,0 +1,185 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.agritrack.ai"
+4    android:versionCode="1"
+5    android:versionName="1.0.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <!-- Permissions -->
+12    <uses-permission android:name="android.permission.INTERNET" />
+12-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:5:5-67
+12-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:5:22-64
+13    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+13-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:6:5-79
+13-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:6:22-76
+14    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+14-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:7:5-81
+14-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:7:22-78
+15    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+15-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:8:5-77
+15-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:8:22-74
+16    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+16-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:9:5-86
+16-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:9:22-83
+17    <uses-permission android:name="android.permission.CAMERA" />
+17-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:10:5-65
+17-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:10:22-62
+18    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+18-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:11:5-71
+18-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:11:22-68
+19    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+19-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:12:5-77
+19-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:12:22-74
+20
+21    <permission
+21-->[androidx.core:core:1.12.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\7b8c69f64ef1739b4399dc7929e17b0a\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
+22        android:name="com.agritrack.ai.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+22-->[androidx.core:core:1.12.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\7b8c69f64ef1739b4399dc7929e17b0a\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
+23        android:protectionLevel="signature" />
+23-->[androidx.core:core:1.12.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\7b8c69f64ef1739b4399dc7929e17b0a\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
+24
+25    <uses-permission android:name="com.agritrack.ai.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+25-->[androidx.core:core:1.12.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\7b8c69f64ef1739b4399dc7929e17b0a\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
+25-->[androidx.core:core:1.12.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\7b8c69f64ef1739b4399dc7929e17b0a\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
+26
+27    <application
+27-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:14:5-37:19
+28        android:allowBackup="true"
+28-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:15:9-35
+29        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+29-->[androidx.core:core:1.12.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\7b8c69f64ef1739b4399dc7929e17b0a\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
+30        android:debuggable="true"
+31        android:extractNativeLibs="false"
+32        android:label="AgriTrack AI"
+32-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:16:9-37
+33        android:supportsRtl="true"
+33-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:17:9-35
+34        android:testOnly="true"
+35        android:theme="@android:style/Theme.Material.NoActionBar"
+35-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:19:9-66
+36        android:usesCleartextTraffic="true" >
+36-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:18:9-44
+37        <activity
+37-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:21:9-29:20
+38            android:name="com.agritrack.ai.MainActivity"
+38-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:22:13-41
+39            android:exported="true"
+39-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:23:13-36
+40            android:theme="@android:style/Theme.Material.NoActionBar" >
+40-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:24:13-70
+41            <intent-filter>
+41-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:25:13-28:29
+42                <action android:name="android.intent.action.MAIN" />
+42-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:26:17-69
+42-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:26:25-66
+43
+44                <category android:name="android.intent.category.LAUNCHER" />
+44-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:27:17-77
+44-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:27:27-74
+45            </intent-filter>
+46        </activity>
+47
+48        <service
+48-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:31:9-35:56
+49            android:name="com.agritrack.ai.service.LocationForegroundService"
+49-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:32:13-62
+50            android:enabled="true"
+50-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:33:13-35
+51            android:exported="false"
+51-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:34:13-37
+52            android:foregroundServiceType="location" />
+52-->C:\Users\Sai\OneDrive\Desktop\Agri Track-AI\android\app\src\main\AndroidManifest.xml:35:13-53
+53
+54        <provider
+54-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\133c8176aa48e332bd7e97f2dfcf52ee\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
+55            android:name="androidx.startup.InitializationProvider"
+55-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\133c8176aa48e332bd7e97f2dfcf52ee\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
+56            android:authorities="com.agritrack.ai.androidx-startup"
+56-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\133c8176aa48e332bd7e97f2dfcf52ee\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
+57            android:exported="false" >
+57-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\133c8176aa48e332bd7e97f2dfcf52ee\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+58            <meta-data
+58-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\133c8176aa48e332bd7e97f2dfcf52ee\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+59                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+59-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\133c8176aa48e332bd7e97f2dfcf52ee\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+60                android:value="androidx.startup" />
+60-->[androidx.emoji2:emoji2:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\133c8176aa48e332bd7e97f2dfcf52ee\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+61            <meta-data
+61-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\5745319b1831903118b7acd928235d54\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
+62                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+62-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\5745319b1831903118b7acd928235d54\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
+63                android:value="androidx.startup" />
+63-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\5745319b1831903118b7acd928235d54\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
+64            <meta-data
+64-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+65                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+65-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+66                android:value="androidx.startup" />
+66-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+67        </provider>
+68
+69        <activity
+69-->[androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\2cccf851e9ee569f9b70c4fb766bbce7\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:23:9-25:39
+70            android:name="androidx.activity.ComponentActivity"
+70-->[androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\2cccf851e9ee569f9b70c4fb766bbce7\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:24:13-63
+71            android:exported="true" />
+71-->[androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\2cccf851e9ee569f9b70c4fb766bbce7\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:25:13-36
+72        <activity
+72-->[androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\0c6c426584e256670116c7bca5c8d350\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
+73            android:name="androidx.compose.ui.tooling.PreviewActivity"
+73-->[androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\0c6c426584e256670116c7bca5c8d350\transformed\ui-tooling-release\AndroidManifest.xml:24:13-71
+74            android:exported="true" />
+74-->[androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\0c6c426584e256670116c7bca5c8d350\transformed\ui-tooling-release\AndroidManifest.xml:25:13-36
+75
+76        <service
+76-->[androidx.room:room-runtime:2.6.1] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\71cab0c4531d72819febafe0809a22de\transformed\room-runtime-2.6.1\AndroidManifest.xml:24:9-28:63
+77            android:name="androidx.room.MultiInstanceInvalidationService"
+77-->[androidx.room:room-runtime:2.6.1] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\71cab0c4531d72819febafe0809a22de\transformed\room-runtime-2.6.1\AndroidManifest.xml:25:13-74
+78            android:directBootAware="true"
+78-->[androidx.room:room-runtime:2.6.1] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\71cab0c4531d72819febafe0809a22de\transformed\room-runtime-2.6.1\AndroidManifest.xml:26:13-43
+79            android:exported="false" />
+79-->[androidx.room:room-runtime:2.6.1] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\71cab0c4531d72819febafe0809a22de\transformed\room-runtime-2.6.1\AndroidManifest.xml:27:13-37
+80
+81        <receiver
+81-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+82            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+82-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+83            android:directBootAware="false"
+83-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+84            android:enabled="true"
+84-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+85            android:exported="true"
+85-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+86            android:permission="android.permission.DUMP" >
+86-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+87            <intent-filter>
+87-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+88                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+88-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+88-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+89            </intent-filter>
+90            <intent-filter>
+90-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+91                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+91-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+91-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+92            </intent-filter>
+93            <intent-filter>
+93-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+94                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+94-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+94-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+95            </intent-filter>
+96            <intent-filter>
+96-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+97                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+97-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+97-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Sai\.gradle\caches\9.0-milestone-1\transforms\4432e9d321253b95c1e3a95e6d1c4677\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+98            </intent-filter>
+99        </receiver>
+100    </application>
+101
+102</manifest>

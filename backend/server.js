@@ -14,8 +14,12 @@ import logger from './utils/logger.js';
 dotenv.config();
 
 // === STARTUP ENVIRONMENT VALIDATION ===
-const requiredEnvKeys = ['MONGO_URI', 'JWT_SECRET'];
-const missingKeys = requiredEnvKeys.filter(key => !process.env[key]);
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+const jwtSecret = process.env.JWT_SECRET;
+const missingKeys = [];
+if (!mongoUri) missingKeys.push('MONGODB_URI (or MONGO_URI)');
+if (!jwtSecret) missingKeys.push('JWT_SECRET');
+
 if (missingKeys.length > 0) {
   logger.error(`CRITICAL BOOTUP FAILURE: Missing required environment variables: ${missingKeys.join(', ')}`);
   process.exit(1);
