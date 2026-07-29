@@ -123,13 +123,10 @@ export const loginUser = async (req, res, next) => {
         return next(new Error('Access denied. Internal staff must use email login.'));
       }
 
-      if (!clientDeviceId) {
-        res.status(400);
-        return next(new Error('Device fingerprint/identifier is required'));
-      }
+      const deviceIdToUse = clientDeviceId || 'android-app-default';
 
       // Check if current device is registered and trusted
-      const trustedDevice = user.trustedDevices.find(d => d.deviceId === clientDeviceId);
+      const trustedDevice = user.trustedDevices.find(d => d.deviceId === deviceIdToUse);
       const isDeviceTrusted = trustedDevice && trustedDevice.trustedStatus === 'Trusted';
 
       if (!isDeviceTrusted) {
@@ -177,7 +174,7 @@ export const loginUser = async (req, res, next) => {
         }
 
         // Register or re-activate trusted device
-        const existingDeviceIndex = user.trustedDevices.findIndex(d => d.deviceId === clientDeviceId);
+        const existingDeviceIndex = user.trustedDevices.findIndex(d => d.deviceId === deviceIdToUse);
         if (existingDeviceIndex !== -1) {
           user.trustedDevices[existingDeviceIndex].trustedStatus = 'Trusted';
           user.trustedDevices[existingDeviceIndex].lastActive = new Date();
@@ -188,7 +185,7 @@ export const loginUser = async (req, res, next) => {
           user.trustedDevices[existingDeviceIndex].deviceName = phoneName || `${browser} on ${os}`;
         } else {
           user.trustedDevices.push({
-            deviceId: clientDeviceId,
+            deviceId: deviceIdToUse,
             deviceName: phoneName || `${browser} on ${os}`,
             browser,
             os,

@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "com.agritrack.ai"
     compileSdk = 34
+    buildToolsVersion = "34.0.0"
 
     defaultConfig {
         applicationId = "com.agritrack.ai"

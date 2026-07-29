@@ -20,62 +20,43 @@ import com.agritrack.ai.domain.model.SummaryMetrics
 import com.agritrack.ai.ui.components.VehicleGaugeWidget
 import com.agritrack.ai.ui.theme.*
 
+import androidx.compose.runtime.*
+import com.agritrack.ai.data.remote.RetrofitClient
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
+    authToken: String,
     onNavigateToMachine: (String) -> Unit = {},
     onVoiceAssistClick: () -> Unit = {}
 ) {
-    // Mock Telemetry & Fleet Summary Data for Demonstration
-    val metrics = SummaryMetrics(
-        totalFleet = 12,
-        activeMachines = 8,
-        idleMachines = 3,
-        maintenanceMachines = 1,
-        totalIncomeToday = 45000.0,
-        totalExpenseToday = 12800.0,
-        netProfitToday = 32200.0
-    )
+    var machinesList by remember { mutableStateOf<List<Machine>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val sampleMachines = listOf(
-        Machine(
-            id = "m1",
-            name = "John Deere 5042D",
-            model = "2024 Heavy Tractor",
-            type = "Tractor",
-            status = "Active",
-            fuelLevelPercent = 82,
-            engineTemperatureC = 88,
-            batteryVoltage = 13.8,
-            healthScorePercent = 94,
-            speedKmh = 24.5,
-            hoursOperated = 1240.5,
-            nextServiceHours = 60,
-            assignedDriverName = "Ramesh Kumar",
-            dailyIncome = 15000.0,
-            dailyExpense = 4200.0,
-            lat = 16.5062,
-            lng = 80.6480
-        ),
-        Machine(
-            id = "m2",
-            name = "Mahindra Arjun 605",
-            model = "Harvester Special",
-            type = "Harvester",
-            status = "Idle",
-            fuelLevelPercent = 35,
-            engineTemperatureC = 72,
-            batteryVoltage = 12.4,
-            healthScorePercent = 86,
-            speedKmh = 0.0,
-            hoursOperated = 890.0,
-            nextServiceHours = 15,
-            assignedDriverName = "Suresh Reddy",
-            dailyIncome = 18000.0,
-            dailyExpense = 6100.0,
-            lat = 16.5120,
-            lng = 80.6550
-        )
+    LaunchedEffect(authToken) {
+        try {
+            val response = RetrofitClient.instance.getMachines("Bearer $authToken")
+            if (response.isSuccessful && response.body()?.success == true) {
+                machinesList = response.body()?.data ?: emptyList()
+            } else {
+                errorMessage = "Server returned error code: ${response.code()}"
+            }
+        } catch (e: Exception) {
+            errorMessage = e.localizedMessage ?: "Failed to connect to server"
+        } finally {
+            isLoading = false
+        }
+    }
+
+    val metrics = SummaryMetrics(
+        totalFleet = machinesList.size,
+        activeMachines = machinesList.count { it.safeStatus == "Active" || it.safeStatus == "Working" },
+        idleMachines = machinesList.count { it.safeStatus == "Idle" },
+        maintenanceMachines = machinesList.count { it.safeStatus == "Maintenance" },
+        totalIncomeToday = machinesList.sumOf { it.safeIncome },
+        totalExpenseToday = machinesList.sumOf { it.safeExpense },
+        netProfitToday = machinesList.sumOf { it.safeIncome } - machinesList.sumOf { it.safeExpense }
     )
 
     Scaffold(
@@ -182,9 +163,9 @@ fun DashboardScreen(
             }
 
             // Machine Dashboard Cards
-            items(sampleMachines) { machine ->
+            items(machinesList) { machine ->
                 Card(
-                    onClick = { onNavigateToMachine(machine.id) },
+                    onClick = { onNavigateToMachine(machine.displayId) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
@@ -198,15 +179,15 @@ fun DashboardScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text(machine.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text(machine.model, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(machine.safeName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(machine.safeModel, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             AssistChip(
                                 onClick = {},
-                                label = { Text(machine.status, fontSize = 11.sp) },
+                                label = { Text(machine.safeStatus, fontSize = 11.sp) },
                                 leadingIcon = {
                                     Icon(
-                                        imageVector = if (machine.status == "Active") Icons.Default.CheckCircle else Icons.Default.Pause,
+                                        imageVector = if (machine.safeStatus == "Active" || machine.safeStatus == "Working") Icons.Default.CheckCircle else Icons.Default.Pause,
                                         contentDescription = null,
                                         modifier = Modifier.size(14.dp)
                                     )
@@ -220,23 +201,23 @@ fun DashboardScreen(
                         Row(modifier = Modifier.fillMaxWidth()) {
                             VehicleGaugeWidget(
                                 title = "Fuel",
-                                valueText = "${machine.fuelLevelPercent}%",
-                                percentValue = machine.fuelLevelPercent / 100f,
-                                gaugeColor = if (machine.fuelLevelPercent < 25) AgroRedAlert else AgroGreenPrimary,
+                                valueText = "${machine.safeFuel}%",
+                                percentValue = machine.safeFuel / 100f,
+                                gaugeColor = if (machine.safeFuel < 25) AgroRedAlert else AgroGreenPrimary,
                                 modifier = Modifier.weight(1f)
                             )
                             VehicleGaugeWidget(
                                 title = "Health",
-                                valueText = "${machine.healthScorePercent}%",
-                                percentValue = machine.healthScorePercent / 100f,
+                                valueText = "${machine.safeHealth}%",
+                                percentValue = machine.safeHealth / 100f,
                                 gaugeColor = AgroGreenVariant,
                                 modifier = Modifier.weight(1f)
                             )
                             VehicleGaugeWidget(
                                 title = "Temp",
-                                valueText = "${machine.engineTemperatureC}°C",
-                                percentValue = machine.engineTemperatureC / 120f,
-                                gaugeColor = if (machine.engineTemperatureC > 95) AgroRedAlert else AgroAmberAccent,
+                                valueText = "${machine.safeTemp}°C",
+                                percentValue = machine.safeTemp / 120f,
+                                gaugeColor = if (machine.safeTemp > 95) AgroRedAlert else AgroAmberAccent,
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -248,7 +229,7 @@ fun DashboardScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("Driver: ${machine.assignedDriverName ?: "Unassigned"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("Speed: ${machine.speedKmh} km/h", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Speed: ${machine.safeSpeed} km/h", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }

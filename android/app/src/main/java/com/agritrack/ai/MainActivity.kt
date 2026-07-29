@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.agritrack.ai.ui.screens.auth.LoginScreen
 import com.agritrack.ai.ui.screens.dashboard.DashboardScreen
 import com.agritrack.ai.ui.theme.AgroGreenPrimary
 
@@ -37,7 +38,17 @@ sealed class BottomNavItem(val title: String, val icon: ImageVector) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppScaffold() {
+    var authToken by remember { mutableStateOf<String?>(null) }
     var selectedItem by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Dashboard) }
+
+    if (authToken == null) {
+        LoginScreen(
+            onLoginSuccess = { token ->
+                authToken = token
+            }
+        )
+        return
+    }
 
     val navItems = listOf(
         BottomNavItem.Dashboard,
@@ -72,9 +83,8 @@ fun MainAppScaffold() {
             color = MaterialTheme.colorScheme.background
         ) {
             when (selectedItem) {
-                is BottomNavItem.Dashboard -> DashboardScreen()
+                is BottomNavItem.Dashboard -> DashboardScreen(authToken = authToken!!)
                 else -> {
-                    // Placeholder screen view for subsequent modules
                     Surface(modifier = Modifier.fillMaxSize()) {
                         Text(
                             text = "${selectedItem.title} Module Active",
@@ -87,3 +97,4 @@ fun MainAppScaffold() {
         }
     }
 }
+
