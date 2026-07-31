@@ -185,10 +185,15 @@ export const LiveTracking = () => {
     };
   }, []);
 
+  const [mobileTab, setMobileTab] = useState('split');
+
   const selectAndCenter = (machine) => {
     setSelectedMachine(machine);
     setMapCenter([machine.location.lat, machine.location.lng]);
     setMapZoom(15);
+    if (mobileTab === 'list') {
+      setMobileTab('map');
+    }
   };
 
   const getDriverName = (assignedDriver) => {
@@ -210,8 +215,37 @@ export const LiveTracking = () => {
   return (
     <div className="h-[calc(100vh-8.5rem)] flex flex-col lg:flex-row gap-4 relative overflow-hidden -m-4 md:-m-6">
       
+      {/* Mobile Mode Switcher Bar */}
+      <div className="flex lg:hidden justify-between items-center px-4 py-2 bg-white dark:bg-[#0e1712] border-b border-gray-200 dark:border-emerald-900/30 shrink-0">
+        <span className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">
+          Live Tracking View
+        </span>
+        <div className="flex bg-gray-100 dark:bg-emerald-950/40 p-0.5 rounded-xl text-[10px] font-bold">
+          <button
+            onClick={() => setMobileTab('split')}
+            className={`px-3 py-1 rounded-lg transition-all ${mobileTab === 'split' ? 'bg-emerald-600 text-white shadow' : 'text-gray-500 dark:text-gray-400'}`}
+          >
+            Split
+          </button>
+          <button
+            onClick={() => setMobileTab('map')}
+            className={`px-3 py-1 rounded-lg transition-all ${mobileTab === 'map' ? 'bg-emerald-600 text-white shadow' : 'text-gray-500 dark:text-gray-400'}`}
+          >
+            Map Only
+          </button>
+          <button
+            onClick={() => setMobileTab('list')}
+            className={`px-3 py-1 rounded-lg transition-all ${mobileTab === 'list' ? 'bg-emerald-600 text-white shadow' : 'text-gray-500 dark:text-gray-400'}`}
+          >
+            List ({filteredMachines.length})
+          </button>
+        </div>
+      </div>
+
       {/* Sidebar Control Panel */}
-      <div className="w-full lg:w-80 shrink-0 bg-white dark:bg-[#0e1712] border-r border-gray-200 dark:border-emerald-950/30 flex flex-col h-full z-10">
+      <div className={`w-full lg:w-80 shrink-0 bg-white dark:bg-[#0e1712] border-r border-gray-200 dark:border-emerald-900/30 flex flex-col z-10 ${
+        mobileTab === 'map' ? 'hidden lg:flex lg:h-full' : mobileTab === 'split' ? 'h-52 lg:h-full' : 'flex-1 lg:h-full'
+      }`}>
         
         {/* Search & Filter Header */}
         <div className="p-4 border-b border-gray-100 dark:border-emerald-950/20 space-y-3">
@@ -291,7 +325,7 @@ export const LiveTracking = () => {
       </div>
 
       {/* Main Map View Area */}
-      <div className="flex-1 h-full relative font-sans">
+      <div className={`flex-1 relative font-sans min-h-[300px] ${mobileTab === 'list' ? 'hidden lg:block lg:h-full' : 'h-full'}`}>
         {!isSocketConnected && (
           <div className="absolute top-4 left-4 z-40 bg-red-600/90 backdrop-blur text-white px-4 py-2 rounded-xl shadow-lg border border-red-500 flex items-center gap-2 text-xs font-bold animate-pulse">
             <FaExclamationTriangle className="shrink-0" />
@@ -327,7 +361,7 @@ export const LiveTracking = () => {
               <Popup className="custom-leaflet-popup">
                 <div className="text-xs p-1 space-y-1.5 w-44 font-sans text-gray-800 dark:text-gray-200">
                   <div className="border-b border-gray-100 dark:border-emerald-950/20 pb-1 flex justify-between items-center">
-                    <strong className="text-emerald-700 dark:text-emerald-450 text-[11px] truncate">{m.name}</strong>
+                    <strong className="text-emerald-700 dark:text-emerald-400 text-[11px] truncate">{m.name}</strong>
                   </div>
                   <div className="grid grid-cols-2 gap-1 text-[9px] font-semibold">
                     <div>Owner:</div>
@@ -358,7 +392,7 @@ export const LiveTracking = () => {
         {/* Map Floating Controls overlay */}
         <div className="absolute top-4 right-4 z-40 bg-white dark:bg-[#0e1712] p-2.5 rounded-xl shadow-lg border border-gray-100 dark:border-emerald-950/30 flex items-center gap-2">
           {/* Layer switcher */}
-          <div className="flex gap-1 border-r border-gray-250 dark:border-emerald-950/20 pr-2">
+          <div className="flex gap-1 border-r border-gray-200 dark:border-emerald-950/20 pr-2">
             {['streets', 'satellite', 'terrain'].map(layer => (
               <button
                 key={layer}

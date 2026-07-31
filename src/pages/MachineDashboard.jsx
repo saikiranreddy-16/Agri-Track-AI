@@ -16,6 +16,7 @@ export const MachineDashboard = () => {
   const toast = useToast();
 
   const [machine, setMachine] = useState(null);
+  const [weather, setWeather] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -25,6 +26,18 @@ export const MachineDashboard = () => {
         const response = await api.get(`/machines/${id}`);
         if (response.data && response.data.success) {
           setMachine(response.data.data);
+          
+          // Fetch live weather telemetry for this machine
+          try {
+            const lat = response.data.data?.location?.lat || 16.985;
+            const lng = response.data.data?.location?.lng || 79.262;
+            const weatherRes = await api.get(`/weather?lat=${lat}&lng=${lng}&machineId=${id}`);
+            if (weatherRes.data && weatherRes.data.success) {
+              setWeather(weatherRes.data.data);
+            }
+          } catch (wErr) {
+            console.warn('Weather fetch failed:', wErr.message);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch vehicle dashboard detail:', err);
@@ -88,8 +101,14 @@ export const MachineDashboard = () => {
             <h1 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
               {machine.name}
             </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Registration: <span className="font-mono font-bold text-gray-700 dark:text-gray-200">{machine.registration}</span> | Brand: <span className="font-bold text-emerald-600">{machine.brand || 'AgriTrack'}</span>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex flex-wrap items-center gap-2">
+              <span>Registration: <span className="font-mono font-bold text-gray-700 dark:text-gray-200">{machine.registration}</span></span>
+              <span>| Brand: <span className="font-bold text-emerald-600">{machine.brand || 'AgriTrack'}</span></span>
+              {weather && (
+                <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-lg text-[11px] font-bold border border-emerald-200 dark:border-emerald-900/30 flex items-center gap-1">
+                  ☀️ {weather.temp} • {weather.condition} ({weather.location})
+                </span>
+              )}
             </p>
           </div>
         </div>

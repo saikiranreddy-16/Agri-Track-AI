@@ -130,7 +130,7 @@ export const Help = () => {
                 required
                 value={supportName}
                 onChange={(e) => setSupportName(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-955/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white"
+                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white"
                 placeholder="e.g. John Miller"
               />
             </div>
@@ -142,7 +142,7 @@ export const Help = () => {
                 required
                 value={supportMsg}
                 onChange={(e) => setSupportMsg(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-955/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white resize-none"
+                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white resize-none"
                 placeholder="Write your message detail here..."
               />
             </div>
@@ -160,7 +160,7 @@ export const Help = () => {
             </button>
           </form>
 
-          <div className="border-t border-gray-100 dark:border-emerald-950/20 pt-4 text-[10px] text-gray-450 text-center font-bold uppercase">
+          <div className="border-t border-gray-100 dark:border-emerald-950/20 pt-4 text-[10px] text-gray-400 text-center font-bold uppercase">
             AgriTrack Platform Version: 1.0.0 (Phase 1 Frontend)
           </div>
         </div>

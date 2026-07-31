@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   FaRobot, FaPaperPlane, FaMicrophone, FaPaperclip, 
-  FaArrowRight, FaCommentAlt, FaHistory, 
+  FaArrowRight, FaCommentAlt, FaComments, FaHistory, 
   FaRedo, FaTrash, FaPen, FaArchive, FaPlus, FaCopy, 
   FaThumbsUp, FaThumbsDown, FaSearch
 } from 'react-icons/fa';
@@ -31,6 +31,7 @@ export const AIAssistant = () => {
   
   const [renamingId, setRenamingId] = useState(null);
   const [renameText, setRenameText] = useState('');
+  const [isMobileHistoryOpen, setIsMobileHistoryOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -307,7 +308,7 @@ export const AIAssistant = () => {
             </h2>
             <button
               onClick={() => setShowArchived(!showArchived)}
-              className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 hover:underline cursor-pointer"
+              className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
             >
               {showArchived ? 'Active list' : 'Archived list'}
             </button>
@@ -402,6 +403,13 @@ export const AIAssistant = () => {
         
         {/* Chat Window header */}
         <div className="p-4 border-b border-gray-100 dark:border-emerald-950/25 flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => setIsMobileHistoryOpen(true)}
+            className="md:hidden p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-emerald-950/40"
+            title="Chat History"
+          >
+            <FaHistory className="text-base" />
+          </button>
           <div className="p-2.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl">
             <FaRobot className="text-lg animate-pulse" />
           </div>
@@ -451,7 +459,7 @@ export const AIAssistant = () => {
                   <button
                     key={p.text}
                     onClick={() => handleSendMessage(p.text, p.serviceOverride)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/40 rounded-xl text-gray-650 dark:text-emerald-350 hover:border-emerald-500/50 hover:bg-emerald-50/10 transition-all cursor-pointer shadow-sm"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/40 rounded-xl text-gray-600 dark:text-emerald-350 hover:border-emerald-500/50 hover:bg-emerald-50/10 transition-all cursor-pointer shadow-sm"
                   >
                     {p.text} <FaArrowRight className="text-[9px]" />
                   </button>
@@ -604,6 +612,72 @@ export const AIAssistant = () => {
         </div>
 
       </div>
+
+      {/* Mobile History Slide-over Drawer */}
+      <AnimatePresence>
+        {isMobileHistoryOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileHistoryOpen(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-[#0e1712] z-50 shadow-2xl flex flex-col md:hidden p-4 space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-emerald-950/20 pb-3">
+                <h2 className="text-xs font-bold text-gray-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                  <FaHistory /> Chat Sessions
+                </h2>
+                <button
+                  onClick={() => setIsMobileHistoryOpen(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-white text-sm font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <button
+                onClick={() => {
+                  handleCreateNewChat();
+                  setIsMobileHistoryOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-sm cursor-pointer"
+              >
+                <FaPlus className="text-[10px]" /> New Chat
+              </button>
+
+              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1">
+                {filteredConversations.map((session) => (
+                  <div
+                    key={session._id}
+                    onClick={() => {
+                      setSelectedId(session._id);
+                      setIsMobileHistoryOpen(false);
+                    }}
+                    className={`p-2.5 rounded-xl cursor-pointer text-xs transition-all flex items-center justify-between border ${
+                      selectedId === session._id 
+                        ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-300 font-bold border-emerald-500/30' 
+                        : 'hover:bg-gray-50 dark:hover:bg-emerald-950/10 text-gray-700 dark:text-gray-300 border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate flex-1 pr-2">
+                      <FaComments className="text-emerald-500 shrink-0 text-xs" />
+                      <span className="truncate">{session.title}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
     </div>
   );

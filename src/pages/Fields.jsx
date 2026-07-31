@@ -147,7 +147,7 @@ export const Fields = () => {
             className={`flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl shadow-lg border transition-all ${
               isDrawing 
                 ? 'bg-emerald-600 border-emerald-650 text-white' 
-                : 'bg-white border-gray-150 text-gray-700 hover:bg-gray-50'
+                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
             }`}
           >
             <FaDrawPolygon /> {isDrawing ? 'Drawing active...' : 'Draw boundaries'}
@@ -157,7 +157,7 @@ export const Fields = () => {
             className={`flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl shadow-lg border transition-all ${
               isMeasuring 
                 ? 'bg-emerald-600 border-emerald-650 text-white' 
-                : 'bg-white border-gray-150 text-gray-700 hover:bg-gray-50'
+                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
             }`}
           >
             <FaRulerCombined /> {isMeasuring ? 'Measuring active...' : 'Measure Field Area'}
@@ -184,7 +184,7 @@ export const Fields = () => {
                 <span>Landlord Owner</span>
                 <span className="text-gray-800 dark:text-gray-200">{selectedField.owner}</span>
               </div>
-              <div className="flex justify-between items-center border-t border-gray-150 dark:border-emerald-950/20 pt-2">
+              <div className="flex justify-between items-center border-t border-gray-200 dark:border-emerald-950/20 pt-2">
                 <span>Assigned Harvester</span>
                 <span className="text-gray-900 dark:text-white font-bold flex items-center gap-1">
                   <FaTractor className="text-[10px] text-emerald-500" />

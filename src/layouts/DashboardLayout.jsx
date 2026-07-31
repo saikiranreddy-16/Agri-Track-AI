@@ -53,6 +53,7 @@ export const DashboardLayout = () => {
     : [];
   
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -300,13 +301,13 @@ export const DashboardLayout = () => {
             </button>
 
             {/* Breadcrumbs */}
-            <nav className="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-gray-505 dark:text-gray-400">
+            <nav className="flex items-center gap-1.5 text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 max-w-[140px] sm:max-w-none overflow-hidden">
               {breadcrumbs.map((crumb, idx) => (
-                <div key={crumb.path} className="flex items-center gap-1.5">
+                <div key={crumb.path} className={`flex items-center gap-1.5 ${idx < breadcrumbs.length - 1 ? 'hidden sm:flex' : 'flex'}`}>
                   {idx > 0 && <span className="text-gray-300 dark:text-emerald-950">/</span>}
                   <Link
                     to={crumb.path}
-                    className={`hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors ${
+                    className={`hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate ${
                       idx === breadcrumbs.length - 1 ? 'text-gray-900 dark:text-white font-semibold' : ''
                     }`}
                   >
@@ -318,11 +319,20 @@ export const DashboardLayout = () => {
           </div>
 
           {/* Global Search & Action Badges */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* Mobile Search Toggle Button */}
+            <button
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-emerald-950/40 rounded-xl sm:hidden"
+              title="Search"
+            >
+              <FaSearch className="text-sm" />
+            </button>
+
             {/* Global Search Bar */}
-            <div className="relative max-w-[200px] sm:max-w-xs hidden sm:block" ref={searchContainerRef}>
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 dark:text-gray-505 pointer-events-none">
+            <div className={`relative max-w-[200px] sm:max-w-xs ${isMobileSearchOpen ? 'block absolute left-4 right-4 top-16 bg-white dark:bg-[#0e1712] p-2 border border-gray-200 dark:border-emerald-900 z-50 rounded-xl shadow-xl' : 'hidden sm:block'}`} ref={searchContainerRef}>
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 dark:text-gray-500 pointer-events-none">
                 <FaSearch className="text-sm" />
               </span>
               <input
@@ -339,7 +349,7 @@ export const DashboardLayout = () => {
               <button
                 onClick={() => setShowFiltersPanel(!showFiltersPanel)}
                 className={`absolute inset-y-0 right-0 pr-3 flex items-center text-xs transition-colors cursor-pointer ${
-                  showFiltersPanel ? 'text-emerald-600 dark:text-emerald-450' : 'text-gray-400 hover:text-gray-600'
+                  showFiltersPanel ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 hover:text-gray-600'
                 }`}
                 title="Toggle Filters"
               >
@@ -348,8 +358,8 @@ export const DashboardLayout = () => {
 
               {/* Suggestions Dropdown Card */}
               {showSuggestions && globalSearchQuery && (
-                <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-[#0f1913] border border-gray-200 dark:border-emerald-955/40 rounded-xl shadow-2xl z-50 py-1.5 overflow-hidden text-left text-[11px] max-h-60 overflow-y-auto">
-                  <div className="px-3 py-1 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[8px] border-b border-gray-100 dark:border-emerald-955/10 mb-1">
+                <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-[#0f1913] border border-gray-200 dark:border-emerald-900/40 rounded-xl shadow-2xl z-50 py-1.5 overflow-hidden text-left text-[11px] max-h-60 overflow-y-auto">
+                  <div className="px-3 py-1 font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[8px] border-b border-gray-100 dark:border-emerald-900/10 mb-1">
                     Suggestions
                   </div>
                   
@@ -362,7 +372,7 @@ export const DashboardLayout = () => {
                         setGlobalSearchQuery(m.name);
                         setShowSuggestions(false);
                       }}
-                      className="flex items-center justify-between px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-bold dark:text-gray-205"
+                      className="flex items-center justify-between px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-bold dark:text-gray-200"
                     >
                       <span>{m.name}</span>
                       <span className="text-[8px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 py-0.2 rounded font-black uppercase">{m.status}</span>
@@ -378,7 +388,7 @@ export const DashboardLayout = () => {
                         setGlobalSearchQuery(c.name);
                         setShowSuggestions(false);
                       }}
-                      className="flex items-center justify-between px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-bold dark:text-gray-205 border-t border-gray-100 dark:border-emerald-955/10"
+                      className="flex items-center justify-between px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all font-bold dark:text-gray-200 border-t border-gray-100 dark:border-emerald-900/10"
                     >
                       <span>{c.name}</span>
                       <span className="text-[8px] bg-orange-500/10 text-orange-600 px-1 py-0.2 rounded font-black uppercase">Customer</span>
@@ -386,7 +396,7 @@ export const DashboardLayout = () => {
                   ))}
 
                   {suggestionMachines.length === 0 && suggestionCustomers.length === 0 && (
-                    <div className="px-3 py-4 text-center text-gray-405 italic">
+                    <div className="px-3 py-4 text-center text-gray-400 italic">
                       No matching records found.
                     </div>
                   )}
@@ -650,7 +660,7 @@ export const DashboardLayout = () => {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="bg-white dark:bg-[#0c120f] border-b border-gray-150 dark:border-emerald-950/20 px-6 py-4 shadow-md z-20 overflow-hidden text-xs leading-normal shrink-0"
+              className="bg-white dark:bg-[#0c120f] border-b border-gray-200 dark:border-emerald-950/20 px-6 py-4 shadow-md z-20 overflow-hidden text-xs leading-normal shrink-0"
             >
               <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
@@ -661,7 +671,7 @@ export const DashboardLayout = () => {
                       setFilterStatus(e.target.value);
                       toast.success(`Filter Status set to: ${e.target.value}`);
                     }}
-                    className="w-full p-2 bg-gray-50 dark:bg-emerald-955/5 border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
+                    className="w-full p-2 bg-gray-50 dark:bg-emerald-950/5 border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
                   >
                     <option value="All">All Statuses</option>
                     <option value="Active">🟢 Active</option>
@@ -679,7 +689,7 @@ export const DashboardLayout = () => {
                       setFilterType(e.target.value);
                       toast.success(`Filter Type set to: ${e.target.value}`);
                     }}
-                    className="w-full p-2 bg-gray-50 dark:bg-emerald-955/5 border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
+                    className="w-full p-2 bg-gray-50 dark:bg-emerald-950/5 border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
                   >
                     <option value="All">All Types</option>
                     <option value="Tractor">Tractor</option>
@@ -696,7 +706,7 @@ export const DashboardLayout = () => {
                       setFilterRegion(e.target.value);
                       toast.success(`Filter Region set to: ${e.target.value}`);
                     }}
-                    className="w-full p-2 bg-gray-50 dark:bg-emerald-955/5 border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
+                    className="w-full p-2 bg-gray-50 dark:bg-emerald-950/5 border border-gray-200 dark:border-emerald-950/30 rounded-xl dark:text-white focus:outline-none font-bold"
                   >
                     <option value="All">All Regions</option>
                     <option value="Punjab">Punjab Sector</option>
@@ -730,11 +740,11 @@ export const DashboardLayout = () => {
         </main>
 
         {/* Sticky Footer */}
-        <footer className="h-10 shrink-0 bg-white dark:bg-[#0e1712] border-t border-gray-200 dark:border-emerald-950/20 flex items-center justify-between px-4 md:px-6 text-[10px] text-gray-550 dark:text-gray-400 transition-colors">
+        <footer className="h-10 shrink-0 bg-white dark:bg-[#0e1712] border-t border-gray-200 dark:border-emerald-950/20 flex items-center justify-between px-4 md:px-6 text-[10px] text-gray-500 dark:text-gray-400 transition-colors">
           <div>
             &copy; {new Date().getFullYear()} AgriTrack AI • Version 1.0 • Support | Privacy Policy | Terms
           </div>
-          <div className="flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-450">
+          <div className="flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             All GPS Telemetry Nominal
           </div>
@@ -743,7 +753,7 @@ export const DashboardLayout = () => {
       </div>
 
       {/* Mobile Bottom Nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-[#0e1712] border-t border-gray-250 dark:border-emerald-950/30 flex items-center justify-around px-2 shadow-2xl z-30 transition-colors">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-[#0e1712] border-t border-gray-200 dark:border-emerald-950/30 flex items-center justify-around px-2 shadow-2xl z-30 transition-colors">
         {[
           { name: 'Dashboard', path: PATHS.DASHBOARD, icon: FaThLarge },
           { name: 'Tracking', path: PATHS.TRACKING, icon: FaRoute },
@@ -760,7 +770,7 @@ export const DashboardLayout = () => {
               className={`flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-all ${
                 isActive 
                   ? 'text-emerald-600 dark:text-emerald-400 font-bold scale-105' 
-                  : 'text-gray-400 hover:text-gray-650'
+                  : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               <Icon className="text-base" />
@@ -790,7 +800,7 @@ export const DashboardLayout = () => {
               <div className="flex gap-2 justify-end text-xs font-bold pt-2">
                 <button
                   onClick={() => setShowLogoutConfirm(false)}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:hover:bg-emerald-900/10 text-gray-650 rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:hover:bg-emerald-900/10 text-gray-600 rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>

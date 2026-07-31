@@ -375,7 +375,7 @@ export const DeviceActivation = () => {
                       setDeviceId(e.target.value);
                       setIsVerified(false);
                     }}
-                    className={`flex-1 p-2.5 rounded-xl border bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white transition-all ${
+                    className={`flex-1 p-2.5 rounded-xl border bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white transition-all ${
                       isVerified 
                         ? 'border-emerald-500 bg-emerald-500/5 focus:border-emerald-500' 
                         : 'border-gray-200 dark:border-emerald-950/30 focus:border-emerald-500'
@@ -422,7 +422,7 @@ export const DeviceActivation = () => {
                 <select
                   value={vehicleType}
                   onChange={(e) => handleVehicleTypeChange(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                 >
                   {types.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
@@ -433,7 +433,7 @@ export const DeviceActivation = () => {
                   value={selectedBrand}
                   required
                   onChange={(e) => handleBrandChange(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                 >
                   <option value="">Select Brand</option>
                   {brands.filter(b => b.models.some(m => m.vehicleType === vehicleType)).map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
@@ -446,7 +446,7 @@ export const DeviceActivation = () => {
                   required
                   disabled={!selectedBrand}
                   onChange={(e) => handleModelChange(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold disabled:opacity-50"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold disabled:opacity-50"
                 >
                   <option value="">Select Model</option>
                   {models.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
@@ -459,7 +459,7 @@ export const DeviceActivation = () => {
                   required
                   disabled={!selectedModel}
                   onChange={(e) => setSelectedHP(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold disabled:opacity-50"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold disabled:opacity-50"
                 >
                   <option value="">Select HP</option>
                   {hpOptions.map(hp => <option key={hp} value={hp}>{hp}</option>)}
@@ -469,7 +469,7 @@ export const DeviceActivation = () => {
 
             {/* Dynamic Series & Engine Configuration */}
             {(vehicleType === 'Tractor' || vehicleType === 'Combine Harvester') && selectedModel && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 bg-gray-50/50 dark:bg-emerald-955/5 p-4 rounded-2xl border border-gray-150 dark:border-emerald-950/20">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 bg-gray-50/50 dark:bg-emerald-950/5 p-4 rounded-2xl border border-gray-200 dark:border-emerald-950/20">
                 {vehicleType === 'Tractor' && (
                   <div>
                     <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Series</label>
@@ -477,7 +477,7 @@ export const DeviceActivation = () => {
                       type="text"
                       readOnly
                       value={models.find(m => m._id === selectedModel)?.series || 'Standard Series'}
-                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-150 dark:bg-emerald-900/10 dark:text-gray-300 font-bold focus:outline-none"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-100 dark:bg-emerald-900/10 dark:text-gray-300 font-bold focus:outline-none"
                     />
                   </div>
                 )}
@@ -488,7 +488,7 @@ export const DeviceActivation = () => {
                       <select
                         value={engineType}
                         onChange={(e) => setEngineType(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                       >
                         <option value="John Deere Engine">John Deere Engine</option>
                         <option value="Ashok Leyland Engine">Ashok Leyland Engine</option>
@@ -499,7 +499,7 @@ export const DeviceActivation = () => {
                         type="text"
                         readOnly
                         value="Factory Integrated Engine"
-                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-150 dark:bg-emerald-900/10 dark:text-gray-300 font-bold focus:outline-none"
+                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-100 dark:bg-emerald-900/10 dark:text-gray-300 font-bold focus:outline-none"
                       />
                     )}
                   </div>
@@ -519,7 +519,7 @@ export const DeviceActivation = () => {
                   required
                   value={firstServiceHours}
                   onChange={(e) => setFirstServiceHours(Number(e.target.value))}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                 />
               </div>
               <div>
@@ -529,7 +529,7 @@ export const DeviceActivation = () => {
                   required
                   value={regularServiceInterval}
                   onChange={(e) => setRegularServiceInterval(Number(e.target.value))}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                 />
               </div>
               <div>
@@ -539,7 +539,7 @@ export const DeviceActivation = () => {
                   value={lastServiceHours}
                   onChange={(e) => setLastServiceHours(Number(e.target.value))}
                   placeholder="e.g. 0 or last done hours"
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                 />
               </div>
             </div>
@@ -557,7 +557,7 @@ export const DeviceActivation = () => {
                   placeholder="e.g. CHASSIS-9812-PB"
                   value={chassisNumber}
                   onChange={(e) => setChassisNumber(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-mono"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-mono"
                 />
               </div>
               <div>
@@ -568,7 +568,7 @@ export const DeviceActivation = () => {
                   placeholder="e.g. Swaraj 963 Main #2"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -578,7 +578,7 @@ export const DeviceActivation = () => {
                   placeholder="e.g. TS-05-EA-1234"
                   value={registrationNumber}
                   onChange={(e) => setRegistrationNumber(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white uppercase font-bold"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white uppercase font-bold"
                 />
               </div>
               <div>
@@ -587,7 +587,7 @@ export const DeviceActivation = () => {
                   type="text"
                   value={engineNumber}
                   onChange={(e) => setEngineNumber(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -596,7 +596,7 @@ export const DeviceActivation = () => {
                   type="number"
                   value={manufacturingYear}
                   onChange={(e) => setManufacturingYear(Number(e.target.value))}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -605,7 +605,7 @@ export const DeviceActivation = () => {
                   type="text"
                   value={rcOwnerName}
                   onChange={(e) => setRcOwnerName(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -614,7 +614,7 @@ export const DeviceActivation = () => {
                   type="date"
                   value={purchaseDate}
                   onChange={(e) => setPurchaseDate(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -623,7 +623,7 @@ export const DeviceActivation = () => {
                   type="date"
                   value={insuranceExpiry}
                   onChange={(e) => setInsuranceExpiry(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -632,7 +632,7 @@ export const DeviceActivation = () => {
                   type="date"
                   value={fitnessExpiry}
                   onChange={(e) => setFitnessExpiry(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
             </div>
@@ -649,7 +649,7 @@ export const DeviceActivation = () => {
                   placeholder="e.g. Ramesh Telematics"
                   value={installerName}
                   onChange={(e) => setInstallerName(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -658,7 +658,7 @@ export const DeviceActivation = () => {
                   type="date"
                   value={installationDate}
                   onChange={(e) => setInstallationDate(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -668,7 +668,7 @@ export const DeviceActivation = () => {
                   placeholder="e.g. Ludhiana Workshop"
                   value={installationLocation}
                   onChange={(e) => setInstallationLocation(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -677,7 +677,7 @@ export const DeviceActivation = () => {
                   type="number"
                   value={vehicleOdometer}
                   onChange={(e) => setVehicleOdometer(Number(e.target.value))}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -687,7 +687,7 @@ export const DeviceActivation = () => {
                   placeholder="20-digit SIM ICCID"
                   value={simIccid}
                   onChange={(e) => setSimIccid(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-mono"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-mono"
                 />
               </div>
               <div>
@@ -696,7 +696,7 @@ export const DeviceActivation = () => {
                   type="text"
                   value={simProvider}
                   onChange={(e) => setSimProvider(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -706,7 +706,7 @@ export const DeviceActivation = () => {
                   placeholder="e.g. SN-908123-XY"
                   value={deviceSerialNumber}
                   onChange={(e) => setDeviceSerialNumber(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-mono"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-mono"
                 />
               </div>
               <div>
@@ -715,7 +715,7 @@ export const DeviceActivation = () => {
                   type="date"
                   value={deviceWarranty}
                   onChange={(e) => setDeviceWarranty(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
             </div>
@@ -733,7 +733,7 @@ export const DeviceActivation = () => {
                   placeholder="e.g. Gurpreet Singh Agrotech"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -744,7 +744,7 @@ export const DeviceActivation = () => {
                   placeholder="e.g. +919876543210"
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-mono"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-mono"
                 />
               </div>
             </div>
@@ -756,7 +756,7 @@ export const DeviceActivation = () => {
                 <select
                   value={selectedState}
                   onChange={(e) => handleStateChange(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-semibold"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-semibold"
                 >
                   <option value="">Select State</option>
                   {states.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
@@ -768,7 +768,7 @@ export const DeviceActivation = () => {
                   value={selectedDistrict}
                   onChange={(e) => handleDistrictChange(e.target.value)}
                   disabled={!selectedState}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-semibold disabled:opacity-50"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-semibold disabled:opacity-50"
                 >
                   <option value="">Select District</option>
                   {districts.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
@@ -780,7 +780,7 @@ export const DeviceActivation = () => {
                   value={selectedMandal}
                   onChange={(e) => handleMandalChange(e.target.value)}
                   disabled={!selectedDistrict}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-semibold disabled:opacity-50"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-semibold disabled:opacity-50"
                 >
                   <option value="">Select Mandal</option>
                   {mandals.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
@@ -792,7 +792,7 @@ export const DeviceActivation = () => {
                   value={selectedVillage}
                   onChange={(e) => handleVillageChange(e.target.value)}
                   disabled={!selectedMandal}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-semibold disabled:opacity-50"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-semibold disabled:opacity-50"
                 >
                   <option value="">Select Village</option>
                   {villages.map(v => <option key={v._id} value={v._id}>{v.name}</option>)}
@@ -807,7 +807,7 @@ export const DeviceActivation = () => {
                   type="text"
                   value={addressLine}
                   onChange={(e) => setAddressLine(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white"
                 />
               </div>
               <div>
@@ -817,7 +817,7 @@ export const DeviceActivation = () => {
                   readOnly
                   placeholder="Auto populated"
                   value={pincode}
-                  className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-900/30 bg-gray-150 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-mono"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-100 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-mono"
                 />
               </div>
             </div>
@@ -849,12 +849,12 @@ export const DeviceActivation = () => {
 
         {/* Operations Guidelines */}
         <div className="space-y-6">
-          <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-150 dark:border-emerald-950/20 rounded-3xl shadow-sm text-xs space-y-4">
-            <h3 className="text-xs font-bold text-gray-450 uppercase tracking-wider flex items-center gap-1.5">
+          <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/20 rounded-3xl shadow-sm text-xs space-y-4">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
               <FaShieldAlt className="text-emerald-500" />
               Onboarding Guidelines
             </h3>
-            <div className="space-y-3 text-gray-650 dark:text-gray-300 leading-relaxed">
+            <div className="space-y-3 text-gray-600 dark:text-gray-300 leading-relaxed">
               <p>
                 1. <strong>Verify Registry:</strong> Verify that the GPS hardware unit identifier (Device ID) is present in the platform's inventory by running a query check first.
               </p>
@@ -878,7 +878,7 @@ export const DeviceActivation = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-[#0c120f] p-6 rounded-3xl max-w-sm w-full space-y-4 border border-gray-250 dark:border-emerald-900/30 text-center"
+              className="bg-white dark:bg-[#0c120f] p-6 rounded-3xl max-w-sm w-full space-y-4 border border-gray-200 dark:border-emerald-900/30 text-center"
             >
               <div className="flex justify-between items-center border-b border-gray-100 dark:border-emerald-950/15 pb-2">
                 <span className="text-xs font-black dark:text-white uppercase tracking-wider">QR Code Hardware Scan</span>

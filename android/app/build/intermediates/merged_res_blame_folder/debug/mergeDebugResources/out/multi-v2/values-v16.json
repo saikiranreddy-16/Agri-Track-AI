@@ -4,7 +4,7 @@
             "outputFile": "com.agritrack.ai.app-mergeDebugResources-53:/values-v16/values-v16.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Sai\\.gradle\\caches\\9.0-milestone-1\\transforms\\7b8c69f64ef1739b4399dc7929e17b0a\\transformed\\core-1.12.0\\res\\values-v16\\values-v16.xml",
+                    "source": "C:\\Users\\Sai\\.gradle\\caches\\8.9\\transforms\\2aa9563aa8cbe5a1c302bb6baa55115d\\transformed\\core-1.12.0\\res\\values-v16\\values-v16.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

@@ -173,7 +173,7 @@ export const AIAdministration = () => {
       {/* Grid: 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         
-        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-250/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-2.5">
+        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-200/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Active Provider</span>
             <FaServer className="text-emerald-500" />
@@ -184,7 +184,7 @@ export const AIAdministration = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-250/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-2.5">
+        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-200/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Avg Latency</span>
             <FaClock className="text-emerald-500" />
@@ -195,7 +195,7 @@ export const AIAdministration = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-250/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-2.5">
+        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-200/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Cache Hits</span>
             <FaHdd className="text-emerald-500" />
@@ -206,7 +206,7 @@ export const AIAdministration = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-250/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-2.5">
+        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-200/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-2.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Uptime Monitor</span>
             <FaToggleOn className="text-emerald-500" />
@@ -222,9 +222,9 @@ export const AIAdministration = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Provider Settings Controller Form */}
-        <div className="lg:col-span-2 p-5 bg-white dark:bg-[#0e1712] border border-gray-250/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-4">
+        <div className="lg:col-span-2 p-5 bg-white dark:bg-[#0e1712] border border-gray-200/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-4">
           <div className="flex items-center gap-2">
-            <FaCogs className="text-emerald-600 dark:text-emerald-450" />
+            <FaCogs className="text-emerald-600 dark:text-emerald-400" />
             <h2 className="text-sm font-extrabold dark:text-white">AI Provider Settings</h2>
           </div>
 
@@ -242,7 +242,7 @@ export const AIAdministration = () => {
                     else if (p === 'gemini') setFormModel('gemini-2.5-flash');
                     else setFormModel('default');
                   }}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-955/20 border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-bold"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-900/45 focus:outline-none focus:border-emerald-500 dark:text-white font-bold"
                 >
                   <option value="openrouter">OpenRouter Provider (Active - Free Models)</option>
                   <option value="gemini">Gemini Provider (Active)</option>
@@ -256,7 +256,7 @@ export const AIAdministration = () => {
                   <select
                     value={formModel}
                     onChange={(e) => setFormModel(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-955/20 border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-900/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
                   >
                     <option value="openrouter/free">Auto Free (Recommended)</option>
                     <option value="google/gemma-3-27b-it:free">Google Gemma 3 27B (Free)</option>
@@ -272,7 +272,7 @@ export const AIAdministration = () => {
                     type="text"
                     value={formModel}
                     onChange={(e) => setFormModel(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-955/20 border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-gray-50 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-900/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
                   />
                 </div>
               )}
@@ -280,7 +280,7 @@ export const AIAdministration = () => {
             </div>
 
             {/* Collapsible Advanced Generation Parameters */}
-            <details className="p-3 bg-gray-50/50 dark:bg-emerald-955/10 border border-gray-150/10 rounded-xl space-y-3">
+            <details className="p-3 bg-gray-50/50 dark:bg-emerald-950/10 border border-gray-200/10 rounded-xl space-y-3">
               <summary className="text-xs font-bold text-gray-600 dark:text-emerald-300 cursor-pointer select-none">
                 Advanced Generation Settings (Temperature, Top P, Max Tokens)
               </summary>
@@ -295,7 +295,7 @@ export const AIAdministration = () => {
                     max="1"
                     value={formTemp}
                     onChange={(e) => setFormTemp(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-900/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
                   />
                 </div>
 
@@ -305,7 +305,7 @@ export const AIAdministration = () => {
                     type="number"
                     value={formMaxTokens}
                     onChange={(e) => setFormMaxTokens(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-900/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
                   />
                 </div>
 
@@ -315,7 +315,7 @@ export const AIAdministration = () => {
                     type="number"
                     value={formTimeout}
                     onChange={(e) => setFormTimeout(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-900/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
                   />
                 </div>
 
@@ -325,7 +325,7 @@ export const AIAdministration = () => {
                     type="number"
                     value={formCacheMin}
                     onChange={(e) => setFormCacheMin(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-955/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
+                    className="w-full px-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-900/45 focus:outline-none focus:border-emerald-500 dark:text-white font-semibold"
                   />
                 </div>
               </div>
@@ -336,7 +336,7 @@ export const AIAdministration = () => {
                 type="button"
                 onClick={handleClearCache}
                 disabled={actionLoading}
-                className="px-4 py-2 text-xs font-bold border border-gray-250 hover:bg-gray-50 dark:border-emerald-950/40 dark:hover:bg-emerald-950/15 text-gray-650 dark:text-gray-300 rounded-xl transition-all cursor-pointer"
+                className="px-4 py-2 text-xs font-bold border border-gray-200 hover:bg-gray-50 dark:border-emerald-950/40 dark:hover:bg-emerald-950/15 text-gray-600 dark:text-gray-300 rounded-xl transition-all cursor-pointer"
               >
                 Clear Memory Cache
               </button>
@@ -352,9 +352,9 @@ export const AIAdministration = () => {
         </div>
 
         {/* In-Memory Provider Health States */}
-        <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-250/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-4">
+        <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-200/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-4">
           <div className="flex items-center gap-2">
-            <FaDatabase className="text-emerald-600 dark:text-emerald-450" />
+            <FaDatabase className="text-emerald-600 dark:text-emerald-400" />
             <h2 className="text-sm font-extrabold dark:text-white">Provider Diagnostics</h2>
           </div>
 
@@ -382,15 +382,15 @@ export const AIAdministration = () => {
       </div>
 
       {/* User Usage Log Panel */}
-      <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-250/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-4">
+      <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-200/20 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-4">
         <div className="flex items-center gap-2">
-          <FaCogs className="text-emerald-600 dark:text-emerald-450" />
+          <FaCogs className="text-emerald-600 dark:text-emerald-400" />
           <h2 className="text-sm font-extrabold dark:text-white">Active User API Usage</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-gray-500 dark:text-gray-400">
-            <thead className="text-[10px] text-gray-400 uppercase bg-gray-50 dark:bg-[#080d0a]/30 border-b border-gray-150/10">
+            <thead className="text-[10px] text-gray-400 uppercase bg-gray-50 dark:bg-[#080d0a]/30 border-b border-gray-200/10">
               <tr>
                 <th className="px-4 py-3 font-bold">User</th>
                 <th className="px-4 py-3 font-bold">Role</th>

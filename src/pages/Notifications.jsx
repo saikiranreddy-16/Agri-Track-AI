@@ -113,7 +113,7 @@ export const Notifications = () => {
       </div>
 
       {/* Filter Tabs bar */}
-      <div className="flex gap-1.5 overflow-x-auto border-b border-gray-150 dark:border-emerald-950/20 pb-2.5 custom-scrollbar">
+      <div className="flex gap-1.5 overflow-x-auto border-b border-gray-200 dark:border-emerald-950/20 pb-2.5 custom-scrollbar">
         {categories.map((cat) => (
           <button
             key={cat}
@@ -121,7 +121,7 @@ export const Notifications = () => {
             className={`px-3.5 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all cursor-pointer ${
               activeFilter === cat
                 ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-gray-550 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-emerald-950/15'
+                : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-emerald-950/15'
             }`}
           >
             {cat}
@@ -219,7 +219,7 @@ const NotificationItem = ({ n, onRead, onDelete, getIcon, getSeverity }) => {
       exit={{ opacity: 0, x: -100 }}
       className={`p-4 bg-white dark:bg-[#0e1712] border rounded-2xl shadow-sm hover:shadow transition-all flex justify-between items-start gap-4 ${
         n.read 
-          ? 'border-gray-150 dark:border-emerald-950/10 opacity-70' 
+          ? 'border-gray-200 dark:border-emerald-950/10 opacity-70' 
           : 'border-emerald-100 dark:border-emerald-900/35 border-l-4 border-l-emerald-500'
       }`}
     >

@@ -221,7 +221,7 @@ export const MachineDetail = () => {
       <Popup className="custom-leaflet-popup">
         <div className="text-xs p-1 space-y-1.5 w-44 font-sans text-gray-800 dark:text-gray-200">
           <div className="border-b border-gray-100 dark:border-emerald-950/20 pb-1 flex justify-between items-center">
-            <strong className="text-emerald-700 dark:text-emerald-450 text-[11px] truncate">{name}</strong>
+            <strong className="text-emerald-700 dark:text-emerald-400 text-[11px] truncate">{name}</strong>
           </div>
           <div className="grid grid-cols-2 gap-1 text-[9px] font-semibold">
             <div>Owner:</div>
@@ -303,7 +303,7 @@ export const MachineDetail = () => {
 
       {/* Unified Tile Layer selector helper overlay */}
       {(activeTab === 'overview' || activeTab === 'live_tracking' || activeTab === 'history') && (
-        <div className="flex items-center justify-end gap-2 text-[10px] font-bold py-1 bg-gray-50 dark:bg-emerald-950/10 px-3 rounded-lg border border-gray-150 dark:border-emerald-950/20 self-end">
+        <div className="flex items-center justify-end gap-2 text-[10px] font-bold py-1 bg-gray-50 dark:bg-emerald-950/10 px-3 rounded-lg border border-gray-200 dark:border-emerald-950/20 self-end">
           <span className="text-gray-400 flex items-center gap-1"><FaRoad /> Map Style:</span>
           {['streets', 'satellite', 'terrain'].map(layer => (
             <button
@@ -447,7 +447,7 @@ export const MachineDetail = () => {
                 </div>
                 <div className="py-2.5 flex justify-between">
                   <span className="text-gray-400">Registration Tag</span>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-450">{machine.registration}</span>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{machine.registration}</span>
                 </div>
                 <div className="py-2.5 flex justify-between">
                   <span className="text-gray-400">RC Registered Owner</span>
@@ -483,7 +483,7 @@ export const MachineDetail = () => {
                   <div className="h-44 bg-gray-100 dark:bg-emerald-950/15 rounded-xl overflow-hidden shadow-inner">
                     <img src={machine.photo} alt="Asset front" className="w-full h-full object-cover" />
                   </div>
-                  <div className="h-44 bg-gray-150 dark:bg-emerald-950/10 rounded-xl border border-dashed border-gray-300 dark:border-emerald-900/30 flex items-center justify-center text-xs text-gray-400 font-bold">
+                  <div className="h-44 bg-gray-100 dark:bg-emerald-950/10 rounded-xl border border-dashed border-gray-300 dark:border-emerald-900/30 flex items-center justify-center text-xs text-gray-400 font-bold">
                     Secondary angle log empty
                   </div>
                 </div>
@@ -526,7 +526,7 @@ export const MachineDetail = () => {
               <div className="divide-y divide-gray-100 dark:divide-emerald-[#0e1712] text-xs font-semibold">
                 <div className="py-3 flex justify-between">
                   <span className="text-gray-400">GPS Device ID</span>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-450">
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                     {typeof machine.gpsDeviceId === 'object' ? machine.gpsDeviceId.deviceId : (machine.gpsDeviceId || 'dev-mach-1')}
                   </span>
                 </div>
@@ -563,7 +563,7 @@ export const MachineDetail = () => {
 
             {/* QR Scan key code card */}
             <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center space-y-4">
-              <h3 className="text-sm font-bold text-gray-805 dark:text-white uppercase tracking-wider self-start">Vector QR Scan Key</h3>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-white uppercase tracking-wider self-start">Vector QR Scan Key</h3>
               
               <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl">
                 <svg className="w-36 h-36 text-emerald-800 dark:text-emerald-400" viewBox="0 0 100 100" fill="currentColor">
@@ -601,7 +601,7 @@ export const MachineDetail = () => {
                 <div className="flex gap-3 items-start relative pl-8">
                   <div className="absolute left-[7px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0e1712] top-1" />
                   <div>
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 block uppercase">Activated</span>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block uppercase">Activated</span>
                     <p className="text-xs font-bold dark:text-white mt-0.5">GPS tracker registered to warehouse</p>
                     <span className="text-[9px] text-gray-400">Date: 2026-03-12 11:24 AM</span>
                   </div>
@@ -609,7 +609,7 @@ export const MachineDetail = () => {
                 <div className="flex gap-3 items-start relative pl-8">
                   <div className="absolute left-[7px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0e1712] top-1" />
                   <div>
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 block uppercase">Chassis Linked</span>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block uppercase">Chassis Linked</span>
                     <p className="text-xs font-bold dark:text-white mt-0.5">Assigned to registration {machine.registration}</p>
                     <span className="text-[9px] text-gray-400">Date: 2026-03-12 01:45 PM</span>
                   </div>
@@ -617,7 +617,7 @@ export const MachineDetail = () => {
                 <div className="flex gap-3 items-start relative pl-8">
                   <div className="absolute left-[7px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0e1712] top-1" />
                   <div>
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-450 block uppercase">Fleet Assigned</span>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block uppercase">Fleet Assigned</span>
                     <p className="text-xs font-bold dark:text-white mt-0.5">Activated in Cheruvupally Division</p>
                     <span className="text-[9px] text-gray-400">Date: 2026-03-15 09:00 AM</span>
                   </div>
@@ -795,7 +795,7 @@ export const MachineDetail = () => {
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-gray-450">No coordinates recorded for speed profile.</div>
+                  <div className="h-full flex items-center justify-center text-gray-400">No coordinates recorded for speed profile.</div>
                 )}
               </div>
             </div>
@@ -814,7 +814,7 @@ export const MachineDetail = () => {
             <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left text-xs border-collapse font-sans">
                 <thead>
-                  <tr className="border-b border-gray-150 dark:border-emerald-950/20 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
+                  <tr className="border-b border-gray-200 dark:border-emerald-950/20 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
                     <th className="py-2.5">Timeframe</th>
                     <th className="py-2.5 text-center">Distance Travelled</th>
                     <th className="py-2.5 text-center">Fuel Used</th>

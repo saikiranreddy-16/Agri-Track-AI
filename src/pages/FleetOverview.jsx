@@ -130,7 +130,7 @@ export const FleetOverview = () => {
       case 'Stopped':
       case 'Engine OFF':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-50 text-gray-700 dark:bg-gray-900 dark:text-gray-400 border border-gray-250 dark:border-gray-800">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-50 text-gray-700 dark:bg-gray-900 dark:text-gray-400 border border-gray-200 dark:border-gray-800">
             <span className="w-1.5 h-1.5 rounded-full bg-gray-500" />
             Stopped
           </span>
@@ -363,7 +363,7 @@ export const FleetOverview = () => {
                     const mappedType = selectedCard === 'customers' ? 'customers' : selectedCard === 'alerts' ? 'alerts' : selectedCard === 'offline' ? 'offline' : 'devices';
                     handleExport(mappedType);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 border border-gray-150 dark:border-emerald-950/20 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-emerald-950/10 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 border border-gray-200 dark:border-emerald-950/20 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer"
                   title="Export records to CSV"
                 >
                   <FaFileAlt className="text-emerald-500" /> Export CSV
@@ -378,7 +378,7 @@ export const FleetOverview = () => {
               {selectedCard === 'customers' && (
                 <table className="w-full text-[11px] text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-gray-150 dark:border-emerald-950/20 text-gray-400">
+                    <tr className="border-b border-gray-200 dark:border-emerald-950/20 text-gray-400">
                       <th className="py-2.5 font-bold">Client Name</th>
                       <th className="py-2.5 font-bold">Contact Info</th>
                       <th className="py-2.5 font-bold">Address Line</th>
@@ -401,13 +401,13 @@ export const FleetOverview = () => {
                         <td className="py-3 pr-2 font-medium max-w-[150px] truncate" title={cust.addressLine}>
                           {cust.addressLine || 'N/A'}
                         </td>
-                        <td className="py-3 pr-2 font-bold text-[10px] text-emerald-600 dark:text-emerald-405">
+                        <td className="py-3 pr-2 font-bold text-[10px] text-emerald-600 dark:text-emerald-400">
                           {cust.planName || cust.subscriptionPlan || 'Standard'}
                         </td>
                         <td className="py-3 pr-2">
                           <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
                             cust.subscriptionStatus === 'Active' 
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-450' 
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
                               : 'bg-red-500/10 text-red-600'
                           }`}>
                             {cust.subscriptionStatus}
@@ -431,7 +431,7 @@ export const FleetOverview = () => {
               {(selectedCard === 'vehicles' || selectedCard === 'running' || selectedCard === 'stopped') && (
                 <table className="w-full text-[11px] text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-gray-150 dark:border-emerald-950/20 text-gray-400">
+                    <tr className="border-b border-gray-200 dark:border-emerald-950/20 text-gray-400">
                       <th className="py-2.5 font-bold">Vehicle Reg.</th>
                       <th className="py-2.5 font-bold">Make/Model</th>
                       <th className="py-2.5 font-bold">Today's Data</th>
@@ -462,7 +462,7 @@ export const FleetOverview = () => {
                           <div className="flex flex-col gap-1 items-start">
                             <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
                               mach.engineStatus === 'On' 
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-450' 
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
                                 : 'bg-gray-500/10 text-gray-600'
                             }`}>
                               Ignition: {mach.engineStatus || 'Off'}
@@ -498,7 +498,7 @@ export const FleetOverview = () => {
               {(selectedCard === 'devices' || selectedCard === 'online' || selectedCard === 'offline' || selectedCard === 'connected' || selectedCard === 'disconnected' || selectedCard === 'comm_failure') && (
                 <table className="w-full text-[11px] text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-gray-150 dark:border-emerald-950/20 text-gray-400">
+                    <tr className="border-b border-gray-200 dark:border-emerald-950/20 text-gray-400">
                       <th className="py-2.5 font-bold">Device ID</th>
                       <th className="py-2.5 font-bold">IMEI / Serial</th>
                       <th className="py-2.5 font-bold">SIM / Network</th>
@@ -541,7 +541,7 @@ export const FleetOverview = () => {
               {selectedCard === 'alerts' && (
                 <table className="w-full text-[11px] text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-gray-150 dark:border-emerald-950/20 text-gray-400">
+                    <tr className="border-b border-gray-200 dark:border-emerald-950/20 text-gray-400">
                       <th className="py-2.5 font-bold">Timestamp</th>
                       <th className="py-2.5 font-bold">Vehicle</th>
                       <th className="py-2.5 font-bold">Alert Category</th>
@@ -591,7 +591,7 @@ export const FleetOverview = () => {
               {selectedCard === 'state_breakdown' && (
                 <table className="w-full text-[11px] text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-gray-150 dark:border-emerald-950/20 text-gray-400">
+                    <tr className="border-b border-gray-200 dark:border-emerald-950/20 text-gray-400">
                       <th className="py-2.5 font-bold">Indian State</th>
                       <th className="py-2.5 font-bold text-center">Customer Count</th>
                       <th className="py-2.5 font-bold text-center">Vehicle Count</th>
@@ -604,13 +604,13 @@ export const FleetOverview = () => {
                         <td className="py-3 pr-2">
                           <span className="font-bold block text-gray-900 dark:text-white text-xs">{item.state}</span>
                         </td>
-                        <td className="py-3 text-center font-bold text-blue-600 dark:text-blue-450">
+                        <td className="py-3 text-center font-bold text-blue-600 dark:text-blue-400">
                           {selectedCard === 'state_breakdown' && item.state === 'Telangana' ? customers.length : 1}
                         </td>
-                        <td className="py-3 text-center font-bold text-emerald-600 dark:text-emerald-450">
+                        <td className="py-3 text-center font-bold text-emerald-600 dark:text-emerald-400">
                           {selectedCard === 'state_breakdown' && item.state === 'Telangana' ? machines.length : 1}
                         </td>
-                        <td className="py-3 text-center font-bold text-purple-600 dark:text-purple-450">
+                        <td className="py-3 text-center font-bold text-purple-600 dark:text-purple-400">
                           {item.count || 1}
                         </td>
                       </tr>
@@ -636,7 +636,7 @@ export const FleetOverview = () => {
           <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
             <div className="flex justify-between items-center border-b border-gray-100 dark:border-emerald-950/20 pb-2 mb-2">
               <div>
-                <h3 className="text-xs font-bold text-gray-450 uppercase tracking-wider">Recent Access Logins</h3>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Recent Access Logins</h3>
                 <span className="text-[9px] text-gray-400">Live authentication audit trails</span>
               </div>
               <FaUserCheck className="text-gray-400" />
@@ -647,13 +647,13 @@ export const FleetOverview = () => {
                 <div key={log._id} className="text-xs border-b border-gray-50 dark:border-emerald-950/10 pb-2.5 last:border-b-0 last:pb-0">
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-gray-800 dark:text-white">{log.user?.name || log.userEmail}</span>
-                    <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-450">{log.user?.role || 'Guest'}</span>
+                    <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">{log.user?.role || 'Guest'}</span>
                   </div>
                   <div className="flex justify-between items-center text-[10px] text-gray-400 mt-1.5 font-medium">
                     <span>{log.device}</span>
                     <span>{new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
-                  <div className="flex justify-between items-center text-[9px] text-gray-450 mt-0.5 font-mono">
+                  <div className="flex justify-between items-center text-[9px] text-gray-400 mt-0.5 font-mono">
                     <span>IP: {log.ip}</span>
                     <span className={log.success ? 'text-emerald-500' : 'text-red-500'}>
                       {log.success ? 'Success' : 'Failed'}
@@ -678,7 +678,7 @@ export const FleetOverview = () => {
                 >
                   Prev
                 </button>
-                <span className="text-gray-450">Page {loginPage} of {Math.ceil(totalLogins / 10)}</span>
+                <span className="text-gray-400">Page {loginPage} of {Math.ceil(totalLogins / 10)}</span>
                 <button
                   disabled={loginPage >= Math.ceil(totalLogins / 10)}
                   onClick={() => handlePageChange(loginPage + 1)}
@@ -692,7 +692,7 @@ export const FleetOverview = () => {
 
           {/* Daily Timeline Counters */}
           <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl shadow-sm space-y-4">
-            <h2 className="text-xs font-bold text-gray-450 uppercase tracking-wider border-b border-gray-100 dark:border-emerald-950/20 pb-2">
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-emerald-950/20 pb-2">
               Today's Fleet Activity Logs
             </h2>
             <div className="grid grid-cols-2 gap-4">

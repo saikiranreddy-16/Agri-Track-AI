@@ -38,7 +38,7 @@ export const EmptyState = ({ title, description, type = 'general', actionText, o
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 md:p-12 text-center bg-white dark:bg-[#0e1712] border border-gray-150 dark:border-emerald-950/20 rounded-3xl shadow-sm space-y-4 max-w-lg mx-auto my-6 animate-fade-in">
+    <div className="flex flex-col items-center justify-center p-8 md:p-12 text-center bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/20 rounded-3xl shadow-sm space-y-4 max-w-lg mx-auto my-6 animate-fade-in">
       <div className="p-4 bg-gray-50 dark:bg-emerald-950/10 rounded-full shrink-0">
         {getIllustration()}
       </div>

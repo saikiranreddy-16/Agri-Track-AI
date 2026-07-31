@@ -116,7 +116,7 @@ export const DriverDetail = () => {
                 </Link>
               </div>
             ) : (
-              <div className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-dashed border-gray-250 rounded-2xl text-center text-xs text-gray-400">
+              <div className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-dashed border-gray-200 rounded-2xl text-center text-xs text-gray-400">
                 Currently not assigned to any active vehicle.
               </div>
             )}

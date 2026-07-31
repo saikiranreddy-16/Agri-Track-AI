@@ -124,7 +124,7 @@ export const Settings = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         
         {/* Left Side: Tabs */}
-        <div className="p-2.5 bg-white dark:bg-[#0e1712] border border-gray-150 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-1 h-fit">
+        <div className="p-2.5 bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/20 rounded-2xl shadow-sm space-y-1 h-fit">
           {tabs.map(tab => {
             const Icon = tab.icon;
             return (
@@ -136,7 +136,7 @@ export const Settings = () => {
                 }}
                 className={`w-full text-left px-4 py-2.5 text-xs font-bold rounded-xl transition-all flex items-center gap-2.5 cursor-pointer ${
                   activeTab === tab.id
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-450 font-extrabold'
+                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 font-extrabold'
                     : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-emerald-950/10 dark:text-gray-400'
                 }`}
               >
@@ -229,7 +229,7 @@ export const Settings = () => {
                       required
                       value={oldSecret}
                       onChange={(e) => setOldSecret(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-955/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white font-mono"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white font-mono"
                       placeholder="••••••••"
                     />
                   </div>
@@ -242,7 +242,7 @@ export const Settings = () => {
                       required
                       value={newSecret}
                       onChange={(e) => setNewSecret(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-955/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white font-mono"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white font-mono"
                       placeholder={isCompanyAdmin ? 'Min 6 characters' : 'Exactly 6 numeric digits'}
                     />
                   </div>
@@ -255,7 +255,7 @@ export const Settings = () => {
                       required
                       value={confirmSecret}
                       onChange={(e) => setConfirmSecret(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-955/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white font-mono"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-[#121c17] focus:bg-white focus:outline-none dark:text-white font-mono"
                       placeholder="••••••••"
                     />
                   </div>
@@ -278,7 +278,7 @@ export const Settings = () => {
                     <FaShieldAlt className="text-emerald-500" />
                     Trusted Login Devices
                   </h3>
-                  <p className="text-[10px] text-gray-450 mb-4 leading-relaxed">
+                  <p className="text-[10px] text-gray-400 mb-4 leading-relaxed">
                     Your account has trusted keys saved on these browser clients. Revoking a device prompts for a device identity scan on next login.
                   </p>
 
@@ -289,7 +289,7 @@ export const Settings = () => {
                       </div>
                     ) : (
                       trustedDevices.map((dev) => (
-                        <div key={dev.clientDeviceId} className="flex items-center justify-between p-3 border border-gray-150 dark:border-emerald-950/15 bg-gray-50/50 dark:bg-[#121c17]/50 rounded-xl">
+                        <div key={dev.clientDeviceId} className="flex items-center justify-between p-3 border border-gray-200 dark:border-emerald-950/15 bg-gray-50/50 dark:bg-[#121c17]/50 rounded-xl">
                           <div className="flex items-center gap-2.5">
                             <FaLaptop className="text-base text-emerald-600 dark:text-emerald-400" />
                             <div>
@@ -327,7 +327,7 @@ export const Settings = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {mockMachines.slice(0, 3).map((mach) => (
-                  <div key={mach.id} className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-150 dark:border-emerald-950/15 rounded-2xl space-y-3">
+                  <div key={mach.id} className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-200 dark:border-emerald-950/15 rounded-2xl space-y-3">
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="text-xs font-black dark:text-white">{mach.name}</h4>
@@ -338,9 +338,9 @@ export const Settings = () => {
                       </span>
                     </div>
 
-                    <div className="text-[10px] text-gray-450 border-t border-gray-150 dark:border-emerald-955/15 pt-2 space-y-1">
-                      <div>GPS Unit Serial: <strong className="font-mono text-emerald-600 dark:text-emerald-450">{mach.gpsDeviceId || 'dev-mach-1'}</strong></div>
-                      <div>Firmware status: <strong className="text-gray-650 dark:text-gray-300">v4.12.8-stable</strong></div>
+                    <div className="text-[10px] text-gray-400 border-t border-gray-200 dark:border-emerald-900/15 pt-2 space-y-1">
+                      <div>GPS Unit Serial: <strong className="font-mono text-emerald-600 dark:text-emerald-400">{mach.gpsDeviceId || 'dev-mach-1'}</strong></div>
+                      <div>Firmware status: <strong className="text-gray-600 dark:text-gray-300">v4.12.8-stable</strong></div>
                     </div>
                   </div>
                 ))}
@@ -358,7 +358,7 @@ export const Settings = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 
                 {/* Metric/Imperial units toggle */}
-                <div className="p-4 bg-gray-55 bg-gray-50 dark:bg-emerald-950/10 border border-gray-150 dark:border-emerald-950/20 rounded-2xl space-y-3">
+                <div className="p-4 bg-gray-55 bg-gray-50 dark:bg-emerald-950/10 border border-gray-200 dark:border-emerald-950/20 rounded-2xl space-y-3">
                   <div>
                     <h4 className="font-bold dark:text-white text-xs">System Unit Standard</h4>
                     <p className="text-[10px] text-gray-400 mt-0.5">Toggle metric (km, hectares) and imperial metrics.</p>
@@ -371,7 +371,7 @@ export const Settings = () => {
                         className={`flex-1 py-1.5 font-bold rounded-lg border text-xs transition-all cursor-pointer ${
                           units === u
                             ? 'bg-emerald-600 border-emerald-650 text-white shadow-sm'
-                            : 'bg-white dark:bg-[#0e1712] border-gray-250 text-gray-655 dark:text-emerald-300 hover:bg-gray-50'
+                            : 'bg-white dark:bg-[#0e1712] border-gray-200 text-gray-655 dark:text-emerald-300 hover:bg-gray-50'
                         }`}
                       >
                         {u}
@@ -381,7 +381,7 @@ export const Settings = () => {
                 </div>
 
                 {/* Interface Theme Selection */}
-                <div className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-150 dark:border-emerald-950/20 rounded-2xl space-y-3">
+                <div className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-200 dark:border-emerald-950/20 rounded-2xl space-y-3">
                   <div>
                     <h4 className="font-bold dark:text-white text-xs">Interface Theme Preference</h4>
                     <p className="text-[10px] text-gray-400 mt-0.5">Choose between light mode, dark mode, or system themes.</p>
@@ -392,7 +392,7 @@ export const Settings = () => {
                       className={`py-1.5 px-2 font-bold rounded-lg border text-[10px] transition-all flex flex-col items-center gap-1 cursor-pointer ${
                         themePref === 'light'
                           ? 'bg-emerald-600 border-emerald-650 text-white shadow-md'
-                          : 'bg-white dark:bg-[#0e1712] border-gray-250 text-gray-600 dark:text-emerald-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-[#0e1712] border-gray-200 text-gray-600 dark:text-emerald-300 hover:bg-gray-50'
                       }`}
                     >
                       <FaSun className="text-sm" />
@@ -403,7 +403,7 @@ export const Settings = () => {
                       className={`py-1.5 px-2 font-bold rounded-lg border text-[10px] transition-all flex flex-col items-center gap-1 cursor-pointer ${
                         themePref === 'dark'
                           ? 'bg-emerald-600 border-emerald-650 text-white shadow-md'
-                          : 'bg-white dark:bg-[#0e1712] border-gray-250 text-gray-600 dark:text-emerald-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-[#0e1712] border-gray-200 text-gray-600 dark:text-emerald-300 hover:bg-gray-50'
                       }`}
                     >
                       <FaMoon className="text-sm" />
@@ -414,7 +414,7 @@ export const Settings = () => {
                       className={`py-1.5 px-2 font-bold rounded-lg border text-[10px] transition-all flex flex-col items-center gap-1 cursor-pointer ${
                         themePref === 'system'
                           ? 'bg-emerald-600 border-emerald-650 text-white shadow-md'
-                          : 'bg-white dark:bg-[#0e1712] border-gray-250 text-gray-600 dark:text-emerald-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-[#0e1712] border-gray-200 text-gray-600 dark:text-emerald-300 hover:bg-gray-50'
                       }`}
                     >
                       <FaDesktop className="text-sm" />
@@ -434,16 +434,16 @@ export const Settings = () => {
                 About AgriTrack-AI Platform
               </h3>
 
-              <div className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-150 dark:border-emerald-950/20 rounded-2xl space-y-3">
-                <div className="flex justify-between font-bold py-1.5 border-b border-gray-150 dark:border-emerald-955/15">
+              <div className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-200 dark:border-emerald-950/20 rounded-2xl space-y-3">
+                <div className="flex justify-between font-bold py-1.5 border-b border-gray-200 dark:border-emerald-900/15">
                   <span className="text-gray-400">Application Version</span>
                   <span className="font-mono text-emerald-600 dark:text-emerald-400">v2.4.0-stable (ERP Edition)</span>
                 </div>
-                <div className="flex justify-between font-bold py-1.5 border-b border-gray-150 dark:border-emerald-955/15">
+                <div className="flex justify-between font-bold py-1.5 border-b border-gray-200 dark:border-emerald-900/15">
                   <span className="text-gray-400">Firmware Build Key</span>
                   <span className="font-mono text-gray-700 dark:text-gray-300">BUILD-20260713-PRECISE</span>
                 </div>
-                <div className="flex justify-between font-bold py-1.5 border-b border-gray-150 dark:border-emerald-955/15">
+                <div className="flex justify-between font-bold py-1.5 border-b border-gray-200 dark:border-emerald-900/15">
                   <span className="text-gray-400">Company License</span>
                   <span className="text-gray-700 dark:text-gray-300">AgriTrack Technologies Pvt. Ltd.</span>
                 </div>
@@ -456,7 +456,7 @@ export const Settings = () => {
                 </div>
               </div>
 
-              <div className="text-[10px] text-gray-450 leading-relaxed text-center">
+              <div className="text-[10px] text-gray-400 leading-relaxed text-center">
                 &copy; {new Date().getFullYear()} AgriTrack Technologies Pvt. Ltd. All rights reserved. 
                 <br />
                 Licensed for commercial precision agricultural fleet management tracking.

@@ -336,7 +336,7 @@ export const GPSHistory = () => {
                     <Popup className="custom-leaflet-popup">
                       <div className="text-xs p-1 space-y-1.5 w-44 font-sans text-gray-800 dark:text-gray-200">
                         <div className="border-b border-gray-100 dark:border-emerald-950/20 pb-1 flex justify-between items-center">
-                          <strong className="text-emerald-700 dark:text-emerald-450 text-[11px] truncate">{activeMachine?.name || 'Vehicle'}</strong>
+                          <strong className="text-emerald-700 dark:text-emerald-400 text-[11px] truncate">{activeMachine?.name || 'Vehicle'}</strong>
                         </div>
                         <div className="grid grid-cols-2 gap-1 text-[9px] font-semibold">
                           <div>Owner:</div>

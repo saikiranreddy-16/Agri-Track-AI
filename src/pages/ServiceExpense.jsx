@@ -239,7 +239,7 @@ export const ServiceExpense = () => {
                   <select
                     value={formVehicleId}
                     onChange={(e) => setFormVehicleId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                   >
                     {machines.map((m) => (
                       <option key={m._id} value={m._id}>{m.name} ({m.registration})</option>
@@ -253,7 +253,7 @@ export const ServiceExpense = () => {
                     <select
                       value={formCategory}
                       onChange={(e) => setFormCategory(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                     >
                       {SERVICE_CATEGORIES.filter(c => c !== 'All').map((c) => (
                         <option key={c} value={c}>{c}</option>
@@ -269,7 +269,7 @@ export const ServiceExpense = () => {
                       value={formCost}
                       onChange={(e) => setFormCost(e.target.value)}
                       placeholder="e.g. 4500"
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                     />
                   </div>
                 </div>
@@ -282,7 +282,7 @@ export const ServiceExpense = () => {
                       value={formWorkshop}
                       onChange={(e) => setFormWorkshop(e.target.value)}
                       placeholder="e.g. Mahindra Service Hub"
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
                     />
                   </div>
                   <div>
@@ -292,7 +292,7 @@ export const ServiceExpense = () => {
                       value={formHours}
                       onChange={(e) => setFormHours(e.target.value)}
                       placeholder="e.g. 240"
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
                     />
                   </div>
                 </div>
@@ -304,7 +304,7 @@ export const ServiceExpense = () => {
                     value={formDescription}
                     onChange={(e) => setFormDescription(e.target.value)}
                     placeholder="e.g. Replaced engine oil filter & greased front axles"
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
                   />
                 </div>
 
@@ -315,7 +315,7 @@ export const ServiceExpense = () => {
                     value={formBillPhoto}
                     onChange={(e) => setFormBillPhoto(e.target.value)}
                     placeholder="/uploads/bills/service_bill_102.jpg"
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-mono text-[10px]"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-mono text-[10px]"
                   />
                 </div>
 

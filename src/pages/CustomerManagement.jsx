@@ -345,10 +345,10 @@ export const CustomerManagement = () => {
           type="general"
         />
       ) : (
-        <div className="bg-white dark:bg-[#0e1712] border border-gray-150 dark:border-emerald-950/20 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/20 rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50 dark:bg-emerald-950/10 text-gray-450 dark:text-gray-400 uppercase font-bold tracking-wider border-b border-gray-100 dark:border-emerald-950/10">
+              <thead className="bg-gray-50 dark:bg-emerald-950/10 text-gray-400 dark:text-gray-400 uppercase font-bold tracking-wider border-b border-gray-100 dark:border-emerald-950/10">
                 <tr>
                   <th className="px-6 py-3.5">Customer / Company</th>
                   <th className="px-6 py-3.5">Contact Details</th>
@@ -369,7 +369,7 @@ export const CustomerManagement = () => {
                       </div>
                       <div className="text-[10px] text-gray-400 mt-0.5">{c.company || 'Private Farm'}</div>
                     </td>
-                    <td className="px-6 py-4 text-gray-650 dark:text-gray-300 font-medium">
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300 font-medium">
                       <div>Phone: {c.phone}</div>
                       {c.alternatePhone && <div className="text-[10px] text-gray-400 mt-0.5">Alt: {c.alternatePhone}</div>}
                     </td>
@@ -385,7 +385,7 @@ export const CustomerManagement = () => {
                         <span className="text-gray-400">No Location Configured</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-center font-bold text-emerald-600 dark:text-emerald-450">
+                    <td className="px-6 py-4 text-center font-bold text-emerald-600 dark:text-emerald-400">
                       {c.activeDevicesCount} / {c.devicesAllowed} Used
                     </td>
                     <td className="px-6 py-4">
@@ -456,7 +456,7 @@ export const CustomerManagement = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-[#0c120f] border border-gray-250 dark:border-emerald-900/30 p-6 rounded-2xl w-full max-w-2xl shadow-2xl space-y-4 text-xs max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-[#0c120f] border border-gray-200 dark:border-emerald-900/30 p-6 rounded-2xl w-full max-w-2xl shadow-2xl space-y-4 text-xs max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center border-b border-gray-100 dark:border-emerald-950/15 pb-2">
                 <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
@@ -584,7 +584,7 @@ export const CustomerManagement = () => {
                           readOnly
                           value={formData.pincode}
                           placeholder="Auto selected"
-                          className="w-full p-2 bg-gray-150 dark:bg-emerald-950/20 border border-gray-250 dark:border-emerald-900/30 rounded-xl dark:text-white focus:outline-none font-mono"
+                          className="w-full p-2 bg-gray-100 dark:bg-emerald-950/20 border border-gray-200 dark:border-emerald-900/30 rounded-xl dark:text-white focus:outline-none font-mono"
                         />
                       </div>
                     </div>

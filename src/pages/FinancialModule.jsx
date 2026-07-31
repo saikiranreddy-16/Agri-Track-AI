@@ -226,7 +226,7 @@ export const FinancialModule = () => {
                   <select
                     value={formVehicleId}
                     onChange={(e) => setFormVehicleId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                   >
                     {machines.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
                   </select>
@@ -236,7 +236,7 @@ export const FinancialModule = () => {
                   <select
                     value={formOpCategory}
                     onChange={(e) => setFormOpCategory(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                   >
                     {['Driver Salary', 'Labour', 'Loading', 'Transport', 'Parking', 'Miscellaneous'].map(c => (
                       <option key={c} value={c}>{c}</option>
@@ -251,7 +251,7 @@ export const FinancialModule = () => {
                     value={formOpAmount}
                     onChange={(e) => setFormOpAmount(e.target.value)}
                     placeholder="e.g. 500"
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                   />
                 </div>
                 <div className="flex gap-2 justify-end pt-3">
@@ -281,7 +281,7 @@ export const FinancialModule = () => {
                   <select
                     value={formVehicleId}
                     onChange={(e) => setFormVehicleId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                   >
                     {machines.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
                   </select>
@@ -291,7 +291,7 @@ export const FinancialModule = () => {
                   <select
                     value={formIncSource}
                     onChange={(e) => setFormIncSource(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                   >
                     {['Custom Hire', 'Harvesting Work', 'Plowing', 'Haulage', 'Subsidy', 'Other'].map(s => (
                       <option key={s} value={s}>{s}</option>
@@ -306,7 +306,7 @@ export const FinancialModule = () => {
                     value={formIncAmount}
                     onChange={(e) => setFormIncAmount(e.target.value)}
                     placeholder="e.g. 3500"
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                   />
                 </div>
                 <div className="flex gap-2 justify-end pt-3">

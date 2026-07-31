@@ -90,7 +90,7 @@ export const CustomerProfile = () => {
     return (
       <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
         isActive 
-          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-450 border border-emerald-250 dark:border-emerald-900/35'
+          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/45 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/35'
           : 'bg-red-50 text-red-750 dark:bg-red-950/20 dark:text-red-400 border border-red-200 dark:border-red-900/30'
       }`}>
         <span className={`w-1 h-1 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
@@ -120,7 +120,7 @@ export const CustomerProfile = () => {
       </div>
 
       {/* Profile Overview Banner */}
-      <div className="p-6 bg-white dark:bg-[#0e1712] border border-gray-150 dark:border-emerald-950/20 rounded-3xl shadow-sm flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
+      <div className="p-6 bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/20 rounded-3xl shadow-sm flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 text-xs">
           <div>
             <span className="font-bold text-gray-400 uppercase tracking-wider block mb-1">Company Account</span>
@@ -181,7 +181,7 @@ export const CustomerProfile = () => {
       </div>
 
       {/* Tab Panels */}
-      <div className="bg-white dark:bg-[#0e1712] border border-gray-150 dark:border-emerald-950/20 rounded-3xl p-6 shadow-sm min-h-[300px]">
+      <div className="bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/20 rounded-3xl p-6 shadow-sm min-h-[300px]">
         
         {/* Profile Tab */}
         {activeTab === 'profile' && (
@@ -226,7 +226,7 @@ export const CustomerProfile = () => {
               <h3 className="text-sm font-black text-emerald-600 uppercase tracking-wider">Account Information</h3>
               <div className="space-y-3 bg-gray-50 dark:bg-[#121c17] p-4 border border-gray-100 dark:border-emerald-950/30 rounded-2xl">
                 <div className="flex justify-between">
-                  <span className="text-gray-450 font-bold uppercase tracking-wider text-[10px]">Registered Date</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Registered Date</span>
                   <span className="font-semibold dark:text-white">{new Date(customer.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -247,7 +247,7 @@ export const CustomerProfile = () => {
                 </div>
                 <div className="p-4 bg-gray-50 dark:bg-[#121c17] border border-gray-100 dark:border-emerald-950/20 rounded-2xl">
                   <span className="text-gray-400 font-bold block uppercase tracking-wider text-[9px] mb-1">Device Fleet Limits</span>
-                  <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-450">{customer.devicesUsed || 0} / {customer.devicesAllowed || 5} Active</span>
+                  <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">{customer.devicesUsed || 0} / {customer.devicesAllowed || 5} Active</span>
                 </div>
                 <div className="p-4 bg-gray-50 dark:bg-[#121c17] border border-gray-100 dark:border-emerald-950/20 rounded-2xl">
                   <span className="text-gray-400 font-bold block uppercase tracking-wider text-[9px] mb-1">Contract Validity</span>
@@ -255,7 +255,7 @@ export const CustomerProfile = () => {
                 </div>
                 <div className="p-4 bg-gray-50 dark:bg-[#121c17] border border-gray-100 dark:border-emerald-950/20 rounded-2xl">
                   <span className="text-gray-400 font-bold block uppercase tracking-wider text-[9px] mb-1">Billing status</span>
-                  <span className="px-2 py-0.5 font-bold uppercase rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/20">{customer.paymentStatus || 'Paid'}</span>
+                  <span className="px-2 py-0.5 font-bold uppercase rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">{customer.paymentStatus || 'Paid'}</span>
                 </div>
               </div>
             </div>
@@ -282,7 +282,7 @@ export const CustomerProfile = () => {
               <h3 className="text-sm font-black text-emerald-600 uppercase tracking-wider">Installed Hardware Trackers ({devices?.length || 0})</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {devices?.map(dev => (
-                  <div key={dev._id} className="p-4 bg-gray-50 dark:bg-[#121c17] border border-gray-150 dark:border-emerald-950/20 rounded-2xl flex flex-col justify-between">
+                  <div key={dev._id} className="p-4 bg-gray-50 dark:bg-[#121c17] border border-gray-200 dark:border-emerald-950/20 rounded-2xl flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start">
                         <span className="font-extrabold text-gray-800 dark:text-white">Kit: {dev.deviceId}</span>
@@ -309,7 +309,7 @@ export const CustomerProfile = () => {
               <h3 className="text-sm font-black text-emerald-600 uppercase tracking-wider">Registered Assets ({vehicles?.length || 0})</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {vehicles?.map(veh => (
-                  <div key={veh._id} className="p-4 bg-gray-50 dark:bg-[#121c17] border border-gray-150 dark:border-emerald-950/20 rounded-2xl flex flex-col justify-between">
+                  <div key={veh._id} className="p-4 bg-gray-50 dark:bg-[#121c17] border border-gray-200 dark:border-emerald-950/20 rounded-2xl flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start">
                         <span className="font-extrabold text-gray-800 dark:text-white">{veh.name} ({veh.brand} &bull; {veh.model})</span>

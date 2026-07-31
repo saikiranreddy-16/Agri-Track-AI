@@ -6,7 +6,7 @@ import api from '../utils/api';
 import { 
   FaPlus, FaTh, FaList, FaTrash, FaPen, FaEye, FaSearch, 
   FaGasPump, FaBatteryThreeQuarters, FaCompass, FaLink, FaUserPlus,
-  FaClock, FaUserTie, FaToggleOn, FaPowerOff, FaTools
+  FaClock, FaUserTie, FaToggleOn, FaPowerOff, FaTools, FaSignal, FaMapMarkerAlt
 } from 'react-icons/fa';
 import { PATHS } from '../constants';
 import { useAuth } from '../context/AuthContext';
@@ -490,7 +490,7 @@ export const Machines = () => {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 mt-4 text-[11px] text-gray-500 dark:text-gray-400 border-b border-gray-150 dark:border-emerald-950/20 pb-3.5">
+                  <div className="grid grid-cols-2 gap-3 mt-4 text-[11px] text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-emerald-950/20 pb-3.5">
                     <div className="flex items-center gap-1.5">
                       <FaUserTie className="text-emerald-500 shrink-0" />
                       <span className="truncate">Driver: <strong className="text-gray-700 dark:text-gray-200">{getDriverName(machine.assignedDriverId)}</strong></span>
@@ -510,7 +510,7 @@ export const Machines = () => {
                   </div>
 
                   {/* Location Address Segment */}
-                  <div className="mt-3 text-[10px] text-gray-450 dark:text-emerald-500/80 font-bold flex items-start gap-1.5">
+                  <div className="mt-3 text-[10px] text-gray-400 dark:text-emerald-500/80 font-bold flex items-start gap-1.5">
                     <FaMapMarkerAlt className="text-red-500 shrink-0 mt-0.5" />
                     <span className="line-clamp-2 text-gray-600 dark:text-gray-300" title={machine.currentAddress}>
                       {machine.currentAddress || 'Cheruvupally Village, Madgulapally, Nalgonda, Telangana'}
@@ -632,7 +632,7 @@ export const Machines = () => {
                     required
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                     placeholder="e.g. Swaraj Max #2"
                   />
                 </div>
@@ -643,7 +643,7 @@ export const Machines = () => {
                     <select
                       value={formType}
                       onChange={(e) => handleVehicleTypeChange(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold"
                     >
                       {typesMetadata.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -654,7 +654,7 @@ export const Machines = () => {
                       value={formBrandId}
                       required
                       onChange={(e) => handleBrandChange(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold"
                     >
                       <option value="">Select Brand</option>
                       {brandsMetadata.filter(b => b.models.some(m => m.vehicleType === formType)).map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
@@ -670,7 +670,7 @@ export const Machines = () => {
                       required
                       disabled={!formBrandId}
                       onChange={(e) => handleModelChange(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold disabled:opacity-50"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold disabled:opacity-50"
                     >
                       <option value="">Select Model</option>
                       {formModels.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
@@ -683,7 +683,7 @@ export const Machines = () => {
                       required
                       disabled={!formModelId}
                       onChange={(e) => setFormHp(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold disabled:opacity-50"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none font-bold disabled:opacity-50"
                     >
                       <option value="">Select HP</option>
                       {formHpOptions.map(hp => <option key={hp} value={hp}>{hp}</option>)}
@@ -693,10 +693,10 @@ export const Machines = () => {
 
                 {/* Dynamic Series & Engine Configuration */}
                 {(formType === 'Tractor' || formType === 'Combine Harvester') && formModelId && (
-                  <div className="grid grid-cols-1 gap-3 bg-gray-50/50 dark:bg-emerald-955/5 p-3 rounded-2xl border border-gray-150 dark:border-emerald-955/20 text-xs">
+                  <div className="grid grid-cols-1 gap-3 bg-gray-50/50 dark:bg-emerald-950/5 p-3 rounded-2xl border border-gray-200 dark:border-emerald-900/20 text-xs">
                     {formType === 'Tractor' && (
                       <div>
-                        <label className="block font-bold text-gray-450 uppercase tracking-wider mb-1.5 font-bold">Series</label>
+                        <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Series</label>
                         <input
                           type="text"
                           readOnly
@@ -712,7 +712,7 @@ export const Machines = () => {
                           <select
                             value={formEngineType}
                             onChange={(e) => setFormEngineType(e.target.value)}
-                            className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold focus:outline-none"
+                            className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold focus:outline-none"
                           >
                             <option value="John Deere Engine">John Deere Engine</option>
                             <option value="Ashok Leyland Engine">Ashok Leyland Engine</option>
@@ -723,7 +723,7 @@ export const Machines = () => {
                             type="text"
                             readOnly
                             value="Factory Integrated Engine"
-                            className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-955/30 bg-gray-100 dark:bg-[#121c17] dark:text-gray-300 font-bold focus:outline-none"
+                            className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-100 dark:bg-[#121c17] dark:text-gray-300 font-bold focus:outline-none"
                           />
                         )}
                       </div>
@@ -732,7 +732,7 @@ export const Machines = () => {
                 )}
 
                 {/* Service Reminder Configuration Thresholds */}
-                <div className="bg-gray-50/50 dark:bg-emerald-955/5 p-3 rounded-2xl border border-gray-150 dark:border-emerald-955/20 text-xs space-y-2">
+                <div className="bg-gray-50/50 dark:bg-emerald-950/5 p-3 rounded-2xl border border-gray-200 dark:border-emerald-900/20 text-xs space-y-2">
                   <h4 className="font-extrabold text-emerald-600">Service Reminders Thresholds (Hours)</h4>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
@@ -742,7 +742,7 @@ export const Machines = () => {
                         required
                         value={formFirstServiceHours}
                         onChange={(e) => setFormFirstServiceHours(Number(e.target.value))}
-                        className="w-full p-2 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white"
+                        className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-white dark:bg-[#0c120f] dark:text-white"
                       />
                     </div>
                     <div>
@@ -752,7 +752,7 @@ export const Machines = () => {
                         required
                         value={formRegularServiceInterval}
                         onChange={(e) => setFormRegularServiceInterval(Number(e.target.value))}
-                        className="w-full p-2 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white"
+                        className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-white dark:bg-[#0c120f] dark:text-white"
                       />
                     </div>
                     <div>
@@ -761,7 +761,7 @@ export const Machines = () => {
                         type="number"
                         value={formLastServiceHours}
                         onChange={(e) => setFormLastServiceHours(Number(e.target.value))}
-                        className="w-full p-2 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white"
+                        className="w-full p-2 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-white dark:bg-[#0c120f] dark:text-white"
                       />
                     </div>
                   </div>
@@ -774,7 +774,7 @@ export const Machines = () => {
                       type="text"
                       value={formReg}
                       onChange={(e) => setFormReg(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white font-mono uppercase"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white font-mono uppercase"
                       placeholder="e.g. PB-10-CD-2034"
                     />
                   </div>
@@ -785,7 +785,7 @@ export const Machines = () => {
                   <select
                     value={formDriver}
                     onChange={(e) => setFormDriver(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/20 dark:text-white focus:outline-none"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                   >
                     <option value="">Unassigned</option>
                     {driversList.map(d => (
@@ -834,7 +834,7 @@ export const Machines = () => {
                     required
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                   />
                 </div>
                 
@@ -844,7 +844,7 @@ export const Machines = () => {
                     <select
                       value={formType}
                       onChange={(e) => handleVehicleTypeChange(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/5 focus:outline-none dark:text-white font-bold"
+                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/5 focus:outline-none dark:text-white font-bold"
                     >
                       {typesMetadata.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -855,7 +855,7 @@ export const Machines = () => {
                       value={formBrandId}
                       required
                       onChange={(e) => handleBrandChange(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/5 focus:outline-none dark:text-white font-bold"
+                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/5 focus:outline-none dark:text-white font-bold"
                     >
                       <option value="">Select Brand</option>
                       {brandsMetadata.filter(b => b.models.some(m => m.vehicleType === formType)).map(b => <option key={b._id} value={b._id}>{b.name}</option>)}
@@ -871,7 +871,7 @@ export const Machines = () => {
                       required
                       disabled={!formBrandId}
                       onChange={(e) => handleModelChange(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/5 focus:outline-none dark:text-white font-bold disabled:opacity-50"
+                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/5 focus:outline-none dark:text-white font-bold disabled:opacity-50"
                     >
                       <option value="">Select Model</option>
                       {formModels.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
@@ -884,7 +884,7 @@ export const Machines = () => {
                       required
                       disabled={!formModelId}
                       onChange={(e) => setFormHp(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-955/5 focus:outline-none dark:text-white font-bold disabled:opacity-50"
+                      className="w-full p-2.5 rounded-xl border border-gray-255 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/5 focus:outline-none dark:text-white font-bold disabled:opacity-50"
                     >
                       <option value="">Select HP</option>
                       {formHpOptions.map(hp => <option key={hp} value={hp}>{hp}</option>)}
@@ -894,10 +894,10 @@ export const Machines = () => {
 
                 {/* Dynamic Series & Engine Configuration */}
                 {(formType === 'Tractor' || formType === 'Combine Harvester') && formModelId && (
-                  <div className="grid grid-cols-1 gap-3 bg-gray-50/50 dark:bg-emerald-955/5 p-3 rounded-2xl border border-gray-150 dark:border-emerald-955/20 text-xs font-bold">
+                  <div className="grid grid-cols-1 gap-3 bg-gray-50/50 dark:bg-emerald-950/5 p-3 rounded-2xl border border-gray-200 dark:border-emerald-900/20 text-xs font-bold">
                     {formType === 'Tractor' && (
                       <div>
-                        <label className="block font-bold text-gray-450 uppercase tracking-wider mb-1.5 font-bold">Series</label>
+                        <label className="block font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-bold">Series</label>
                         <input
                           type="text"
                           readOnly
@@ -933,7 +933,7 @@ export const Machines = () => {
                 )}
 
                 {/* Service Reminder Configuration Thresholds */}
-                <div className="bg-gray-50/50 dark:bg-emerald-955/5 p-3 rounded-2xl border border-gray-150 dark:border-emerald-955/20 text-xs font-bold space-y-2">
+                <div className="bg-gray-50/50 dark:bg-emerald-950/5 p-3 rounded-2xl border border-gray-200 dark:border-emerald-900/20 text-xs font-bold space-y-2">
                   <h4 className="font-extrabold text-emerald-600">Service Reminders Thresholds (Hours)</h4>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
@@ -943,7 +943,7 @@ export const Machines = () => {
                         required
                         value={formFirstServiceHours}
                         onChange={(e) => setFormFirstServiceHours(Number(e.target.value))}
-                        className="w-full p-2 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold"
+                        className="w-full p-2 rounded-xl border border-gray-255 dark:border-emerald-900/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold"
                       />
                     </div>
                     <div>
@@ -953,7 +953,7 @@ export const Machines = () => {
                         required
                         value={formRegularServiceInterval}
                         onChange={(e) => setFormRegularServiceInterval(Number(e.target.value))}
-                        className="w-full p-2 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold"
+                        className="w-full p-2 rounded-xl border border-gray-255 dark:border-emerald-900/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold"
                       />
                     </div>
                     <div>
@@ -962,7 +962,7 @@ export const Machines = () => {
                         type="number"
                         value={formLastServiceHours}
                         onChange={(e) => setFormLastServiceHours(Number(e.target.value))}
-                        className="w-full p-2 rounded-xl border border-gray-255 dark:border-emerald-955/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold"
+                        className="w-full p-2 rounded-xl border border-gray-255 dark:border-emerald-900/30 bg-white dark:bg-[#0c120f] dark:text-white font-bold"
                       />
                     </div>
                   </div>
@@ -977,7 +977,7 @@ export const Machines = () => {
                       max="100"
                       value={formFuel}
                       onChange={(e) => setFormFuel(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                     />
                   </div>
                   <div>
@@ -985,7 +985,7 @@ export const Machines = () => {
                     <select
                       value={formStatus}
                       onChange={(e) => setFormStatus(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                     >
                       <option value="Working">Running</option>
                       <option value="Idle">Idle</option>
@@ -1003,7 +1003,7 @@ export const Machines = () => {
                       required
                       value={formReg}
                       onChange={(e) => setFormReg(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white font-mono"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white font-mono"
                     />
                   </div>
                 </div>
@@ -1013,7 +1013,7 @@ export const Machines = () => {
                   <select
                     value={formDriver}
                     onChange={(e) => setFormDriver(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                   >
                     <option value="">Unassigned</option>
                     {driversList.map(d => (

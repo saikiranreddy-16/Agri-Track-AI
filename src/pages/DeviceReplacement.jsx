@@ -191,7 +191,7 @@ export const DeviceReplacement = () => {
                 <select
                   value={selectedVehicleId}
                   onChange={(e) => handleVehicleChange(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold"
                 >
                   {machines.map((m) => (
                     <option key={m._id || m.id} value={m._id || m.id}>
@@ -208,7 +208,7 @@ export const DeviceReplacement = () => {
                   type="text"
                   readOnly
                   value={oldDeviceId}
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-100 dark:bg-emerald-955/10 text-gray-500 font-mono focus:outline-none"
+                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-100 dark:bg-emerald-950/10 text-gray-500 font-mono focus:outline-none"
                 />
               </div>
 
@@ -225,7 +225,7 @@ export const DeviceReplacement = () => {
                       setNewDeviceId(e.target.value);
                       setIsVerified(false);
                     }}
-                    className={`flex-1 p-2.5 rounded-xl border bg-gray-50 dark:bg-emerald-955/5 focus:bg-white dark:text-white focus:outline-none transition-all ${
+                    className={`flex-1 p-2.5 rounded-xl border bg-gray-50 dark:bg-emerald-950/5 focus:bg-white dark:text-white focus:outline-none transition-all ${
                       isVerified 
                         ? 'border-emerald-500 bg-emerald-500/5 focus:border-emerald-500' 
                         : 'border-gray-200 dark:border-emerald-950/30 focus:border-emerald-500'
@@ -253,7 +253,7 @@ export const DeviceReplacement = () => {
                   {isVerifying ? (
                     <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
                   ) : isVerified ? (
-                    <span className="flex items-center justify-center gap-1.5 text-emerald-600 dark:text-emerald-450">
+                    <span className="flex items-center justify-center gap-1.5 text-emerald-600 dark:text-emerald-400">
                       <FaCheckCircle /> Verified
                     </span>
                   ) : (
@@ -269,7 +269,7 @@ export const DeviceReplacement = () => {
               <select
                 value={replacementReason}
                 onChange={(e) => setReplacementReason(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-955/5 focus:bg-white focus:outline-none dark:text-white font-bold"
+                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-950/30 bg-gray-50 dark:bg-emerald-950/5 focus:bg-white focus:outline-none dark:text-white font-bold"
               >
                 <option value="Hardware Failure">Hardware Failure (Antenna/Power)</option>
                 <option value="Physical Damage">Physical Damage (Water/Accident)</option>
@@ -312,7 +312,7 @@ export const DeviceReplacement = () => {
         {/* Right Side: Vehicle Summary Info */}
         <div className="space-y-6">
           <div className="p-5 bg-white dark:bg-[#0e1712] border border-gray-155 dark:border-emerald-950/20 rounded-3xl shadow-sm text-xs space-y-4">
-            <h3 className="text-xs font-bold text-gray-450 uppercase tracking-wider flex items-center gap-1.5">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
               <FaTractor className="text-emerald-500" />
               Target Vehicle Details
             </h3>
@@ -343,7 +343,7 @@ export const DeviceReplacement = () => {
                 </div>
               </div>
             ) : (
-              <p className="text-gray-450 italic">No vehicle selected.</p>
+              <p className="text-gray-400 italic">No vehicle selected.</p>
             )}
           </div>
         </div>
@@ -358,7 +358,7 @@ export const DeviceReplacement = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-[#0c120f] p-6 rounded-3xl max-w-sm w-full space-y-4 border border-gray-250 dark:border-emerald-900/30 text-center"
+              className="bg-white dark:bg-[#0c120f] p-6 rounded-3xl max-w-sm w-full space-y-4 border border-gray-200 dark:border-emerald-900/30 text-center"
             >
               <div className="flex justify-between items-center border-b border-gray-100 dark:border-emerald-950/15 pb-2">
                 <span className="text-xs font-black dark:text-white uppercase tracking-wider">Scan Replacement QR Code</span>
@@ -386,7 +386,7 @@ export const DeviceReplacement = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-[#0c120f] border border-gray-250 dark:border-emerald-900/30 p-6 rounded-2xl w-full max-w-sm shadow-2xl space-y-4 text-xs"
+              className="bg-white dark:bg-[#0c120f] border border-gray-200 dark:border-emerald-900/30 p-6 rounded-2xl w-full max-w-sm shadow-2xl space-y-4 text-xs"
             >
               <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider text-red-500 flex items-center gap-1.5">
                 <FaHistory />

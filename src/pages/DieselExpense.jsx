@@ -239,7 +239,7 @@ export const DieselExpense = () => {
                   <select
                     value={formVehicleId}
                     onChange={(e) => setFormVehicleId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                   >
                     {machines.map((m) => (
                       <option key={m._id} value={m._id}>{m.name} ({m.registration})</option>
@@ -255,7 +255,7 @@ export const DieselExpense = () => {
                       required
                       value={formDate}
                       onChange={(e) => setFormDate(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
                     />
                   </div>
                   <div>
@@ -268,7 +268,7 @@ export const DieselExpense = () => {
                       value={formQuantity}
                       onChange={(e) => setFormQuantity(e.target.value)}
                       placeholder="e.g. 50"
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                     />
                   </div>
                 </div>
@@ -284,7 +284,7 @@ export const DieselExpense = () => {
                       value={formCostPerLitre}
                       onChange={(e) => setFormCostPerLitre(e.target.value)}
                       placeholder="e.g. 96.50"
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-bold"
                     />
                   </div>
                   <div>
@@ -302,7 +302,7 @@ export const DieselExpense = () => {
                     value={formPump}
                     onChange={(e) => setFormPump(e.target.value)}
                     placeholder="e.g. Indian Oil, Madgulapally"
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white"
                   />
                 </div>
 
@@ -313,7 +313,7 @@ export const DieselExpense = () => {
                     value={formBillPhoto}
                     onChange={(e) => setFormBillPhoto(e.target.value)}
                     placeholder="/uploads/bills/fuel_receipt_1.jpg"
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-mono text-[10px]"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white font-mono text-[10px]"
                   />
                 </div>
 

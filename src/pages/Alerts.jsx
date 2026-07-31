@@ -115,7 +115,7 @@ export const Alerts = () => {
           </div>
           <FaCheckCircle className="text-emerald-500 text-lg" />
         </div>
-        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-150 dark:border-emerald-950/10 rounded-2xl flex justify-between items-center">
+        <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-200 dark:border-emerald-950/10 rounded-2xl flex justify-between items-center">
           <div>
             <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Total logged</span>
             <span className="text-xl font-black dark:text-white block mt-0.5">{alerts.length}</span>
@@ -222,7 +222,7 @@ export const Alerts = () => {
                   </p>
                   
                   {/* Expanded Admin alert parameters */}
-                  <div className="mt-4 pt-3.5 border-t border-gray-150 dark:border-emerald-950/10 text-[11px] font-semibold text-gray-450 space-y-2">
+                  <div className="mt-4 pt-3.5 border-t border-gray-200 dark:border-emerald-950/10 text-[11px] font-semibold text-gray-400 space-y-2">
                     <div className="grid grid-cols-2 gap-2">
                       <span>Device ID: <strong className="text-gray-700 dark:text-gray-200">{alert.deviceId}</strong></span>
                       <span>Vehicle: <strong className="text-gray-700 dark:text-gray-200">{alert.machineId?.name || 'Unassigned'}</strong></span>

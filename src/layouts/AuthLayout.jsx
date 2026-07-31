@@ -69,7 +69,7 @@ export const AuthLayout = () => {
             <span className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-1.5">
               AgriTrack <span className="text-amber-500 font-extrabold">AI</span>
             </span>
-            <span className="text-[9px] uppercase tracking-widest text-emerald-450 font-bold opacity-80">
+            <span className="text-[9px] uppercase tracking-widest text-emerald-400 font-bold opacity-80">
               Smart Fleet Operations
             </span>
           </div>
@@ -107,7 +107,7 @@ export const AuthLayout = () => {
                 
                 <button
                   disabled
-                  className="w-full px-4 py-2 text-xs font-semibold text-emerald-450/40 flex items-center justify-between cursor-not-allowed select-none"
+                  className="w-full px-4 py-2 text-xs font-semibold text-emerald-400/40 flex items-center justify-between cursor-not-allowed select-none"
                 >
                   <span>తెలుగు</span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-bold uppercase tracking-wider scale-90">Soon</span>
@@ -115,7 +115,7 @@ export const AuthLayout = () => {
                 
                 <button
                   disabled
-                  className="w-full px-4 py-2 text-xs font-semibold text-emerald-450/40 flex items-center justify-between cursor-not-allowed select-none"
+                  className="w-full px-4 py-2 text-xs font-semibold text-emerald-400/40 flex items-center justify-between cursor-not-allowed select-none"
                 >
                   <span>हिन्दी</span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-bold uppercase tracking-wider scale-90">Soon</span>

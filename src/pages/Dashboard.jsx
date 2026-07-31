@@ -17,7 +17,59 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const { alerts, notifications } = useUIState();
 
-  const [weather] = useState({ temp: '28°C', condition: 'Sunny & Clear', humidity: '55%', location: 'Nalgonda, Telangana' });
+  const [machinesList, setMachinesList] = useState(mockMachines);
+  const [selectedVehicleId, setSelectedVehicleId] = useState('');
+  const [weather, setWeather] = useState({
+    temp: '28°C',
+    condition: 'Sunny & Clear',
+    humidity: '55%',
+    windSpeed: '12 km/h',
+    location: 'Nalgonda, Telangana',
+    isLive: false
+  });
+  const [weatherLoading, setWeatherLoading] = useState(false);
+
+  // Fetch vehicles list
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const res = await api.get('/machines?limit=100');
+        if (res.data && res.data.success && res.data.data.length > 0) {
+          setMachinesList(res.data.data);
+          setSelectedVehicleId(res.data.data[0]._id || res.data.data[0].id);
+        } else {
+          setSelectedVehicleId(mockMachines[0].id);
+        }
+      } catch (err) {
+        setSelectedVehicleId(mockMachines[0].id);
+      }
+    };
+    fetchVehicles();
+  }, []);
+
+  // Fetch live weather from backend whenever selected vehicle changes
+  useEffect(() => {
+    const fetchLiveWeather = async () => {
+      try {
+        setWeatherLoading(true);
+        const selectedMach = machinesList.find(m => (m._id || m.id) === selectedVehicleId) || machinesList[0];
+        const lat = selectedMach?.location?.lat || 16.985;
+        const lng = selectedMach?.location?.lng || 79.262;
+
+        const res = await api.get(`/weather?lat=${lat}&lng=${lng}&machineId=${selectedVehicleId}`);
+        if (res.data && res.data.success) {
+          setWeather(res.data.data);
+        }
+      } catch (err) {
+        console.warn('Backend weather fetch failed, using fallback:', err.message);
+      } finally {
+        setWeatherLoading(false);
+      }
+    };
+
+    fetchLiveWeather();
+  }, [selectedVehicleId, machinesList]);
+
   const [proactiveRecommendations] = useState([
     {
       id: 1,
@@ -38,25 +90,25 @@ export const Dashboard = () => {
     {
       id: 3,
       title: 'Weather Forecast Alert',
-      message: 'Light rain expected in Nalgonda farm sector around 03:30 PM today.',
+      message: 'Light rain expected in farm sector around 03:30 PM today.',
       type: 'Info',
       icon: FaCloudRain,
       color: 'text-sky-500 bg-sky-50 dark:bg-sky-950/30 border-sky-200 dark:border-sky-900/40',
     },
   ]);
 
-  const isCompanyAdmin = user?.role === 'Company Admin';
+  const isCompanyAdmin = ['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin'].includes(user?.role);
 
   useEffect(() => {
     if (isCompanyAdmin) {
-      navigate('/fleet');
+      navigate('/fleet', { replace: true });
     }
   }, [isCompanyAdmin, navigate]);
 
-  const totalVehicles = mockMachines.length;
-  const runningVehicles = mockMachines.filter((m) => m.status === 'Working').length;
-  const idleVehicles = mockMachines.filter((m) => m.status === 'Idle').length;
-  const offlineVehicles = mockMachines.filter((m) => m.status === 'Offline').length;
+  const totalVehicles = machinesList.length;
+  const runningVehicles = machinesList.filter((m) => m.status === 'Working' || m.status === 'Active').length;
+  const idleVehicles = machinesList.filter((m) => m.status === 'Idle').length;
+  const offlineVehicles = machinesList.filter((m) => m.status === 'Offline').length;
 
   const quickActions = [
     { name: 'My Vehicles', path: PATHS.MACHINES, icon: FaTractor, bgClass: 'bg-emerald-600' },
@@ -85,12 +137,34 @@ export const Dashboard = () => {
         </div>
 
         {/* Live Weather Widget */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center gap-4 shrink-0">
-          <FaSun className="text-3xl text-yellow-300 animate-spin-slow" />
-          <div className="text-xs">
-            <div className="text-lg font-black">{weather.temp}</div>
-            <div className="font-semibold text-emerald-100">{weather.condition}</div>
-            <div className="text-[10px] opacity-75">{weather.location}</div>
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3">
+            <FaSun className="text-3xl text-yellow-300 animate-spin-slow" />
+            <div className="text-xs">
+              <div className="text-lg font-black flex items-center gap-2">
+                {weather.temp}
+                {weatherLoading && <span className="text-[10px] text-emerald-200 animate-pulse">(Updating...)</span>}
+              </div>
+              <div className="font-semibold text-emerald-100">{weather.condition}</div>
+              <div className="text-[10px] opacity-75">{weather.location}</div>
+            </div>
+          </div>
+
+          <div className="sm:border-l sm:border-white/20 sm:pl-3 pt-2 sm:pt-0">
+            <label className="block text-[9px] font-bold uppercase tracking-wider text-emerald-200 mb-1">
+              Vehicle Location
+            </label>
+            <select
+              value={selectedVehicleId}
+              onChange={(e) => setSelectedVehicleId(e.target.value)}
+              className="bg-emerald-900/80 text-white text-[11px] font-bold py-1 px-2.5 rounded-xl border border-white/20 focus:outline-none cursor-pointer"
+            >
+              {machinesList.map(m => (
+                <option key={m._id || m.id} value={m._id || m.id}>
+                  🚜 {m.name} ({m.brand || 'Asset'})
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

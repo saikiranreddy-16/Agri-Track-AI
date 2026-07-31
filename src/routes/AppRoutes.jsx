@@ -10,6 +10,10 @@ import { LiveTracking } from '../pages/LiveTracking';
 import { GPSHistory } from '../pages/GPSHistory';
 import { Machines } from '../pages/Machines';
 import { MachineDetail } from '../pages/MachineDetail';
+import { Drivers } from '../pages/Drivers';
+import { DriverDetail } from '../pages/DriverDetail';
+import { Fields } from '../pages/Fields';
+import { Jobs } from '../pages/Jobs';
 import { Reports } from '../pages/Reports';
 import { Alerts } from '../pages/Alerts';
 import { Maintenance } from '../pages/Maintenance';
@@ -50,6 +54,8 @@ const RoleProtectedRoute = ({ allowedRoles, children }) => {
 };
 
 export const AppRoutes = () => {
+  const allRoles = ['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin', 'Farm Admin'];
+
   return (
     <Routes>
       {/* Public Auth Layout pages */}
@@ -64,7 +70,7 @@ export const AppRoutes = () => {
           <DashboardLayout />
         </RoleProtectedRoute>
       }>
-        {/* Shared / Accessible by both */}
+        {/* Shared Routes */}
         <Route path={PATHS.DASHBOARD} element={<Dashboard />} />
         <Route path={PATHS.TRACKING} element={<LiveTracking />} />
         <Route path={PATHS.REPORTS} element={<Reports />} />
@@ -80,6 +86,15 @@ export const AppRoutes = () => {
         <Route path={PATHS.TRIP_REPLAY} element={<TripReplay />} />
         <Route path={PATHS.MACHINE_DASHBOARD} element={<MachineDashboard />} />
 
+        {/* Fleet & Resource Operations */}
+        <Route path={PATHS.MACHINES} element={<Machines />} />
+        <Route path={PATHS.MACHINE_DETAIL} element={<MachineDetail />} />
+        <Route path={PATHS.GPS_HISTORY} element={<GPSHistory />} />
+        <Route path={PATHS.DRIVERS} element={<Drivers />} />
+        <Route path={PATHS.DRIVER_DETAIL} element={<DriverDetail />} />
+        <Route path={PATHS.FIELDS} element={<Fields />} />
+        <Route path={PATHS.JOBS} element={<Jobs />} />
+
         {/* Admin Hierarchy Routes */}
         <Route path={PATHS.AI_ADMINISTRATION} element={
           <RoleProtectedRoute allowedRoles={['Grand Master Admin', 'Master Admin', 'Company Admin']}>
@@ -87,7 +102,7 @@ export const AppRoutes = () => {
           </RoleProtectedRoute>
         } />
         <Route path={PATHS.FLEET_OVERVIEW} element={
-          <RoleProtectedRoute allowedRoles={['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin']}>
+          <RoleProtectedRoute allowedRoles={allRoles}>
             <FleetOverview />
           </RoleProtectedRoute>
         } />
@@ -109,23 +124,6 @@ export const AppRoutes = () => {
         <Route path={PATHS.DEVICE_REPLACEMENT} element={
           <RoleProtectedRoute allowedRoles={['Grand Master Admin', 'Master Admin', 'State Admin', 'Company Admin']}>
             <DeviceReplacement />
-          </RoleProtectedRoute>
-        } />
-
-        {/* Farm Admin Only */}
-        <Route path={PATHS.MACHINES} element={
-          <RoleProtectedRoute allowedRoles={['Farm Admin']}>
-            <Machines />
-          </RoleProtectedRoute>
-        } />
-        <Route path={PATHS.MACHINE_DETAIL} element={
-          <RoleProtectedRoute allowedRoles={['Farm Admin']}>
-            <MachineDetail />
-          </RoleProtectedRoute>
-        } />
-        <Route path={PATHS.GPS_HISTORY} element={
-          <RoleProtectedRoute allowedRoles={['Farm Admin']}>
-            <GPSHistory />
           </RoleProtectedRoute>
         } />
       </Route>

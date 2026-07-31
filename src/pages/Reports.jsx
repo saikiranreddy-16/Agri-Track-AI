@@ -158,28 +158,28 @@ export const Reports = () => {
         <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl flex items-center gap-3">
           <div className="p-3 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-orange-500"><FaGasPump className="text-lg" /></div>
           <div>
-            <span className="text-[10px] text-gray-450 uppercase font-bold tracking-wider">Total Fuel</span>
+            <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Total Fuel</span>
             <span className="text-lg font-black dark:text-white block mt-0.5">{totalFuel} L</span>
           </div>
         </div>
         <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl flex items-center gap-3">
           <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500"><FaMap className="text-lg" /></div>
           <div>
-            <span className="text-[10px] text-gray-450 uppercase font-bold tracking-wider">Area Covered</span>
+            <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Area Covered</span>
             <span className="text-lg font-black dark:text-white block mt-0.5">{totalArea} ha</span>
           </div>
         </div>
         <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl flex items-center gap-3">
           <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/20 text-blue-500"><FaRoute className="text-lg" /></div>
           <div>
-            <span className="text-[10px] text-gray-450 uppercase font-bold tracking-wider">Distance Traced</span>
+            <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Distance Traced</span>
             <span className="text-lg font-black dark:text-white block mt-0.5">{totalDistance} km</span>
           </div>
         </div>
         <div className="p-4 bg-white dark:bg-[#0e1712] border border-gray-100 dark:border-emerald-950/30 rounded-2xl flex items-center gap-3">
           <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-500"><FaClock className="text-lg" /></div>
           <div>
-            <span className="text-[10px] text-gray-450 uppercase font-bold tracking-wider">Active Time</span>
+            <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Active Time</span>
             <span className="text-lg font-black dark:text-white block mt-0.5">{totalHours} hrs</span>
           </div>
         </div>

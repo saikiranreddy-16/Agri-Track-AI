@@ -80,7 +80,7 @@ export const Maintenance = () => {
             {upcoming.map((task) => (
               <div 
                 key={task.id} 
-                className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-150 dark:border-emerald-950/20 rounded-xl flex justify-between items-start text-xs font-semibold"
+                className="p-4 bg-gray-50 dark:bg-emerald-950/10 border border-gray-200 dark:border-emerald-950/20 rounded-xl flex justify-between items-start text-xs font-semibold"
               >
                 <div className="space-y-1.5 flex-1 min-w-0 pr-4">
                   <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export const Maintenance = () => {
             {history.map((record) => (
               <div 
                 key={record.id} 
-                className="p-4 bg-gray-50/50 dark:bg-[#080d0a] border border-gray-150 dark:border-emerald-950/20 rounded-xl text-xs space-y-2.5 font-semibold"
+                className="p-4 bg-gray-50/50 dark:bg-[#080d0a] border border-gray-200 dark:border-emerald-950/20 rounded-xl text-xs space-y-2.5 font-semibold"
               >
                 <div className="flex justify-between items-start">
                   <div>
@@ -173,7 +173,7 @@ export const Maintenance = () => {
                       required
                       value={formCost}
                       onChange={(e) => setFormCost(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                       placeholder="e.g. 3500"
                     />
                   </div>
@@ -184,7 +184,7 @@ export const Maintenance = () => {
                       required
                       value={formMech}
                       onChange={(e) => setFormMech(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                     />
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export const Maintenance = () => {
                     rows="3"
                     value={formNotes}
                     onChange={(e) => setFormNotes(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white resize-none"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white resize-none"
                     placeholder="e.g. Replaced filter seals, checked hydraulic flow valves, completed nominal safety testing."
                   />
                 </div>

@@ -258,7 +258,7 @@ export const Drivers = () => {
                     required
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                     placeholder="e.g. Thomas Mueller"
                   />
                 </div>
@@ -270,7 +270,7 @@ export const Drivers = () => {
                     required
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                     placeholder="e.g. +1 (555) 123-4567"
                   />
                 </div>
@@ -282,7 +282,7 @@ export const Drivers = () => {
                       type="text"
                       value={formExp}
                       onChange={(e) => setFormExp(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                       placeholder="e.g. 5 Years"
                     />
                   </div>
@@ -291,7 +291,7 @@ export const Drivers = () => {
                     <select
                       value={formStatus}
                       onChange={(e) => setFormStatus(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                     >
                       <option value="Active">Active</option>
                       <option value="Off-duty">Off-duty</option>
@@ -304,7 +304,7 @@ export const Drivers = () => {
                   <select
                     value={formMachine}
                     onChange={(e) => setFormMachine(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                   >
                     <option value="">Unassigned</option>
                     {mockMachines.map(m => (
@@ -353,7 +353,7 @@ export const Drivers = () => {
                     required
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                   />
                 </div>
                 
@@ -364,7 +364,7 @@ export const Drivers = () => {
                     required
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                   />
                 </div>
 
@@ -375,7 +375,7 @@ export const Drivers = () => {
                       type="text"
                       value={formExp}
                       onChange={(e) => setFormExp(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none focus:bg-white"
                     />
                   </div>
                   <div>
@@ -383,7 +383,7 @@ export const Drivers = () => {
                     <select
                       value={formStatus}
                       onChange={(e) => setFormStatus(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
+                      className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                     >
                       <option value="Active">Active</option>
                       <option value="Off-duty">Off-duty</option>
@@ -396,7 +396,7 @@ export const Drivers = () => {
                   <select
                     value={formMachine}
                     onChange={(e) => setFormMachine(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-250 dark:border-emerald-955/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
+                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-emerald-900/30 bg-gray-50 dark:bg-emerald-950/20 dark:text-white focus:outline-none"
                   >
                     <option value="">Unassigned</option>
                     {mockMachines.map(m => (
