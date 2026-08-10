@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">AgriTrack AI</string>
+    <string name="login_title">AgriTrack AI</string>
+    <string name="login_subtitle">Smart Agriculture &amp; Fleet Portal</string>
+    <string name="customer_login">Farm Customer</string>
+    <string name="admin_login">Company Admin</string>
+    <string name="phone_label">Phone Number</string>
+    <string name="phone_placeholder">e.g. 9876543210</string>
+    <string name="pin_label">PIN / Password</string>
+    <string name="pin_placeholder">Enter PIN or Password</string>
+    <string name="admin_email_label">Admin Email</string>
+    <string name="admin_email_placeholder">admin@agritrack.in</string>
+    <string name="password_label">Password</string>
+    <string name="password_placeholder">Enter Admin Password</string>
+    <string name="login_button_customer">FARM CUSTOMER LOGIN</string>
+    <string name="login_button_admin">COMPANY ADMIN LOGIN</string>
+</resources>

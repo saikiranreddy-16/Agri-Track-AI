@@ -1,0 +1,26 @@
+# Backend
+backend/node_modules/
+backend/.env
+backend/.env.development
+backend/.env.production
+backend/.env.staging
+
+# Backend generated/runtime files
+backend/logs/
+backend/uploads/
+
+# Android
+android/.gradle/
+android/.idea/
+android/.artifacts/
+android/local.properties
+android/**/build/
+
+# General
+*.log
+.DS_Store
+Thumbs.db
+
+# Original local backup folders
+Agri_Track_Android/
+Agri_track_AI-backend-master/
