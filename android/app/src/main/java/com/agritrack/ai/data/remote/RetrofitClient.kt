@@ -1,12 +1,15 @@
 package com.agritrack.ai.data.remote
 
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL = "https://agri-track-ai-backend.onrender.com/api/v1/"
+    // For Physical Phone connected to PC Mobile Hotspot, use host PC's hotspot IP (192.168.137.1)
+    // For Android Studio Emulator, use http://10.0.2.2:5000/api/v1/
+    private const val BASE_URL = "http://192.168.137.1:5000/api/v1/"
 
     private var authToken: String? = null
 
@@ -18,7 +21,7 @@ object RetrofitClient {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    private val authInterceptor = { chain: okhttp3.Interceptor.Chain ->
+    private val authInterceptor = Interceptor { chain ->
         val request = chain.request().newBuilder()
         authToken?.let {
             request.addHeader("Authorization", "Bearer $it")

@@ -10,7 +10,7 @@ const rateLimitStore = new Map();
 export const authRateLimiter = (options = {}) => {
   const { 
     windowMs = 15 * 60 * 1000, 
-    max = 5, 
+    max = 100, 
     message = 'Too many requests from this IP, please try again after 15 minutes.' 
   } = options;
   

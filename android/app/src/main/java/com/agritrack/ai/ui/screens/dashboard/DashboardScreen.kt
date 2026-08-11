@@ -1,6 +1,5 @@
 package com.agritrack.ai.ui.screens.dashboard
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,18 +26,75 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.agritrack.ai.ui.viewmodel.DashboardState
 import com.agritrack.ai.ui.viewmodel.DashboardViewModel
 
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.*
+import java.util.Locale
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel = viewModel(),
-    authToken: String,
+    userRole: String? = null,
     onNavigateToMachine: (String) -> Unit = {},
-    onVoiceAssistClick: () -> Unit = {}
+    onLogout: () -> Unit = {},
 ) {
     val state = viewModel.state
+    var showNotificationsSheet by remember { mutableStateOf(value = false) }
+    var showVoiceSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchDashboardData()
+    }
+
+    if (showNotificationsSheet) {
+        AlertDialog(
+            onDismissRequest = { showNotificationsSheet = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Notifications, contentDescription = null, tint = AgroGreenPrimary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Live Fleet Alerts", fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("• Mahindra Yuvo: Low Fuel Alert (15%)", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text("• John Deere 5042D: Scheduled Service in 50 Hours", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text("• System Notice: Telemetry sync active on port 5000", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showNotificationsSheet = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    if (showVoiceSheet) {
+        AlertDialog(
+            onDismissRequest = { showVoiceSheet = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Mic, contentDescription = null, tint = AgroAmberAccent)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("AI Voice Assistant", fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Default.GraphicEq, contentDescription = null, modifier = Modifier.size(48.dp), tint = AgroGreenPrimary)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Listening for farm queries...", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Try: 'What is my total fleet profit today?'", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showVoiceSheet = false }) {
+                    Text("Done")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -46,16 +102,29 @@ fun DashboardScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("AgriTrack AI", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                        Text("Commercial Farm Fleet Operations", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = if (userRole != null && (userRole != "Farm Admin")) "AgriTrack AI - Enterprise Admin" else "AgriTrack AI",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            maxLines = 1
+                        )
+                        Text(
+                            text = if (userRole != null && (userRole != "Farm Admin")) "Company Executive Fleet Portal" else "Commercial Farm Operations",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
                     }
                 },
                 actions = {
-                    IconButton(onClick = onVoiceAssistClick) {
+                    IconButton(onClick = { showVoiceSheet = true }) {
                         Icon(Icons.Default.Mic, contentDescription = "Voice Assistant", tint = AgroAmberAccent)
                     }
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = { showNotificationsSheet = true }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Notifications")
+                    }
+                    IconButton(onClick = onLogout) {
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout", tint = MaterialTheme.colorScheme.error)
                     }
                 }
             )
@@ -127,7 +196,7 @@ fun DashboardScreen(
                             Column(modifier = Modifier.padding(20.dp)) {
                                 Text("Today's Net Profit", color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
                                 Text(
-                                    text = "₹${String.format("%,.0f", metrics.netProfitToday)}",
+                                    text = "₹${String.format(Locale.getDefault(), "%,.0f", metrics.netProfitToday)}",
                                     color = Color.White,
                                     fontSize = 28.sp,
                                     fontWeight = FontWeight.Bold
@@ -139,11 +208,11 @@ fun DashboardScreen(
                                 ) {
                                     Column {
                                         Text("Income Today", color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp)
-                                        Text("₹${String.format("%,.0f", metrics.totalIncomeToday)}", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                                        Text("₹${String.format(Locale.getDefault(), "%,.0f", metrics.totalIncomeToday)}", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                                     }
                                     Column {
                                         Text("Expenses Today", color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp)
-                                        Text("₹${String.format("%,.0f", metrics.totalExpenseToday)}", color = AgroAmberAccent, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                                        Text("₹${String.format(Locale.getDefault(), "%,.0f", metrics.totalExpenseToday)}", color = AgroAmberAccent, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                                     }
                                     Column {
                                         Text("Active Fleet", color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp)
@@ -154,20 +223,9 @@ fun DashboardScreen(
                         }
                     }
 
-                    // Fleet Overview Section Title
+                    // Fleet Telemetry & Operating Hours Overview
                     item {
-                        Text(
-                            text = "Live Vehicle Digital Dashboards",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-                        )
-                    }
-
-                    // Machine Dashboard Cards
-                    items(machinesList) { machine ->
                         Card(
-                            onClick = { onNavigateToMachine(machine.displayId) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp),
@@ -180,58 +238,94 @@ fun DashboardScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Column {
-                                        Text(machine.safeName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                        Text(machine.safeModel, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
-                                    AssistChip(
-                                        onClick = {},
-                                        label = { Text(machine.safeStatus, fontSize = 11.sp) },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = if (machine.safeStatus == "Active" || machine.safeStatus == "Working") Icons.Default.CheckCircle else Icons.Default.Pause,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                        }
-                                    )
+                                    Text("Fleet Operating Metrics", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Icon(Icons.Default.Speed, contentDescription = null, tint = AgroGreenPrimary)
                                 }
-
                                 Spacer(modifier = Modifier.height(12.dp))
-
-                                // Visual Gauges Row
-                                Row(modifier = Modifier.fillMaxWidth()) {
-                                    VehicleGaugeWidget(
-                                        title = "Fuel",
-                                        valueText = "${machine.safeFuel}%",
-                                        percentValue = machine.safeFuel / 100f,
-                                        gaugeColor = if (machine.safeFuel < 25) AgroRedAlert else AgroGreenPrimary,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    VehicleGaugeWidget(
-                                        title = "Health",
-                                        valueText = "${machine.safeHealth}%",
-                                        percentValue = machine.safeHealth / 100f,
-                                        gaugeColor = AgroGreenVariant,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    VehicleGaugeWidget(
-                                        title = "Temp",
-                                        valueText = "${machine.safeTemp}°C",
-                                        percentValue = machine.safeTemp / 120f,
-                                        gaugeColor = if (machine.safeTemp > 95) AgroRedAlert else AgroAmberAccent,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(8.dp))
+                                val totalFleetHours = machinesList.sumOf { it.hoursOperated ?: 0.0 }
+                                val avgSpeed = if (machinesList.isNotEmpty()) machinesList.map { it.safeSpeed }.average() else 0.0
+                                val avgTemp = if (machinesList.isNotEmpty()) machinesList.map { it.safeTemp }.average() else 0.0
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("Driver: ${machine.assignedDriverName ?: "Unassigned"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    Text("Speed: ${machine.safeSpeed} km/h", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                    Column {
+                                        Text("Total Operating Hours", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text("${String.format(Locale.getDefault(), "%.1f", totalFleetHours)} hrs", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AgroGreenPrimary)
+                                    }
+                                    Column {
+                                        Text("Avg Fleet Speed", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text("${String.format(Locale.getDefault(), "%.1f", avgSpeed)} km/h", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    }
+                                    Column {
+                                        Text("Avg Engine Temp", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text("${String.format(Locale.getDefault(), "%.1f", avgTemp)}°C", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AgroAmberAccent)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Live Fleet Quick Status Summary (Replaces detailed machine gauge list)
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Fleet Status Summary", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = AgroGreenPrimary.copy(alpha = 0.15f)
+                                    ) {
+                                        Text(
+                                            text = "${machinesList.count { it.safeStatus == "Working" || it.safeStatus == "Active" }} Working / ${machinesList.count { it.safeStatus == "Offline" }} Offline",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AgroGreenPrimary,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                                machinesList.take(3).forEach { machine ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                Icons.Default.Agriculture,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                                tint = AgroGreenPrimary
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Column {
+                                                Text(machine.safeName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                                Text("${machine.safeFuel}% Fuel • ${machine.hoursOperated} hrs", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            }
+                                        }
+                                        Text(
+                                            text = "${machine.safeTemp}°C",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (machine.safeTemp > 90) AgroRedAlert else AgroAmberAccent
+                                        )
+                                    }
+                                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                                 }
                             }
                         }

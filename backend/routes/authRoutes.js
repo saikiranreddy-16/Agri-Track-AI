@@ -19,11 +19,11 @@ import { authRateLimiter } from '../middleware/rateLimiter.js';
 const router = express.Router();
 
 router.post('/register', registerValidator, registerUser);
-router.post('/login', authRateLimiter({ max: 5 }), loginValidator, loginUser);
+router.post('/login', authRateLimiter({ max: 100 }), loginValidator, loginUser);
 router.post('/logout', protect, logoutUser);
 router.get('/me', protect, getUserProfile);
 router.get('/login-history', protect, getLoginHistory);
-router.put('/change-pin', protect, authRateLimiter({ max: 5 }), changePINValidator, changePIN);
+router.put('/change-pin', protect, authRateLimiter({ max: 100 }), changePINValidator, changePIN);
 router.delete('/trusted-devices/:deviceId', protect, removeTrustedDevice);
 
 export default router;

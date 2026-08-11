@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.AgriTrack" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.AgriTrack" parent="android:Theme.Material.Light.NoActionBar">
         <!-- Customize your theme here. -->
     </style>
 </resources>

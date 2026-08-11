@@ -1,7 +1,6 @@
 package com.agritrack.ai.ui.screens.auth
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,6 +30,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.agritrack.ai.ui.viewmodel.LoginState
 import com.agritrack.ai.ui.viewmodel.LoginViewModel
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
+
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.material.icons.filled.Agriculture
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.Eco
+
 enum class LoginTab {
     CUSTOMER, ADMIN
 }
@@ -39,7 +51,7 @@ enum class LoginTab {
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    onLoginSuccess: (String) -> Unit
+    onLoginSuccess: (String, String?) -> Unit,
 ) {
     var selectedTab by remember { mutableStateOf(LoginTab.CUSTOMER) }
     
@@ -51,20 +63,60 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    // Password Visibility Toggle
+    var isPasswordVisible by remember { mutableStateOf(value = false) }
+
     val state = viewModel.state
 
     LaunchedEffect(state) {
         if (state is LoginState.Success) {
-            onLoginSuccess(state.token)
+            onLoginSuccess(state.token, state.role)
         }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF071B0F),
+                        Color(0xFF0F321B),
+                        Color(0xFF1B492B)
+                    )
+                )
+            )
+            .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Subtle Agriculture Graphic Overlays
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 28.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Agriculture,
+                contentDescription = null,
+                tint = AgroAmberAccent.copy(alpha = 0.85f),
+                modifier = Modifier.size(38.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(horizontalAlignment = Alignment.Start) {
+                Text(
+                    text = "AgriTrack AI",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "Smart Agriculture Telemetry",
+                    fontSize = 11.sp,
+                    color = AgroAmberAccent
+                )
+            }
+        }
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
@@ -74,20 +126,24 @@ fun LoginScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Header Title
                 Text(
                     text = "AgriTrack AI",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
-                    color = AgroGreenPrimary
+                    fontSize = 26.sp,
+                    color = AgroGreenPrimary,
+                    maxLines = 1
                 )
                 Text(
                     text = "Smart Agriculture & Fleet Portal",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -103,9 +159,15 @@ fun LoginScreen(
                             viewModel.resetError()
                         },
                         shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                        icon = { Icon(Icons.Default.Person, contentDescription = null) }
+                        icon = { Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(16.dp)) }
                     ) {
-                        Text("Farm Customer", fontWeight = FontWeight.SemiBold)
+                        Text(
+                            text = "Farm Customer",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
 
                     SegmentedButton(
@@ -115,13 +177,19 @@ fun LoginScreen(
                             viewModel.resetError()
                         },
                         shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                        icon = { Icon(Icons.Default.AdminPanelSettings, contentDescription = null) }
+                        icon = { Icon(Icons.Default.AdminPanelSettings, contentDescription = null, modifier = Modifier.size(16.dp)) }
                     ) {
-                        Text("Company Admin", fontWeight = FontWeight.SemiBold)
+                        Text(
+                            text = "Company Admin",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Form Input Fields
                 if (selectedTab == LoginTab.CUSTOMER) {
@@ -144,7 +212,15 @@ fun LoginScreen(
                         label = { Text("PIN / Password") },
                         placeholder = { Text("Enter PIN or Password") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                        visualTransformation = PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                                Icon(
+                                    imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = if (isPasswordVisible) "Hide password" else "Show password"
+                                )
+                            }
+                        },
+                        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -169,7 +245,15 @@ fun LoginScreen(
                         label = { Text("Password") },
                         placeholder = { Text("Enter Admin Password") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                        visualTransformation = PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
+                                Icon(
+                                    imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = if (isPasswordVisible) "Hide password" else "Show password"
+                                )
+                            }
+                        },
+                        visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -196,10 +280,11 @@ fun LoginScreen(
                     onClick = {
                         val req = if (selectedTab == LoginTab.CUSTOMER) {
                             if (phone.isBlank() || pin.isBlank()) {
-                                // Handled locally or in VM
                                 return@Button
                             }
-                            LoginRequest(phone = phone.trim(), password = pin.trim())
+                            val cleanPhone = phone.trim()
+                            val phoneWithCountryCode = if (cleanPhone.startsWith("+")) cleanPhone else "+91$cleanPhone"
+                            LoginRequest(phone = phoneWithCountryCode, password = pin.trim())
                         } else {
                             if (email.isBlank() || password.isBlank()) {
                                 return@Button

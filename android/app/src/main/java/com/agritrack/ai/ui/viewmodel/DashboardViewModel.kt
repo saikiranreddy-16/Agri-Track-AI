@@ -23,17 +23,17 @@ class DashboardViewModel : ViewModel() {
     fun fetchDashboardData() {
         state = DashboardState.Loading
         viewModelScope.launch {
-            try {
+            state = try {
                 val response = RetrofitClient.instance.getMachines()
-                if (response.isSuccessful && response.body()?.success == true) {
+                if (response.isSuccessful && (response.body()?.success == true)) {
                     val machines = response.body()?.data ?: emptyList()
                     val metrics = calculateMetrics(machines)
-                    state = DashboardState.Success(machines, metrics)
+                    DashboardState.Success(machines, metrics)
                 } else {
-                    state = DashboardState.Error("Failed to fetch machines: ${response.code()}")
+                    DashboardState.Error("Failed to fetch machines: ${response.code()}")
                 }
             } catch (e: Exception) {
-                state = DashboardState.Error(e.localizedMessage ?: "Connectivity error")
+                DashboardState.Error(e.localizedMessage ?: "Connectivity error")
             }
         }
     }
@@ -41,12 +41,12 @@ class DashboardViewModel : ViewModel() {
     private fun calculateMetrics(machines: List<Machine>): SummaryMetrics {
         return SummaryMetrics(
             totalFleet = machines.size,
-            activeMachines = machines.count { it.safeStatus == "Active" || it.safeStatus == "Working" },
+            activeMachines = machines.count { (it.safeStatus == "Active") || (it.safeStatus == "Working") },
             idleMachines = machines.count { it.safeStatus == "Idle" },
             maintenanceMachines = machines.count { it.safeStatus == "Maintenance" },
             totalIncomeToday = machines.sumOf { it.safeIncome },
             totalExpenseToday = machines.sumOf { it.safeExpense },
-            netProfitToday = machines.sumOf { it.safeIncome } - machines.sumOf { it.safeExpense }
+            netProfitToday = machines.sumOf { it.safeIncome } - machines.sumOf { it.safeExpense },
         )
     }
 }

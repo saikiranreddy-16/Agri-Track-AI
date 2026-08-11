@@ -51,7 +51,7 @@ export const loginUser = async (req, res, next) => {
   const deviceDisplayName = phoneName || `${browser} on ${os}`;
 
   try {
-    // 1. Company Admin Login (uses Email)
+    // 1. Company / System Admin Login (uses Email)
     if (email) {
       const user = await User.findOne({ email });
       const passwordMatch = user && (await user.matchPassword(password));
@@ -67,12 +67,14 @@ export const loginUser = async (req, res, next) => {
         success: !!(user && passwordMatch),
       });
 
-      if (user && user.role === 'Company Admin' && passwordMatch) {
+      const isAdminRole = user && ['Company Admin', 'Grand Master Admin', 'Master Admin', 'State Admin'].includes(user.role);
+
+      if (user && isAdminRole && passwordMatch) {
         const token = generateToken(res, user._id);
         
-        await logActivity(user._id, user.name, 'User Logged In', `Company Admin logged in from IP ${ip}`, req);
+        await logActivity(user._id, user.name, 'User Logged In', `${user.role} logged in from IP ${ip}`, req);
 
-        return successResponse(res, 200, 'Company Admin login successful', {
+        return successResponse(res, 200, 'Admin login successful', {
           user: {
             _id: user._id,
             name: user.name,
@@ -93,7 +95,20 @@ export const loginUser = async (req, res, next) => {
 
     // 2. Farm Admin Login (uses Mobile Number/Phone)
     if (phone) {
-      const user = await User.findOne({ phone });
+      const formattedPhone = phone.trim();
+      const rawDigits = formattedPhone.replace(/\D/g, '');
+      const last10Digits = rawDigits.slice(-10);
+
+      const user = await User.findOne({
+        $or: [
+          { phone: formattedPhone },
+          { phone: `+91${last10Digits}` },
+          { phone: last10Digits },
+          { mobile: formattedPhone },
+          { mobile: `+91${last10Digits}` },
+          { mobile: last10Digits }
+        ]
+      });
 
       if (!user || !(await user.matchPassword(password))) {
         await LoginHistory.create({
@@ -148,29 +163,19 @@ export const loginUser = async (req, res, next) => {
           }
         }
 
-        // Enforce max 3 trusted devices limit
+        // Manage trusted devices limit (max 3) - auto-prune oldest if limit reached
         const activeTrustedCount = user.trustedDevices.filter(d => d.trustedStatus === 'Trusted').length;
         const isCurrentlyTrusted = user.trustedDevices.some(d => d.deviceId === clientDeviceId && d.trustedStatus === 'Trusted');
         
         if (!isCurrentlyTrusted && activeTrustedCount >= 3) {
-          await LoginHistory.create({
-            user: user._id,
-            userPhone: phone,
-            time: new Date(),
-            device: deviceDisplayName,
-            browser,
-            ip,
-            success: false,
-          });
-          res.status(400);
-          return res.json({
-            success: false,
-            code: 'max_trusted_devices',
-            message: 'Maximum trusted devices limit reached (3). Please contact support to reset.',
-            data: null,
-            pagination: null,
-            timestamp: new Date().toISOString(),
-          });
+          // Find and prune the oldest trusted device to make room for new device
+          const oldestDevice = user.trustedDevices
+            .filter(d => d.trustedStatus === 'Trusted')
+            .sort((a, b) => new Date(a.loginTime || 0) - new Date(b.loginTime || 0))[0];
+          
+          if (oldestDevice) {
+            oldestDevice.trustedStatus = 'Revoked';
+          }
         }
 
         // Register or re-activate trusted device
