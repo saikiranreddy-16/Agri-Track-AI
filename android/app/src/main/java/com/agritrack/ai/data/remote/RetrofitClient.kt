@@ -7,9 +7,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    // For Physical Phone connected to PC Mobile Hotspot, use host PC's hotspot IP (192.168.137.1)
+    // For Physical Phone connected to PC via same Wi-Fi, use host PC's Wi-Fi IPv4 address (192.168.137.9)
     // For Android Studio Emulator, use http://10.0.2.2:5000/api/v1/
-    private const val BASE_URL = "http://192.168.137.1:5000/api/v1/"
+    private const val BASE_URL = "http://192.168.137.9:5000/api/v1/"
 
     private var authToken: String? = null
 
