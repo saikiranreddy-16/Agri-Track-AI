@@ -14,26 +14,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.agritrack.ai.ui.theme.*
-
-data class DemoExpense(
-    val title: String,
-    val category: String,
-    val amount: Double,
-    val date: String,
-    val machineName: String
-)
+import com.agritrack.ai.ui.viewmodel.ExpensesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpensesScreen(
     userRole: String? = null,
-    machines: List<com.agritrack.ai.domain.model.Machine> = emptyList()
+    machines: List<com.agritrack.ai.domain.model.Machine> = emptyList(),
+    expensesViewModel: ExpensesViewModel = viewModel()
 ) {
     val isCustomer = userRole != null && userRole != "Company Admin" && userRole != "Admin"
     var showAddDialog by remember { mutableStateOf(false) }
     var selectedMachine by remember { mutableStateOf("John Deere 5042D") }
-    var category by remember { mutableStateOf("Fuel") }
     var amountText by remember { mutableStateOf("") }
     var notesText by remember { mutableStateOf("") }
 
@@ -43,26 +37,8 @@ fun ExpensesScreen(
         listOf("John Deere 5042D")
     }
 
-    val allExpensesList = remember {
-        mutableStateListOf(
-            DemoExpense("Diesel Refill (200L)", "Fuel", 18500.0, "Today", "John Deere 5042D"),
-            DemoExpense("Engine Oil Service", "Maintenance", 4200.0, "Yesterday", "Mahindra Yuvo"),
-            DemoExpense("Driver Daily Allowance", "Wages", 1200.0, "Yesterday", "Preet 987 Combine"),
-            DemoExpense("Hydraulic Hose Replacement", "Spare Parts", 3500.0, "08 Aug 2026", "Swaraj 855 FE")
-        )
-    }
-
-    // Customer only sees expenditures for their assigned vehicle(s)
-    val displayExpenses = if (isCustomer) {
-        val allowedNames = vehicleOptions.map { it.lowercase() }
-        allExpensesList.filter { exp ->
-            allowedNames.any { exp.machineName.lowercase().contains(it) || it.contains(exp.machineName.lowercase()) }
-        }
-    } else {
-        allExpensesList
-    }
-
-    val totalExpense = displayExpenses.sumOf { it.amount }
+    val displayExpenses = expensesViewModel.expenseList
+    val totalExpense = displayExpenses.sumOf { it.displayAmount }
 
     if (showAddDialog && isCustomer) {
         AlertDialog(
@@ -112,15 +88,12 @@ fun ExpensesScreen(
                     onClick = {
                         val parsedAmt = amountText.trim().toDoubleOrNull() ?: 0.0
                         if (parsedAmt > 0) {
-                            allExpensesList.add(
-                                0,
-                                DemoExpense(
-                                    title = notesText.ifBlank { "Vehicle Maintenance" },
-                                    category = category,
-                                    amount = parsedAmt,
-                                    date = "Today",
-                                    machineName = selectedMachine
-                                )
+                            expensesViewModel.addExpense(
+                                vehicleId = null,
+                                qty = parsedAmt / 95.0, // approx litres if fuel
+                                rate = 95.0,
+                                pump = selectedMachine,
+                                notes = notesText.ifBlank { "Fuel Refill" }
                             )
                             showAddDialog = false
                             amountText = ""
@@ -249,10 +222,10 @@ fun ExpensesScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text(expense.title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                                Text("${expense.machineName} • ${expense.date}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(expense.displayTitle, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                Text("${expense.machineName ?: "Vehicle"} • ${expense.date ?: "Recently"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            Text("₹${String.format("%,.0f", expense.amount)}", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AgroAmberAccent)
+                            Text("₹${String.format("%,.0f", expense.displayAmount)}", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AgroAmberAccent)
                         }
                     }
                 }
@@ -260,3 +233,4 @@ fun ExpensesScreen(
         }
     }
 }
+

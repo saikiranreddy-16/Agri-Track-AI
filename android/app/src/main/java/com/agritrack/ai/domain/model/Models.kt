@@ -3,9 +3,9 @@ package com.agritrack.ai.domain.model
 import com.google.gson.annotations.SerializedName
 
 data class ApiResponse<T>(
-    val success: Boolean,
-    val message: String?,
-    val data: T?
+    val success: Boolean = true,
+    val message: String? = null,
+    val data: T? = null
 )
 
 data class MachineLocation(
@@ -64,12 +64,56 @@ data class Driver(
 data class Expense(
     @SerializedName("_id") val mongoId: String? = null,
     val id: String? = null,
-    val machineId: String? = null,
+    val vehicleId: String? = null,
     val category: String? = "General",
+    val title: String? = null,
     val amount: Double? = 0.0,
+    val totalCost: Double? = 0.0,
+    val dieselQuantity: Double? = null,
+    val costPerLitre: Double? = null,
     val date: String? = "",
+    val remarks: String? = "",
     val notes: String? = "",
-    val receiptUrl: String? = null
+    val machineName: String? = "Machine"
+) {
+    val displayAmount: Double get() = totalCost ?: amount ?: 0.0
+    val displayTitle: String get() = title ?: if (dieselQuantity != null) "Diesel Refill (${dieselQuantity}L)" else (category ?: "Expense")
+}
+
+data class AddDieselExpenseRequest(
+    val vehicleId: String? = null,
+    val date: String? = null,
+    val dieselQuantity: Double,
+    val costPerLitre: Double,
+    val petrolPumpName: String? = null,
+    val remarks: String? = null
+)
+
+data class MaintenanceRecord(
+    @SerializedName("_id") val mongoId: String? = null,
+    val machineId: String? = null,
+    val machineName: String? = "Vehicle",
+    val type: String? = "Routine Service",
+    val cost: Double? = 0.0,
+    val date: String? = "",
+    val description: String? = "",
+    val status: String? = "Completed"
+)
+
+data class AddMaintenanceRequest(
+    val machineId: String? = null,
+    val type: String,
+    val cost: Double,
+    val description: String? = null
+)
+
+data class AlertRecord(
+    @SerializedName("_id") val mongoId: String? = null,
+    val title: String? = "Alert",
+    val message: String? = "",
+    val severity: String? = "Medium", // High, Medium, Low
+    val machineName: String? = "Machine",
+    val date: String? = ""
 )
 
 data class SummaryMetrics(
@@ -109,3 +153,34 @@ data class UserData(
     val phone: String?,
     val role: String?
 )
+
+// AI Assistant Models
+data class AIConversationRequest(
+    val message: String? = null,
+    val context: Map<String, Any>? = null
+)
+
+data class AIChatRequest(
+    val message: String
+)
+
+data class AIMessage(
+    val role: String? = "assistant", // "user" or "assistant"
+    val content: String? = ""
+)
+
+data class AIConversationData(
+    @SerializedName("_id") val conversationId: String? = null,
+    val id: String? = null,
+    val title: String? = null,
+    val messages: List<AIMessage>? = emptyList(),
+    val reply: String? = null
+)
+
+data class AIResponse(
+    val success: Boolean = true,
+    val data: AIConversationData? = null,
+    val reply: String? = null,
+    val message: String? = null
+)
+
